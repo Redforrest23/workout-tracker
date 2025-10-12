@@ -151,9 +151,6 @@
         }
 
         .refresh-btn {
-            position: absolute;
-            top: 70px;
-            right: 15px;
             background-color: #333;
             border-radius: 25px;
             width: 40px;
@@ -165,6 +162,7 @@
             cursor: pointer;
             font-size: 24px;
             color: #bb86fc;
+            margin: 10px auto 0;
         }
 
         .button-row {
@@ -192,6 +190,11 @@
 
         .history-btn {
             background-color: #444;
+        }
+
+        .postpone-btn {
+            background-color: #bb86fc;
+            color: #000;
         }
 
         .workout-list {
@@ -487,6 +490,38 @@
             padding: 15px;
         }
 
+        /* Tab Styles */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #333;
+            background-color: #1a1a1a;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            color: #bb86fc;
+            border-bottom-color: #bb86fc;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         .desc-modal-content {
             background-color: #1e1e1e;
             border-radius: 12px;
@@ -609,6 +644,61 @@
             cursor: pointer;
         }
 
+        .rest-day-selector {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .rest-day-label {
+            font-size: 14px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .rest-day-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .rest-day-option {
+            background-color: #333;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid #444;
+            color: #ccc;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .rest-day-option.selected {
+            background-color: #bb86fc;
+            color: #000;
+            border-color: #bb86fc;
+        }
+
+        .info-section {
+            background-color: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #bb86fc;
+            margin-bottom: 8px;
+        }
+
+        .info-text {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 20px;
+        }
+
         .empty-history {
             font-size: 14px;
             color: #888;
@@ -676,7 +766,7 @@
         // CHANGE PASSWORD HERE - Make it whatever you want!
         const CORRECT_PASSWORD = "workout123";
 
-        const EXERCISES = {
+        const DEFAULT_EXERCISES = {
             push: [
                 { id: 'p1', name: 'Wall Push-ups', difficulty: 1, sets: 3, reps: 10, hardSets: 4, hardReps: 15, isTime: false, enabled: true, desc: 'Stand facing wall. Hands on wall at shoulder height. Lean in, push back. Keep body straight throughout.', videoUrl: 'https://www.hybridcalisthenics.com/wall-pushups' },
                 { id: 'p2', name: 'Incline Push-ups', difficulty: 2, sets: 3, reps: 10, hardSets: 4, hardReps: 12, isTime: false, enabled: false, desc: 'Hands on elevated surface. Lower chest to surface, push up. Keep core tight, body in straight line.', videoUrl: 'https://www.hybridcalisthenics.com/incline-pushups' },
@@ -781,6 +871,8 @@
             6: { name: 'Rest', focus: [], includeCore: false }
         };
 
+        const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
         // Password Screen Component
         function PasswordScreen({ onUnlock }) {
             const [password, setPassword] = useState('');
@@ -824,12 +916,13 @@
 
         function App() {
             const [isAuthenticated, setIsAuthenticated] = useState(false);
-            const [exercises, setExercises] = useState(EXERCISES);
+            const [exercises, setExercises] = useState(DEFAULT_EXERCISES);
             const [workout, setWorkout] = useState([]);
             const [completedWorkout, setCompletedWorkout] = useState([]);
             const [log, setLog] = useState({});
             const [hardMode, setHardMode] = useState({});
             const [showSettings, setShowSettings] = useState(false);
+            const [activeSettingsTab, setActiveSettingsTab] = useState('exercises');
             const [showDesc, setShowDesc] = useState(false);
             const [showHistory, setShowHistory] = useState(false);
             const [selected, setSelected] = useState(null);
@@ -842,6 +935,8 @@
             const [viewingHistoryWorkout, setViewingHistoryWorkout] = useState(null);
             const [showHistoryDetail, setShowHistoryDetail] = useState(false);
             const [workoutComplete, setWorkoutComplete] = useState(false);
+            const [customRestDay, setCustomRestDay] = useState(6); // Default Saturday
+            const [restDayPostponed, setRestDayPostponed] = useState(false);
 
             useEffect(() => {
                 // Check if user is authenticated
@@ -860,6 +955,32 @@
 
             const loadData = () => {
                 try {
+                    // Load saved exercise settings
+                    const savedExercises = localStorage.getItem('exerciseSettings');
+                    if (savedExercises) {
+                        setExercises(JSON.parse(savedExercises));
+                    }
+
+                    // Load custom rest day
+                    const savedRestDay = localStorage.getItem('customRestDay');
+                    if (savedRestDay !== null) {
+                        setCustomRestDay(parseInt(savedRestDay));
+                    }
+
+                    // Load rest day postponed status
+                    const postponedStatus = localStorage.getItem('restDayPostponed');
+                    const postponedDate = localStorage.getItem('restDayPostponedDate');
+                    const today = new Date().toDateString();
+
+                    if (postponedStatus === 'true' && postponedDate === today) {
+                        setRestDayPostponed(true);
+                    } else {
+                        // Clear postponed status if it's a new day
+                        localStorage.removeItem('restDayPostponed');
+                        localStorage.removeItem('restDayPostponedDate');
+                        setRestDayPostponed(false);
+                    }
+
                     const historyData = localStorage.getItem('workoutHistory');
                     const stretchData = localStorage.getItem('lastStretchCats');
 
@@ -876,10 +997,15 @@
                     const d = new Date();
                     const day = d.getDay();
                     setDate(d.toDateString());
-                    setDayName(WEEK_SCHEDULE[day].name);
-                    setIsRest(day === 6);
 
-                    if (day !== 6) {
+                    // Determine if today is rest day (considering postponement)
+                    const actualRestDay = restDayPostponed && day === customRestDay ? customRestDay + 1 : customRestDay;
+                    const isRestDay = day === actualRestDay % 7;
+
+                    setIsRest(isRestDay);
+                    setDayName(isRestDay ? 'Rest' : WEEK_SCHEDULE[day].name);
+
+                    if (!isRestDay) {
                         const todayDateStr = d.toDateString();
                         const alreadyWorkedOut = historyData ? JSON.parse(historyData).some(h => h.date === todayDateStr) : false;
 
@@ -909,7 +1035,8 @@
                 while (true) {
                     const dayOfWeek = checkDate.getDay();
 
-                    if (dayOfWeek === 6) {
+                    // Skip rest days
+                    if (dayOfWeek === customRestDay) {
                         checkDate.setDate(checkDate.getDate() - 1);
                         continue;
                     }
@@ -1068,6 +1195,8 @@
                         const ex = updated[category].find(e => e.id === id);
                         if (ex) ex.enabled = !ex.enabled;
                     }
+                    // Save to localStorage
+                    localStorage.setItem('exerciseSettings', JSON.stringify(updated));
                     return updated;
                 });
             };
@@ -1106,6 +1235,22 @@
                 window.open(url, '_blank');
             };
 
+            const postponeRestDay = () => {
+                if (window.confirm('Move rest day to tomorrow? You can do today\'s workout instead.')) {
+                    setRestDayPostponed(true);
+                    localStorage.setItem('restDayPostponed', 'true');
+                    localStorage.setItem('restDayPostponedDate', new Date().toDateString());
+
+                    // Reload to generate today's workout
+                    window.location.reload();
+                }
+            };
+
+            const changeRestDay = (day) => {
+                setCustomRestDay(day);
+                localStorage.setItem('customRestDay', day.toString());
+            };
+
             // Show password screen if not authenticated
             if (!isAuthenticated) {
                 return <PasswordScreen onUnlock={() => setIsAuthenticated(true)} />;
@@ -1119,10 +1264,19 @@
                             <div className="header-date">{date}</div>
                             <div className="streak">Streak: {streak} days</div>
                         </div>
+
+                        <div className="button-row">
+                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
+                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
+                            <button onClick={postponeRestDay} className="btn postpone-btn">Postpone Rest</button>
+                        </div>
+
                         <div className="rest-container">
-                            <div className="rest-title">Saturday Rest Day</div>
+                            <div className="rest-title">{DAYS_OF_WEEK[new Date().getDay()]} Rest Day</div>
                             <div className="rest-text">Recovery is when you get stronger. Rest up for tomorrow!</div>
                         </div>
+
+                        {renderModals()}
                     </div>
                 );
             }
@@ -1186,173 +1340,276 @@
 
             const renderModals = () => (
                 <>
+                    {/* Settings Modal */}
                     <div className={`modal ${showSettings ? 'show' : ''}`}>
                         <div className="modal-content modal-full">
                             <div className="modal-header">
-                                <div className="modal-title">Exercise Settings</div>
+                                <div className="modal-title">Settings</div>
                                 <button onClick={() => setShowSettings(false)} className="modal-done">Done</button>
                             </div>
+
+                            <div className="tabs">
+                                <button
+                                    className={`tab ${activeSettingsTab === 'exercises' ? 'active' : ''}`}
+                                    onClick={() => setActiveSettingsTab('exercises')}
+                                >
+                                    Exercises
+                                </button>
+                                <button
+                                    className={`tab ${activeSettingsTab === 'restday' ? 'active' : ''}`}
+                                    onClick={() => setActiveSettingsTab('restday')}
+                                >
+                                    Rest Day
+                                </button>
+                                <button
+                                    className={`tab ${activeSettingsTab === 'about' ? 'active' : ''}`}
+                                    onClick={() => setActiveSettingsTab('about')}
+                                >
+                                    About
+                                </button>
+                            </div>
+
                             <div className="modal-scroll">
-                                <div className="cat-title">Mandatory Mobility (3x per week)</div>
-                                <div className="settings-subtitle">These exercises automatically appear Mon/Wed/Fri</div>
-                                {exercises.mandatory.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('mandatory', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                {/* Exercises Tab */}
+                                <div className={`tab-content ${activeSettingsTab === 'exercises' ? 'active' : ''}`}>
+                                    <div className="cat-title">Mandatory Mobility (3x per week)</div>
+                                    <div className="settings-subtitle">These exercises automatically appear Mon/Wed/Fri</div>
+                                    {exercises.mandatory.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('mandatory', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Push Exercises</div>
-                                {exercises.push.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('push', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Push Exercises</div>
+                                    {exercises.push.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('push', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Pull Exercises</div>
-                                {exercises.pull.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('pull', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Pull Exercises</div>
+                                    {exercises.pull.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('pull', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Squats</div>
-                                {exercises.squats.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('squats', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Squats</div>
+                                    {exercises.squats.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('squats', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Core</div>
-                                {exercises.core.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('core', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Core</div>
+                                    {exercises.core.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('core', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">APT</div>
-                                {exercises.apt.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('apt', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">APT</div>
+                                    {exercises.apt.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('apt', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Hip Flexor Stretches</div>
-                                {exercises.stretches.hipFlexor.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('stretches', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Hip Flexor Stretches</div>
+                                    {exercises.stretches.hipFlexor.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('stretches', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Hamstring Stretches</div>
-                                {exercises.stretches.hamstring.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('stretches', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Hamstring Stretches</div>
+                                    {exercises.stretches.hamstring.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('stretches', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Hip/Glute Stretches</div>
-                                {exercises.stretches.hipGlute.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('stretches', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Hip/Glute Stretches</div>
+                                    {exercises.stretches.hipGlute.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('stretches', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Shoulder Stretches</div>
-                                {exercises.stretches.shoulder.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('stretches', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Shoulder Stretches</div>
+                                    {exercises.stretches.shoulder.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('stretches', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Back/Spine Stretches</div>
-                                {exercises.stretches.backSpine.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('stretches', ex.id)}
-                                        />
-                                    </div>
-                                ))}
+                                    <div className="cat-title">Back/Spine Stretches</div>
+                                    {exercises.stretches.backSpine.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('stretches', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
 
-                                <div className="cat-title">Full Body Stretches</div>
-                                {exercises.stretches.fullBody.map(ex => (
-                                    <div key={ex.id} className="settings-row">
-                                        <div className="settings-name">{ex.name}</div>
-                                        <input
-                                            type="checkbox"
-                                            className="checkbox"
-                                            checked={ex.enabled}
-                                            onChange={() => toggleEx('stretches', ex.id)}
-                                        />
+                                    <div className="cat-title">Full Body Stretches</div>
+                                    {exercises.stretches.fullBody.map(ex => (
+                                        <div key={ex.id} className="settings-row">
+                                            <div className="settings-name">{ex.name}</div>
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={ex.enabled}
+                                                onChange={() => toggleEx('stretches', ex.id)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Rest Day Tab */}
+                                <div className={`tab-content ${activeSettingsTab === 'restday' ? 'active' : ''}`}>
+                                    <div className="info-section">
+                                        <div className="info-title">Rest Day Configuration</div>
+                                        <div className="info-text">
+                                            Choose which day of the week should be your rest day. You can also postpone rest day by one day using the "Postpone Rest" button on rest days.
+                                        </div>
                                     </div>
-                                ))}
+
+                                    <div className="rest-day-selector">
+                                        <div className="rest-day-label">Select Rest Day:</div>
+                                        <div className="rest-day-options">
+                                            {DAYS_OF_WEEK.map((day, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={`rest-day-option ${customRestDay === idx ? 'selected' : ''}`}
+                                                    onClick={() => changeRestDay(idx)}
+                                                >
+                                                    {day}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="info-section" style={{ marginTop: '20px' }}>
+                                        <div className="info-title">Current Schedule</div>
+                                        <div className="info-text">
+                                            {DAYS_OF_WEEK.map((day, idx) => {
+                                                if (idx === customRestDay) {
+                                                    return <div key={idx}><strong>{day}:</strong> Rest Day 💤</div>;
+                                                } else {
+                                                    return <div key={idx}><strong>{day}:</strong> {WEEK_SCHEDULE[idx].name} Day 💪</div>;
+                                                }
+                                            })}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* About Tab */}
+                                <div className={`tab-content ${activeSettingsTab === 'about' ? 'active' : ''}`}>
+                                    <div className="info-section">
+                                        <div className="info-title">Workout Tracker</div>
+                                        <div className="info-text">
+                                            A progressive workout tracker with automatic daily workout generation based on a Push/Pull/Legs split schedule.
+                                        </div>
+                                    </div>
+
+                                    <div className="info-section">
+                                        <div className="info-title">Features</div>
+                                        <div className="info-text">
+                                            • Automatic daily workout generation<br />
+                                            • Regular and Hard mode for each exercise<br />
+                                            • Workout history and streak tracking<br />
+                                            • Customizable exercise selection<br />
+                                            • Configurable rest days<br />
+                                            • APT correction exercises<br />
+                                            • Mandatory mobility work (3x/week)<br />
+                                            • Progressive overload tracking
+                                        </div>
+                                    </div>
+
+                                    <div className="info-section">
+                                        <div className="info-title">How It Works</div>
+                                        <div className="info-text">
+                                            Each day, the app generates a workout based on your schedule. Complete all sets and reps, then mark exercises as complete. Your workout history and streak are automatically tracked.
+                                        </div>
+                                    </div>
+
+                                    <div className="info-section">
+                                        <div className="info-title">Data Storage</div>
+                                        <div className="info-text">
+                                            All data is stored locally on your device. Your workout history, settings, and preferences are saved in your browser's local storage.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
+                    {/* History Modal */}
                     <div className={`modal ${showHistory ? 'show' : ''}`}>
                         <div className="modal-content modal-full">
                             <div className="modal-header">
@@ -1386,6 +1643,7 @@
                         </div>
                     </div>
 
+                    {/* History Detail Modal */}
                     <div className={`modal ${showHistoryDetail ? 'show' : ''}`}>
                         <div className="modal-content modal-full">
                             <div className="modal-header">
@@ -1431,6 +1689,7 @@
                         </div>
                     </div>
 
+                    {/* Description Modal */}
                     <div className={`modal ${showDesc ? 'show' : ''}`}>
                         <div className="desc-modal-content">
                             <div className="desc-title">{selected?.name}</div>
