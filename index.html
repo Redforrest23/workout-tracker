@@ -1002,8 +1002,13 @@
                     let loadedExercises = DEFAULT_EXERCISES;
 
                     if (savedExercises) {
-                        loadedExercises = JSON.parse(savedExercises);
-                        setExercises(loadedExercises);
+                        try {
+                            loadedExercises = JSON.parse(savedExercises);
+                            setExercises(loadedExercises);
+                        } catch (e) {
+                            console.error('Error parsing saved exercises:', e);
+                            loadedExercises = DEFAULT_EXERCISES;
+                        }
                     }
 
                     const savedRestDay = localStorage.getItem('customRestDay');
@@ -1029,39 +1034,65 @@
 
                     const historyData = localStorage.getItem('workoutHistory');
                     const stretchData = localStorage.getItem('lastStretchCats');
+                    let loadedStretchCats = [];
 
                     if (historyData) {
-                        const parsedHistory = JSON.parse(historyData);
-                        setHistory(parsedHistory);
-                        calculateStreak(parsedHistory);
+                        try {
+                            const parsedHistory = JSON.parse(historyData);
+                            setHistory(parsedHistory);
+                            calculateStreak(parsedHistory);
+                        } catch (e) {
+                            console.error('Error parsing history:', e);
+                        }
                     }
 
                     if (stretchData) {
-                        setLastStretchCats(JSON.parse(stretchData));
+                        try {
+                            loadedStretchCats = JSON.parse(stretchData);
+                            setLastStretchCats(loadedStretchCats);
+                        } catch (e) {
+                            console.error('Error parsing stretch data:', e);
+                        }
                     }
 
                     const d = new Date();
                     const day = d.getDay();
                     setDate(d.toDateString());
 
-                    const actualRestDay = isPostponed && day === currentRestDay ? currentRestDay + 1 : currentRestDay;
-                    const isRestDay = day === actualRestDay % 7;
+                    const actualRestDay = isPostponed && day === currentRestDay ? (currentRestDay + 1) % 7 : currentRestDay;
+                    const isRestDay = day === actualRestDay;
 
                     setIsRest(isRestDay);
-                    setDayName(isRestDay ? 'Rest' : WEEK_SCHEDULE[day].name);
 
-                    if (!isRestDay) {
+                    if (isRestDay) {
+                        setDayName('Rest');
+                    } else {
+                        setDayName(WEEK_SCHEDULE[day].name);
+
                         const todayDateStr = d.toDateString();
-                        const alreadyWorkedOut = historyData ? JSON.parse(historyData).some(h => h.date === todayDateStr) : false;
+                        let alreadyWorkedOut = false;
+
+                        if (historyData) {
+                            try {
+                                alreadyWorkedOut = JSON.parse(historyData).some(h => h.date === todayDateStr);
+                            } catch (e) {
+                                console.error('Error checking workout history:', e);
+                            }
+                        }
 
                         if (!alreadyWorkedOut) {
-                            generateWorkoutWithExercises(day, loadedExercises, JSON.parse(stretchData || '[]'));
+                            generateWorkoutWithExercises(day, loadedExercises, loadedStretchCats);
                         } else {
                             setWorkoutComplete(true);
                         }
                     }
                 } catch (error) {
                     console.error('Error loading data:', error);
+                    // Set fallback state to prevent grey screen
+                    setIsRest(false);
+                    setDayName('Push');
+                    const d = new Date();
+                    setDate(d.toDateString());
                 }
             };
 
@@ -1324,92 +1355,7 @@
                 });
             };
 
-            if (!isAuthenticated) {
-                return <PasswordScreen onUnlock={() => setIsAuthenticated(true)} />;
-            }
-
-            if (isRest) {
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <div className="header-title">Rest Day</div>
-                            <div className="header-date">{date}</div>
-                            <div className="streak">Streak: {streak} days</div>
-                        </div>
-
-                        <div className="button-row">
-                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
-                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
-                            <button onClick={postponeRestDay} className="btn postpone-btn">Postpone Rest</button>
-                        </div>
-
-                        <div className="rest-container">
-                            <div className="rest-title">{DAYS_OF_WEEK[new Date().getDay()]} Rest Day</div>
-                            <div className="rest-text">Recovery is when you get stronger. Rest up for tomorrow!</div>
-                        </div>
-
-                        {renderModals()}
-                    </div>
-                );
-            }
-
-            if (workoutComplete) {
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <div className="header-title">{dayName} Day</div>
-                            <div className="header-date">{date}</div>
-                            <div className="streak">Streak: {streak} days</div>
-                        </div>
-
-                        <div className="button-row">
-                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
-                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
-                        </div>
-
-                        <div className="workout-list">
-                            <div style={{ textAlign: 'center', padding: '20px' }}>
-                                <div className="rest-title">Workout Complete!</div>
-                                <div className="rest-text">Great work today. Come back tomorrow for your next workout.</div>
-                            </div>
-
-                            <div className="cat-title" style={{ paddingLeft: '15px', paddingRight: '15px' }}>Today's Completed Workout</div>
-
-                            {completedWorkout.map((ex) => {
-                                const isHard = hardMode[ex.id];
-                                const numSets = isHard ? ex.hardSets : ex.sets;
-                                const reps = isHard ? ex.hardReps : ex.reps;
-                                const prefix = isHard ? 'hard' : 'reg';
-
-                                return (
-                                    <div key={ex.id} className="card">
-                                        <div className="card-header">
-                                            <div className="ex-info">
-                                                <div className="ex-name">✓ {ex.name}</div>
-                                                <div className="ex-cat">{ex.category}</div>
-                                            </div>
-                                        </div>
-                                        <div className={isHard ? 'hard-section' : 'reg-section'}>
-                                            <div className={isHard ? 'diff-title-hard' : 'diff-title'}>
-                                                {isHard ? 'Hard' : 'Regular'}: {numSets} sets × {reps} {ex.isTime ? 'sec' : 'reps'}
-                                            </div>
-                                            {Array.from({ length: numSets }).map((_, i) => (
-                                                <div key={i} className="set-row">
-                                                    <div className="set-label">Set {i + 1}:</div>
-                                                    <div className="completed-set-value">{log[`${ex.id}-${prefix}-${i}`] || '0'} {ex.isTime ? 'sec' : 'reps'}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {renderModals()}
-                    </div>
-                );
-            }
-
+            // CRITICAL: Define renderModals BEFORE any return statements
             const renderModals = () => (
                 <>
                     {/* Settings Modal */}
@@ -1893,28 +1839,21 @@
                                 <button onClick={() => setShowHistory(false)} className="modal-done">Done</button>
                             </div>
                             <div className="modal-scroll">
-                                {history.length === 0 ? (
-                                    <div className="empty-history">No workout history yet.</div>
-                                ) : (
-                                    [...history].reverse().map((h, idx) => (
-                                        <div
-                                            key={idx}
-                                            className="history-card"
-                                            onClick={() => {
-                                                setViewingHistoryWorkout(h);
-                                                setShowHistory(false);
-                                                setShowHistoryDetail(true);
-                                            }}
-                                        >
-                                            <div className="history-date">{h.date}</div>
-                                            <div className="history-type">{h.workoutType} Day</div>
-                                            <div className="history-exercises">
-                                                {h.exercises.map(e => e.name).join(', ')}
-                                            </div>
-                                            <div className="tap-to-view">Tap to view details</div>
+                                {history.length === 0 && <div className="empty-history">No workout history yet. Complete your first workout!</div>}
+                                {history.slice().reverse().map((h, idx) => (
+                                    <div key={idx} className="history-card" onClick={() => {
+                                        setViewingHistoryWorkout(h);
+                                        setShowHistoryDetail(true);
+                                        setShowHistory(false);
+                                    }}>
+                                        <div className="history-date">{h.date}</div>
+                                        <div className="history-type">{h.workoutType} Day</div>
+                                        <div className="history-exercises">
+                                            {h.exercises.length} exercises completed
                                         </div>
-                                    ))
-                                )}
+                                        <div className="tap-to-view">Tap to view details</div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -1923,100 +1862,150 @@
                     <div className={`modal ${showHistoryDetail ? 'show' : ''}`}>
                         <div className="modal-content modal-full">
                             <div className="modal-header">
-                                <div className="modal-title">{viewingHistoryWorkout?.workoutType} Day</div>
-                                <button
-                                    onClick={() => {
-                                        setShowHistoryDetail(false);
-                                        setViewingHistoryWorkout(null);
-                                    }}
-                                    className="modal-done"
-                                >
-                                    Close
-                                </button>
+                                <div className="modal-title">Workout Details</div>
+                                <button onClick={() => {
+                                    setShowHistoryDetail(false);
+                                    setShowHistory(true);
+                                }} className="modal-done">Back</button>
                             </div>
                             <div className="modal-scroll">
-                                {viewingHistoryWorkout?.exercises?.map((ex, idx) => {
-                                    const numSets = ex.isHard ? ex.hardSets : ex.sets;
-                                    const reps = ex.isHard ? ex.hardReps : ex.reps;
-
-                                    return (
-                                        <div key={idx} className="card">
-                                            <div className="card-header">
-                                                <div className="ex-info">
-                                                    <div className="ex-name">{ex.name}</div>
-                                                    <div className="ex-cat">{ex.category}</div>
-                                                </div>
-                                            </div>
-                                            <div className={ex.isHard ? 'hard-section' : 'reg-section'}>
-                                                <div className={ex.isHard ? 'diff-title-hard' : 'diff-title'}>
-                                                    {ex.isHard ? 'Hard' : 'Regular'}: {numSets} sets × {reps} {ex.isTime ? 'sec' : 'reps'}
-                                                </div>
-                                                {ex.loggedSets?.map((logged, i) => (
-                                                    <div key={i} className="set-row">
-                                                        <div className="set-label">Set {i + 1}:</div>
-                                                        <div className="completed-set-value">{logged} {ex.isTime ? 'sec' : 'reps'}</div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                {viewingHistoryWorkout && (
+                                    <>
+                                        <div className="info-section">
+                                            <div className="info-title">{viewingHistoryWorkout.date}</div>
+                                            <div className="info-text">{viewingHistoryWorkout.workoutType} Day</div>
                                         </div>
-                                    );
-                                })}
+
+                                        {viewingHistoryWorkout.exercises.map((ex, idx) => (
+                                            <div key={idx} className="card completed-card">
+                                                <div className="card-header">
+                                                    <div className="ex-info">
+                                                        <div className="ex-name">{ex.name}</div>
+                                                        <div className="ex-cat">{ex.category}</div>
+                                                    </div>
+                                                </div>
+
+                                                <div className={ex.isHard ? 'hard-section' : 'reg-section'}>
+                                                    <div className={ex.isHard ? 'diff-title-hard' : 'diff-title'}>
+                                                        {ex.isHard ? 'Hard Mode' : 'Regular Mode'}
+                                                    </div>
+                                                    {ex.loggedSets.map((value, setIdx) => (
+                                                        <div key={setIdx} className="set-row">
+                                                            <div className="set-label">Set {setIdx + 1}:</div>
+                                                            <div className="completed-set-value">
+                                                                {value} {ex.isTime ? 'seconds' : 'reps'}
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
 
                     {/* Description Modal */}
-                    <div className={`modal ${showDesc ? 'show' : ''}`}>
-                        <div className="desc-modal-content">
-                            <div className="desc-title">{selected?.name}</div>
-                            {selected?.videoUrl ? (
+                    <div className={`modal ${showDesc ? 'show' : ''}`} onClick={() => setShowDesc(false)}>
+                        <div className="desc-modal-content" onClick={(e) => e.stopPropagation()}>
+                            {selected && (
                                 <>
-                                    <div className="desc-text">{selected?.desc}</div>
-                                    <button onClick={() => openVideo(selected.videoUrl)} className="video-link-btn">
-                                        📹 Watch Tutorial Video
-                                    </button>
+                                    <div className="desc-title">{selected.name}</div>
+                                    <div className="desc-text">{selected.desc}</div>
+                                    {selected.videoUrl && (
+                                        <button onClick={() => openVideo(selected.videoUrl)} className="video-link-btn">
+                                            Watch Video Tutorial
+                                        </button>
+                                    )}
+                                    {selected.pdfUrl && (
+                                        <>
+                                            <div className="pdf-info-box">
+                                                <div className="pdf-info-text">Movement by David Stretching Program</div>
+                                                {selected.pdfPage && (
+                                                    <div className="pdf-page-text">See: {selected.pdfPage}</div>
+                                                )}
+                                            </div>
+                                            <button onClick={() => openVideo(selected.pdfUrl)} className="pdf-link-btn">
+                                                Open PDF Guide
+                                            </button>
+                                        </>
+                                    )}
+                                    <button onClick={() => setShowDesc(false)} className="close-btn">Close</button>
                                 </>
-                            ) : selected?.pdfUrl ? (
-                                <>
-                                    <div className="desc-text">{selected?.desc}</div>
-                                    <div className="pdf-info-box">
-                                        <div className="pdf-info-text">📄 Find video tutorial in PDF:</div>
-                                        <div className="pdf-page-text">{selected?.pdfPage}</div>
-                                    </div>
-                                    <button onClick={() => openVideo(selected.pdfUrl)} className="pdf-link-btn">
-                                        Open PDF Guide
-                                    </button>
-                                </>
-                            ) : (
-                                <div className="desc-text">{selected?.desc}</div>
                             )}
-                            <button onClick={() => setShowDesc(false)} className="close-btn">
-                                Close
-                            </button>
                         </div>
                     </div>
                 </>
             );
 
+            // Check authentication first
+            if (!isAuthenticated) {
+                return <PasswordScreen onUnlock={() => setIsAuthenticated(true)} />;
+            }
+
+            // Rest day view
+            if (isRest) {
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <div className="header-title">Rest Day</div>
+                            <div className="header-date">{date}</div>
+                            <div className="streak">Streak: {streak} days</div>
+                        </div>
+
+                        <div className="button-row">
+                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
+                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
+                            <button onClick={postponeRestDay} className="btn postpone-btn">Postpone Rest</button>
+                        </div>
+
+                        <div className="rest-container">
+                            <div className="rest-title">{DAYS_OF_WEEK[new Date().getDay()]} Rest Day</div>
+                            <div className="rest-text">Recovery is when you get stronger. Rest up for tomorrow!</div>
+                        </div>
+
+                        {renderModals()}
+                    </div>
+                );
+            }
+
+            // Workout complete view
+            if (workoutComplete) {
+                return (
+                    <div className="container">
+                        <div className="header">
+                            <div className="header-title">{dayName} Day</div>
+                            <div className="header-date">{date}</div>
+                            <div className="streak">Streak: {streak} days 🔥</div>
+                        </div>
+
+                        <div className="button-row">
+                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
+                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
+                        </div>
+
+                        <div className="rest-container">
+                            <div className="rest-title">Workout Complete! 💪</div>
+                            <div className="rest-text">Great job! You've already completed today's workout.</div>
+                        </div>
+
+                        {renderModals()}
+                    </div>
+                );
+            }
+
+            // Main workout view
             return (
                 <div className="container">
                     <div className="header">
                         <div className="header-title">{dayName} Day</div>
                         <div className="header-date">{date}</div>
-                        <div className="streak">Streak: {streak} days</div>
+                        <div className="streak">Streak: {streak} days 🔥</div>
+                        <button onClick={() => generateWorkout(new Date().getDay())} className="refresh-btn">
+                            🔄
+                        </button>
                     </div>
-
-                    <button
-                        onClick={() => {
-                            if (window.confirm('This will generate a new workout for today. Your current progress will be lost. Continue?')) {
-                                const d = new Date();
-                                generateWorkout(d.getDay());
-                            }
-                        }}
-                        className="refresh-btn"
-                    >
-                        ↻
-                    </button>
 
                     <div className="button-row">
                         <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
@@ -2024,84 +2013,113 @@
                     </div>
 
                     <div className="workout-list">
-                        {workout.map((ex) => {
-                            const isHard = hardMode[ex.id];
-                            const numSets = isHard ? ex.hardSets : ex.sets;
-                            const reps = isHard ? ex.hardReps : ex.reps;
-                            const complete = isComplete(ex);
-                            const prefix = isHard ? 'hard' : 'reg';
-
-                            return (
-                                <div key={ex.id} className="card">
-                                    <div className="card-header">
-                                        <div className="ex-info">
-                                            <div className="ex-name">{ex.name}</div>
-                                            <div className="ex-cat">{ex.category}</div>
-                                        </div>
-                                        <div className="header-right">
-                                            <div className="diff-toggle">
-                                                <span className={`diff-label ${!isHard ? 'diff-label-active' : ''}`}>Reg</span>
-                                                <div
-                                                    className={`toggle-switch ${isHard ? 'hard' : ''}`}
-                                                    onClick={() => toggleHardMode(ex.id)}
-                                                />
-                                                <span className={`diff-label ${isHard ? 'diff-label-active' : ''}`}>Hard</span>
-                                            </div>
-                                            <button onClick={() => viewDesc(ex)} className="desc-btn">
-                                                Info
-                                            </button>
-                                        </div>
+                        {workout.map(ex => (
+                            <div key={ex.id} className="card">
+                                <div className="card-header">
+                                    <div className="ex-info">
+                                        <div className="ex-name">{ex.name}</div>
+                                        <div className="ex-cat">{ex.category}</div>
                                     </div>
-
-                                    <div className={isHard ? 'hard-section' : 'reg-section'}>
-                                        <div className={isHard ? 'diff-title-hard' : 'diff-title'}>
-                                            {isHard ? 'Hard' : 'Regular'}: {numSets} sets × {reps} {ex.isTime ? 'sec' : 'reps'}
+                                    <div className="header-right">
+                                        <div className="diff-toggle">
+                                            <span className={`diff-label ${!hardMode[ex.id] ? 'diff-label-active' : ''}`}>
+                                                Reg
+                                            </span>
+                                            <div
+                                                className={`toggle-switch ${hardMode[ex.id] ? 'hard' : ''}`}
+                                                onClick={() => toggleHardMode(ex.id)}
+                                            ></div>
+                                            <span className={`diff-label ${hardMode[ex.id] ? 'diff-label-active' : ''}`}>
+                                                Hard
+                                            </span>
                                         </div>
-                                        {Array.from({ length: numSets }).map((_, i) => (
+                                        <button onClick={() => viewDesc(ex)} className="desc-btn">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {!hardMode[ex.id] && (
+                                    <div className="reg-section">
+                                        <div className="diff-title">Regular Mode</div>
+                                        {Array.from({ length: ex.sets }).map((_, i) => (
                                             <div key={i} className="set-row">
                                                 <div className="set-label">Set {i + 1}:</div>
                                                 <input
                                                     type="number"
                                                     className="input"
                                                     placeholder={ex.isTime ? 'Seconds' : 'Reps'}
-                                                    value={log[`${ex.id}-${prefix}-${i}`] || ''}
-                                                    onChange={(e) => logRep(`${ex.id}-${prefix}`, i, e.target.value)}
+                                                    value={log[`${ex.id}-reg-${i}`] || ''}
+                                                    onChange={(e) => logRep(ex.id, `reg-${i}`, e.target.value)}
                                                 />
                                             </div>
                                         ))}
                                     </div>
+                                )}
 
-                                    <button
-                                        onClick={() => complete && completeExercise(ex)}
-                                        className="complete-btn"
-                                        disabled={!complete}
-                                    >
-                                        Mark Complete
-                                    </button>
-                                </div>
-                            );
-                        })}
+                                {hardMode[ex.id] && (
+                                    <div className="hard-section">
+                                        <div className="diff-title-hard">Hard Mode</div>
+                                        {Array.from({ length: ex.hardSets }).map((_, i) => (
+                                            <div key={i} className="set-row">
+                                                <div className="set-label">Set {i + 1}:</div>
+                                                <input
+                                                    type="number"
+                                                    className="input"
+                                                    placeholder={ex.isTime ? 'Seconds' : 'Reps'}
+                                                    value={log[`${ex.id}-hard-${i}`] || ''}
+                                                    onChange={(e) => logRep(ex.id, `hard-${i}`, e.target.value)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <button
+                                    className="complete-btn"
+                                    disabled={!isComplete(ex)}
+                                    onClick={() => completeExercise(ex)}
+                                >
+                                    {isComplete(ex) ? 'Complete Exercise' : 'Fill All Sets'}
+                                </button>
+                            </div>
+                        ))}
 
                         {completedWorkout.length > 0 && (
                             <>
                                 <div className="completed-divider">
-                                    <div className="completed-title">Completed</div>
+                                    <div className="completed-title">Completed Exercises</div>
+                                    <div className="completed-summary">
+                                        {completedWorkout.length} of {workout.length + completedWorkout.length} complete
+                                    </div>
                                 </div>
-                                {completedWorkout.map((ex) => {
+
+                                {completedWorkout.map(ex => {
                                     const isHard = hardMode[ex.id];
                                     const numSets = isHard ? ex.hardSets : ex.sets;
-                                    const reps = isHard ? ex.hardReps : ex.reps;
+                                    const prefix = isHard ? 'hard' : 'reg';
 
                                     return (
                                         <div key={ex.id} className="card completed-card">
                                             <div className="card-header">
                                                 <div className="ex-info">
-                                                    <div className="ex-name completed-text">✓ {ex.name}</div>
-                                                    <div className="ex-cat completed-text">{ex.category}</div>
+                                                    <div className="ex-name completed-text">{ex.name}</div>
+                                                    <div className="ex-cat">{ex.category}</div>
                                                 </div>
                                             </div>
-                                            <div className="completed-summary">
-                                                {isHard ? 'Hard' : 'Regular'}: {numSets} sets × {reps} {ex.isTime ? 'sec' : 'reps'}
+
+                                            <div className={isHard ? 'hard-section' : 'reg-section'}>
+                                                <div className={isHard ? 'diff-title-hard' : 'diff-title'}>
+                                                    {isHard ? 'Hard Mode' : 'Regular Mode'}
+                                                </div>
+                                                {Array.from({ length: numSets }).map((_, i) => (
+                                                    <div key={i} className="set-row">
+                                                        <div className="set-label">Set {i + 1}:</div>
+                                                        <div className="completed-set-value">
+                                                            {log[`${ex.id}-${prefix}-${i}`]} {ex.isTime ? 'seconds' : 'reps'}
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     );
