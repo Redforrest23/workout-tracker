@@ -1059,8 +1059,15 @@
                     const day = d.getDay();
                     setDate(d.toDateString());
 
-                    const actualRestDay = isPostponed && day === currentRestDay ? (currentRestDay + 1) % 7 : currentRestDay;
-                    const isRestDay = day === actualRestDay;
+                    // FIXED: Rest day postponement logic
+                    let isRestDay;
+                    if (isPostponed && day === currentRestDay) {
+                        // If today was supposed to be rest day BUT it's postponed, today is NOT a rest day
+                        isRestDay = false;
+                    } else {
+                        // Normal rest day check
+                        isRestDay = day === currentRestDay;
+                    }
 
                     setIsRest(isRestDay);
 
@@ -1088,7 +1095,6 @@
                     }
                 } catch (error) {
                     console.error('Error loading data:', error);
-                    // Set fallback state to prevent grey screen
                     setIsRest(false);
                     setDayName('Push');
                     const d = new Date();
@@ -1355,7 +1361,6 @@
                 });
             };
 
-            // CRITICAL: Define renderModals BEFORE any return statements
             const renderModals = () => (
                 <>
                     {/* Settings Modal */}
@@ -1939,12 +1944,10 @@
                 </>
             );
 
-            // Check authentication first
             if (!isAuthenticated) {
                 return <PasswordScreen onUnlock={() => setIsAuthenticated(true)} />;
             }
 
-            // Rest day view
             if (isRest) {
                 return (
                     <div className="container">
@@ -1970,7 +1973,6 @@
                 );
             }
 
-            // Workout complete view
             if (workoutComplete) {
                 return (
                     <div className="container">
@@ -1995,7 +1997,6 @@
                 );
             }
 
-            // Main workout view
             return (
                 <div className="container">
                     <div className="header">
@@ -2041,7 +2042,7 @@
 
                                 {!hardMode[ex.id] && (
                                     <div className="reg-section">
-                                        <div className="diff-title">Regular Mode</div>
+                                        <div className="diff-title">Regular Mode: {ex.sets} sets × {ex.reps} {ex.isTime ? 'seconds' : 'reps'}</div>
                                         {Array.from({ length: ex.sets }).map((_, i) => (
                                             <div key={i} className="set-row">
                                                 <div className="set-label">Set {i + 1}:</div>
@@ -2059,7 +2060,7 @@
 
                                 {hardMode[ex.id] && (
                                     <div className="hard-section">
-                                        <div className="diff-title-hard">Hard Mode</div>
+                                        <div className="diff-title-hard">Hard Mode: {ex.hardSets} sets × {ex.hardReps} {ex.isTime ? 'seconds' : 'reps'}</div>
                                         {Array.from({ length: ex.hardSets }).map((_, i) => (
                                             <div key={i} className="set-row">
                                                 <div className="set-label">Set {i + 1}:</div>
