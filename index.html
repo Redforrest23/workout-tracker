@@ -10,13 +10,15 @@
     <meta name="apple-mobile-web-app-title" content="Workout">
     <title>Workout Tracker</title>
 
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><rect width='180' height='180' fill='%231f1f1f'/><text x='50%' y='50%' font-size='80' text-anchor='middle' dominant-baseline='middle' fill='%23bb86fc'>💪</text></svg>">
 
-    <!-- PWA Manifest embedded as data URL -->
-    <link rel="manifest"
-        href="data:application/json;base64,eyJuYW1lIjoiV29ya291dCBUcmFja2VyIiwic2hvcnRfbmFtZSI6IldvcmtvdXQiLCJzdGFydF91cmwiOiIvIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzEyMTIxMiIsInRoZW1lX2NvbG9yIjoiIzFmMWYxZiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyB2aWV3Qm94PScwIDAgMTkyIDE5MiclM0UlM0NyZWN0IHdpZHRoPScxOTInIGhlaWdodD0nMTkyJyBmaWxsPSclMjMxZjFmMWYnLyUzRSUzQ3RleHQgeD0nNTAlMjUnIHk9JzUwJTI1JyBmb250LXNpemU9JzgwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkb21pbmFudC1iYXNlbGluZT0nbWlkZGxlJyBmaWxsPSclMjNiYjg2ZmMnJTNFJUYwJTlGJThCJUFBJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJzaXplcyI6IjE5MngxOTIifSx7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzMWYxZjFmJy8lM0UlM0N0ZXh0IHg9JzUwJTI1JyB5PSc1MCUyNScgZm9udC1zaXplPScyNTAnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIGZpbGw9JyUyM2JiODZmYyclM0UlRjAlOUYlOEIlQUElM0MvdGV4dCUzRSUzQy9zdmclM0UiLCJ0eXBlIjoiaW1hZ2Uvc3ZnK3htbCIsInNpemVzIjoiNTEyeDUxMiJ9XX0=">
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
 
     <style>
         * {
@@ -32,8 +34,8 @@
             overflow-x: hidden;
         }
 
-        /* Password Screen Styles */
-        .password-screen {
+        /* Auth Screen Styles */
+        .auth-screen {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -42,7 +44,7 @@
             padding: 20px;
         }
 
-        .password-container {
+        .auth-container {
             background-color: #1e1e1e;
             border-radius: 12px;
             padding: 30px;
@@ -51,7 +53,7 @@
             border: 1px solid #333;
         }
 
-        .password-title {
+        .auth-title {
             font-size: 28px;
             font-weight: bold;
             color: #bb86fc;
@@ -59,14 +61,14 @@
             text-align: center;
         }
 
-        .password-subtitle {
+        .auth-subtitle {
             font-size: 14px;
             color: #ccc;
             margin-bottom: 30px;
             text-align: center;
         }
 
-        .password-input {
+        .auth-input {
             width: 100%;
             background-color: #2a2a2a;
             color: #fff;
@@ -74,15 +76,15 @@
             border-radius: 8px;
             font-size: 16px;
             border: 1px solid #444;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
-        .password-input:focus {
+        .auth-input:focus {
             outline: none;
             border-color: #bb86fc;
         }
 
-        .password-btn {
+        .auth-btn {
             width: 100%;
             background-color: #03dac6;
             padding: 15px;
@@ -92,25 +94,55 @@
             font-weight: bold;
             font-size: 16px;
             cursor: pointer;
+            margin-bottom: 10px;
         }
 
-        .password-btn:active {
+        .auth-btn:active {
             opacity: 0.8;
         }
 
-        .password-error {
+        .auth-btn:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        .auth-btn-secondary {
+            background-color: #333;
+            color: #fff;
+        }
+
+        .auth-error {
             color: #cf6679;
             font-size: 14px;
             margin-top: 10px;
             text-align: center;
         }
 
-        .password-hint {
-            font-size: 12px;
-            color: #888;
-            margin-top: 20px;
+        .auth-success {
+            color: #03dac6;
+            font-size: 14px;
+            margin-top: 10px;
             text-align: center;
-            font-style: italic;
+        }
+
+        .auth-link {
+            color: #bb86fc;
+            text-decoration: none;
+            font-size: 14px;
+            text-align: center;
+            display: block;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        .loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-size: 18px;
+            color: #bb86fc;
         }
 
         .container {
@@ -138,6 +170,12 @@
             font-size: 14px;
             color: #ccc;
             margin-top: 5px;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
         }
 
         .streak {
@@ -192,6 +230,11 @@
         .postpone-btn {
             background-color: #bb86fc;
             color: #000;
+        }
+
+        .logout-btn {
+            background-color: #cf6679;
+            color: #fff;
         }
 
         .workout-list {
@@ -399,6 +442,7 @@
             font-size: 14px;
             color: #aaa;
             margin-top: 5px;
+            text-align: center;
         }
 
         .category-header {
@@ -533,7 +577,6 @@
             padding: 15px;
         }
 
-        /* Tab Styles */
         .tabs {
             display: flex;
             border-bottom: 1px solid #333;
@@ -806,9 +849,10 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // CHANGE PASSWORD HERE - Make it whatever you want!
-        const CORRECT_PASSWORD = "workout123";
-
+        // Initialize Supabase client
+        const SUPABASE_URL = 'https://gnxwcdwqmderpghmtddy.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const DEFAULT_EXERCISES = {
             push: [
                 { id: 'p1', name: 'Wall Push-ups', difficulty: 1, sets: 3, reps: 10, hardSets: 4, hardReps: 15, isTime: false, enabled: true, desc: 'Stand facing wall. Hands on wall at shoulder height. Lean in, push back. Keep body straight throughout.', videoUrl: 'https://www.hybridcalisthenics.com/wall-pushups' },
@@ -916,49 +960,107 @@
 
         const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        // Password Screen Component
-        function PasswordScreen({ onUnlock }) {
+        // Auth Component
+        function AuthScreen() {
+            const [isSignUp, setIsSignUp] = useState(false);
+            const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [message, setMessage] = useState('');
             const [error, setError] = useState('');
 
-            const handleSubmit = (e) => {
+            const handleSignUp = async (e) => {
                 e.preventDefault();
-                if (password === CORRECT_PASSWORD) {
-                    localStorage.setItem('workoutAppAuthenticated', 'true');
-                    onUnlock();
+                setLoading(true);
+                setError('');
+                setMessage('');
+
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                });
+
+                setLoading(false);
+
+                if (error) {
+                    setError(error.message);
                 } else {
-                    setError('Incorrect password. Try again.');
-                    setPassword('');
+                    setMessage('Check your email to confirm your account!');
+                }
+            };
+
+            const handleSignIn = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+                setMessage('');
+
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password,
+                });
+
+                setLoading(false);
+
+                if (error) {
+                    setError(error.message);
                 }
             };
 
             return (
-                <div className="password-screen">
-                    <div className="password-container">
-                        <div className="password-title">💪 Workout Tracker</div>
-                        <div className="password-subtitle">Enter password to continue</div>
-                        <form onSubmit={handleSubmit}>
+                <div className="auth-screen">
+                    <div className="auth-container">
+                        <div className="auth-title">💪 Workout Tracker</div>
+                        <div className="auth-subtitle">
+                            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+                        </div>
+
+                        <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
                             <input
-                                type="password"
-                                className="password-input"
-                                placeholder="Enter password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                type="email"
+                                className="auth-input"
+                                placeholder="Email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
                                 autoFocus
                             />
-                            <button type="submit" className="password-btn">
-                                Unlock
+                            <input
+                                type="password"
+                                className="auth-input"
+                                placeholder="Password (min 6 characters)"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                                minLength={6}
+                            />
+
+                            <button type="submit" className="auth-btn" disabled={loading}>
+                                {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
                             </button>
                         </form>
-                        {error && <div className="password-error">{error}</div>}
-                        <div className="password-hint">Hint: Default is "workout123"</div>
+
+                        <button
+                            className="auth-btn auth-btn-secondary"
+                            onClick={() => {
+                                setIsSignUp(!isSignUp);
+                                setError('');
+                                setMessage('');
+                            }}
+                        >
+                            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                        </button>
+
+                        {message && <div className="auth-success">{message}</div>}
+                        {error && <div className="auth-error">{error}</div>}
                     </div>
                 </div>
             );
         }
-
+        // Main App Component
         function App() {
-            const [isAuthenticated, setIsAuthenticated] = useState(false);
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
             const [exercises, setExercises] = useState(DEFAULT_EXERCISES);
             const [workout, setWorkout] = useState([]);
             const [completedWorkout, setCompletedWorkout] = useState([]);
@@ -983,89 +1085,107 @@
             const [collapsedCategories, setCollapsedCategories] = useState({});
 
             useEffect(() => {
-                const authStatus = localStorage.getItem('workoutAppAuthenticated');
-                if (authStatus === 'true') {
-                    setIsAuthenticated(true);
-                    loadData();
-                }
+                checkUser();
+
+                const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+                    setUser(session?.user ?? null);
+                    if (session?.user) {
+                        loadData(session.user.id);
+                    }
+                });
+
+                return () => {
+                    authListener.subscription.unsubscribe();
+                };
             }, []);
 
             useEffect(() => {
-                if (isAuthenticated) {
+                if (user) {
                     finishWorkout();
                 }
-            }, [workout, completedWorkout, isAuthenticated]);
+            }, [workout, completedWorkout, user]);
 
-            const loadData = () => {
+            const checkUser = async () => {
+                const { data: { session } } = await supabase.auth.getSession();
+                setUser(session?.user ?? null);
+                if (session?.user) {
+                    await loadData(session.user.id);
+                }
+                setLoading(false);
+            };
+
+            const loadData = async (userId) => {
                 try {
-                    const savedExercises = localStorage.getItem('exerciseSettings');
-                    let loadedExercises = DEFAULT_EXERCISES;
+                    // Load exercise settings
+                    const { data: settingsData } = await supabase
+                        .from('exercise_settings')
+                        .select('exercise_data')
+                        .eq('user_id', userId)
+                        .single();
 
-                    if (savedExercises) {
-                        try {
-                            loadedExercises = JSON.parse(savedExercises);
-                            setExercises(loadedExercises);
-                        } catch (e) {
-                            console.error('Error parsing saved exercises:', e);
-                            loadedExercises = DEFAULT_EXERCISES;
-                        }
+                    if (settingsData) {
+                        setExercises(settingsData.exercise_data);
                     }
 
-                    const savedRestDay = localStorage.getItem('customRestDay');
+                    // Load user profile (rest day)
+                    const { data: profileData } = await supabase
+                        .from('user_profiles')
+                        .select('custom_rest_day')
+                        .eq('id', userId)
+                        .single();
+
                     let currentRestDay = 6;
-                    if (savedRestDay !== null) {
-                        currentRestDay = parseInt(savedRestDay);
+                    if (profileData) {
+                        currentRestDay = profileData.custom_rest_day;
                         setCustomRestDay(currentRestDay);
                     }
 
-                    const postponedStatus = localStorage.getItem('restDayPostponed');
-                    const postponedDate = localStorage.getItem('restDayPostponedDate');
+                    // Check for rest day postponement
                     const today = new Date().toDateString();
+                    const { data: postponementData } = await supabase
+                        .from('rest_day_postponements')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .eq('postponed_date', new Date().toISOString().split('T')[0])
+                        .single();
 
-                    let isPostponed = false;
-                    if (postponedStatus === 'true' && postponedDate === today) {
-                        isPostponed = true;
-                        setRestDayPostponed(true);
-                    } else {
-                        localStorage.removeItem('restDayPostponed');
-                        localStorage.removeItem('restDayPostponedDate');
-                        setRestDayPostponed(false);
-                    }
+                    const isPostponed = !!postponementData;
+                    setRestDayPostponed(isPostponed);
 
-                    const historyData = localStorage.getItem('workoutHistory');
-                    const stretchData = localStorage.getItem('lastStretchCats');
-                    let loadedStretchCats = [];
+                    // Load workout history
+                    const { data: historyData } = await supabase
+                        .from('workout_history')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .order('date', { ascending: false });
 
                     if (historyData) {
-                        try {
-                            const parsedHistory = JSON.parse(historyData);
-                            setHistory(parsedHistory);
-                            calculateStreak(parsedHistory);
-                        } catch (e) {
-                            console.error('Error parsing history:', e);
-                        }
+                        setHistory(historyData);
+                        calculateStreak(historyData, currentRestDay);
                     }
 
+                    // Load stretch categories
+                    const { data: stretchData } = await supabase
+                        .from('stretch_categories')
+                        .select('last_categories')
+                        .eq('user_id', userId)
+                        .single();
+
+                    let loadedStretchCats = [];
                     if (stretchData) {
-                        try {
-                            loadedStretchCats = JSON.parse(stretchData);
-                            setLastStretchCats(loadedStretchCats);
-                        } catch (e) {
-                            console.error('Error parsing stretch data:', e);
-                        }
+                        loadedStretchCats = stretchData.last_categories;
+                        setLastStretchCats(loadedStretchCats);
                     }
 
+                    // Generate workout
                     const d = new Date();
                     const day = d.getDay();
                     setDate(d.toDateString());
 
-                    // FIXED: Rest day postponement logic
                     let isRestDay;
                     if (isPostponed && day === currentRestDay) {
-                        // If today was supposed to be rest day BUT it's postponed, today is NOT a rest day
                         isRestDay = false;
                     } else {
-                        // Normal rest day check
                         isRestDay = day === currentRestDay;
                     }
 
@@ -1076,34 +1196,24 @@
                     } else {
                         setDayName(WEEK_SCHEDULE[day].name);
 
-                        const todayDateStr = d.toDateString();
-                        let alreadyWorkedOut = false;
-
-                        if (historyData) {
-                            try {
-                                alreadyWorkedOut = JSON.parse(historyData).some(h => h.date === todayDateStr);
-                            } catch (e) {
-                                console.error('Error checking workout history:', e);
-                            }
-                        }
+                        const todayDateStr = d.toISOString().split('T')[0];
+                        const alreadyWorkedOut = historyData?.some(h =>
+                            new Date(h.date).toISOString().split('T')[0] === todayDateStr
+                        );
 
                         if (!alreadyWorkedOut) {
-                            generateWorkoutWithExercises(day, loadedExercises, loadedStretchCats);
+                            generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
                         } else {
                             setWorkoutComplete(true);
                         }
                     }
                 } catch (error) {
                     console.error('Error loading data:', error);
-                    setIsRest(false);
-                    setDayName('Push');
-                    const d = new Date();
-                    setDate(d.toDateString());
                 }
             };
 
-            const calculateStreak = (historyData) => {
-                if (historyData.length === 0) {
+            const calculateStreak = (historyData, restDay) => {
+                if (!historyData || historyData.length === 0) {
                     setStreak(0);
                     return;
                 }
@@ -1117,13 +1227,15 @@
                 while (true) {
                     const dayOfWeek = checkDate.getDay();
 
-                    if (dayOfWeek === customRestDay) {
+                    if (dayOfWeek === restDay) {
                         checkDate.setDate(checkDate.getDate() - 1);
                         continue;
                     }
 
-                    const dateStr = checkDate.toDateString();
-                    const workedOut = historyData.some(h => h.date === dateStr);
+                    const dateStr = checkDate.toISOString().split('T')[0];
+                    const workedOut = historyData.some(h =>
+                        new Date(h.date).toISOString().split('T')[0] === dateStr
+                    );
 
                     if (workedOut) {
                         currentStreak++;
@@ -1132,9 +1244,7 @@
                         break;
                     }
 
-                    if (checkDate.getDay() === 0 && currentStreak > 0) {
-                        break;
-                    }
+                    if (currentStreak > 100) break;
                 }
 
                 setStreak(currentStreak);
@@ -1208,7 +1318,7 @@
                 }
 
                 setLastStretchCats(usedCats);
-                localStorage.setItem('lastStretchCats', JSON.stringify(usedCats));
+                saveStretchCategories(usedCats);
 
                 setWorkout(selected);
                 setCompletedWorkout([]);
@@ -1217,12 +1327,36 @@
                 setWorkoutComplete(false);
             };
 
-            const saveWorkoutToHistory = () => {
+            const saveStretchCategories = async (cats) => {
+                if (!user) return;
+
+                const { data: existing } = await supabase
+                    .from('stretch_categories')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (existing) {
+                    await supabase
+                        .from('stretch_categories')
+                        .update({ last_categories: cats, updated_at: new Date().toISOString() })
+                        .eq('user_id', user.id);
+                } else {
+                    await supabase
+                        .from('stretch_categories')
+                        .insert({ user_id: user.id, last_categories: cats });
+                }
+            };
+
+            const saveWorkoutToHistory = async () => {
+                if (!user) return;
+
                 try {
                     const d = new Date();
                     const workoutData = {
-                        date: d.toDateString(),
-                        workoutType: dayName,
+                        user_id: user.id,
+                        date: d.toISOString().split('T')[0],
+                        workout_type: dayName,
                         exercises: [...workout, ...completedWorkout].map(ex => {
                             const isHard = hardMode[ex.id];
                             const prefix = isHard ? 'hard' : 'reg';
@@ -1241,11 +1375,17 @@
                         })
                     };
 
-                    const updatedHistory = [...history, workoutData];
-                    setHistory(updatedHistory);
-                    localStorage.setItem('workoutHistory', JSON.stringify(updatedHistory));
+                    const { data, error } = await supabase
+                        .from('workout_history')
+                        .insert(workoutData)
+                        .select()
+                        .single();
 
-                    calculateStreak(updatedHistory);
+                    if (error) throw error;
+
+                    const updatedHistory = [data, ...history];
+                    setHistory(updatedHistory);
+                    calculateStreak(updatedHistory, customRestDay);
                     setWorkoutComplete(true);
                 } catch (error) {
                     console.error('Error saving workout:', error);
@@ -1258,30 +1398,50 @@
                 }
             };
 
-            const toggleEx = (category, id) => {
-                setExercises(prev => {
-                    const updated = JSON.parse(JSON.stringify(prev));
-                    if (category === 'apt') {
-                        const ex = updated.apt.find(e => e.id === id);
-                        if (ex) ex.enabled = !ex.enabled;
-                    } else if (category === 'mandatory') {
-                        const ex = updated.mandatory.find(e => e.id === id);
-                        if (ex) ex.enabled = !ex.enabled;
-                    } else if (category === 'stretches') {
-                        for (const subcat of Object.keys(updated.stretches)) {
-                            const ex = updated.stretches[subcat].find(e => e.id === id);
-                            if (ex) {
-                                ex.enabled = !ex.enabled;
-                                break;
-                            }
+            const toggleEx = async (category, id) => {
+                const updated = JSON.parse(JSON.stringify(exercises));
+                if (category === 'apt') {
+                    const ex = updated.apt.find(e => e.id === id);
+                    if (ex) ex.enabled = !ex.enabled;
+                } else if (category === 'mandatory') {
+                    const ex = updated.mandatory.find(e => e.id === id);
+                    if (ex) ex.enabled = !ex.enabled;
+                } else if (category === 'stretches') {
+                    for (const subcat of Object.keys(updated.stretches)) {
+                        const ex = updated.stretches[subcat].find(e => e.id === id);
+                        if (ex) {
+                            ex.enabled = !ex.enabled;
+                            break;
                         }
-                    } else {
-                        const ex = updated[category].find(e => e.id === id);
-                        if (ex) ex.enabled = !ex.enabled;
                     }
-                    localStorage.setItem('exerciseSettings', JSON.stringify(updated));
-                    return updated;
-                });
+                } else {
+                    const ex = updated[category].find(e => e.id === id);
+                    if (ex) ex.enabled = !ex.enabled;
+                }
+
+                setExercises(updated);
+                await saveExerciseSettings(updated);
+            };
+
+            const saveExerciseSettings = async (exerciseData) => {
+                if (!user) return;
+
+                const { data: existing } = await supabase
+                    .from('exercise_settings')
+                    .select('id')
+                    .eq('user_id', user.id)
+                    .single();
+
+                if (existing) {
+                    await supabase
+                        .from('exercise_settings')
+                        .update({ exercise_data: exerciseData, updated_at: new Date().toISOString() })
+                        .eq('user_id', user.id);
+                } else {
+                    await supabase
+                        .from('exercise_settings')
+                        .insert({ user_id: user.id, exercise_data: exerciseData });
+                }
             };
 
             const logRep = (id, setIdx, value) => {
@@ -1318,18 +1478,29 @@
                 window.open(url, '_blank');
             };
 
-            const postponeRestDay = () => {
+            const postponeRestDay = async () => {
+                if (!user) return;
+
                 if (window.confirm('Move rest day to tomorrow? You can do today\'s workout instead.')) {
-                    setRestDayPostponed(true);
-                    localStorage.setItem('restDayPostponed', 'true');
-                    localStorage.setItem('restDayPostponedDate', new Date().toDateString());
+                    const today = new Date().toISOString().split('T')[0];
+
+                    await supabase
+                        .from('rest_day_postponements')
+                        .insert({ user_id: user.id, postponed_date: today });
+
                     window.location.reload();
                 }
             };
 
-            const changeRestDay = (day) => {
+            const changeRestDay = async (day) => {
+                if (!user) return;
+
                 setCustomRestDay(day);
-                localStorage.setItem('customRestDay', day.toString());
+
+                await supabase
+                    .from('user_profiles')
+                    .update({ custom_rest_day: day, updated_at: new Date().toISOString() })
+                    .eq('id', user.id);
             };
 
             const toggleCategory = (categoryKey) => {
@@ -1339,28 +1510,39 @@
                 }));
             };
 
-            const toggleAllInCategory = (category, subcategory = null) => {
-                setExercises(prev => {
-                    const updated = JSON.parse(JSON.stringify(prev));
-                    let exercises = [];
+            const toggleAllInCategory = async (category, subcategory = null) => {
+                const updated = JSON.parse(JSON.stringify(exercises));
+                let exerciseList = [];
 
-                    if (category === 'stretches' && subcategory) {
-                        exercises = updated.stretches[subcategory];
-                    } else {
-                        exercises = updated[category];
-                    }
+                if (category === 'stretches' && subcategory) {
+                    exerciseList = updated.stretches[subcategory];
+                } else {
+                    exerciseList = updated[category];
+                }
 
-                    const allEnabled = exercises.every(ex => ex.enabled);
+                const allEnabled = exerciseList.every(ex => ex.enabled);
 
-                    exercises.forEach(ex => {
-                        ex.enabled = !allEnabled;
-                    });
-
-                    localStorage.setItem('exerciseSettings', JSON.stringify(updated));
-                    return updated;
+                exerciseList.forEach(ex => {
+                    ex.enabled = !allEnabled;
                 });
+
+                setExercises(updated);
+                await saveExerciseSettings(updated);
             };
 
+            const handleLogout = async () => {
+                await supabase.auth.signOut();
+                setUser(null);
+            };
+
+            if (loading) {
+                return <div className="loading-screen">Loading...</div>;
+            }
+
+            if (!user) {
+                return <AuthScreen />;
+            }
+            // Render modals and UI components
             const renderModals = () => (
                 <>
                     {/* Settings Modal */}
@@ -1800,13 +1982,15 @@
                                     <div className="info-section">
                                         <div className="info-title">Workout Tracker</div>
                                         <div className="info-text">
-                                            A progressive workout tracker with automatic daily workout generation based on a Push/Pull/Legs split schedule.
+                                            A progressive workout tracker with automatic daily workout generation based on a Push/Pull/Legs split schedule. Now with cloud sync!
                                         </div>
                                     </div>
 
                                     <div className="info-section">
                                         <div className="info-title">Features</div>
                                         <div className="info-text">
+                                            • Cloud-synced data across all devices<br />
+                                            • Secure user authentication<br />
                                             • Automatic daily workout generation<br />
                                             • Regular and Hard mode for each exercise<br />
                                             • Workout history and streak tracking<br />
@@ -1821,14 +2005,7 @@
                                     <div className="info-section">
                                         <div className="info-title">How It Works</div>
                                         <div className="info-text">
-                                            Each day, the app generates a workout based on your schedule. Complete all sets and reps, then mark exercises as complete. Your workout history and streak are automatically tracked.
-                                        </div>
-                                    </div>
-
-                                    <div className="info-section">
-                                        <div className="info-title">Data Storage</div>
-                                        <div className="info-text">
-                                            All data is stored locally on your device. Your workout history, settings, and preferences are saved in your browser's local storage.
+                                            Each day, the app generates a workout based on your schedule. Complete all sets and reps, then mark exercises as complete. Your workout history and streak are automatically tracked and synced to the cloud.
                                         </div>
                                     </div>
                                 </div>
@@ -1845,14 +2022,14 @@
                             </div>
                             <div className="modal-scroll">
                                 {history.length === 0 && <div className="empty-history">No workout history yet. Complete your first workout!</div>}
-                                {history.slice().reverse().map((h, idx) => (
+                                {history.map((h, idx) => (
                                     <div key={idx} className="history-card" onClick={() => {
                                         setViewingHistoryWorkout(h);
                                         setShowHistoryDetail(true);
                                         setShowHistory(false);
                                     }}>
-                                        <div className="history-date">{h.date}</div>
-                                        <div className="history-type">{h.workoutType} Day</div>
+                                        <div className="history-date">{new Date(h.date).toLocaleDateString()}</div>
+                                        <div className="history-type">{h.workout_type} Day</div>
                                         <div className="history-exercises">
                                             {h.exercises.length} exercises completed
                                         </div>
@@ -1877,8 +2054,8 @@
                                 {viewingHistoryWorkout && (
                                     <>
                                         <div className="info-section">
-                                            <div className="info-title">{viewingHistoryWorkout.date}</div>
-                                            <div className="info-text">{viewingHistoryWorkout.workoutType} Day</div>
+                                            <div className="info-title">{new Date(viewingHistoryWorkout.date).toLocaleDateString()}</div>
+                                            <div className="info-text">{viewingHistoryWorkout.workout_type} Day</div>
                                         </div>
 
                                         {viewingHistoryWorkout.exercises.map((ex, idx) => (
@@ -1944,16 +2121,14 @@
                 </>
             );
 
-            if (!isAuthenticated) {
-                return <PasswordScreen onUnlock={() => setIsAuthenticated(true)} />;
-            }
-
+            // Rest Day View
             if (isRest) {
                 return (
                     <div className="container">
                         <div className="header">
                             <div className="header-title">Rest Day</div>
                             <div className="header-date">{date}</div>
+                            <div className="user-email">{user.email}</div>
                             <div className="streak">Streak: {streak} days</div>
                         </div>
 
@@ -1961,6 +2136,7 @@
                             <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
                             <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
                             <button onClick={postponeRestDay} className="btn postpone-btn">Postpone Rest</button>
+                            <button onClick={handleLogout} className="btn logout-btn">Logout</button>
                         </div>
 
                         <div className="rest-container">
@@ -1973,18 +2149,21 @@
                 );
             }
 
+            // Workout Complete View
             if (workoutComplete) {
                 return (
                     <div className="container">
                         <div className="header">
                             <div className="header-title">{dayName} Day</div>
                             <div className="header-date">{date}</div>
+                            <div className="user-email">{user.email}</div>
                             <div className="streak">Streak: {streak} days 🔥</div>
                         </div>
 
                         <div className="button-row">
                             <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
                             <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
+                            <button onClick={handleLogout} className="btn logout-btn">Logout</button>
                         </div>
 
                         <div className="rest-container">
@@ -1997,11 +2176,13 @@
                 );
             }
 
+            // Main Workout View
             return (
                 <div className="container">
                     <div className="header">
                         <div className="header-title">{dayName} Day</div>
                         <div className="header-date">{date}</div>
+                        <div className="user-email">{user.email}</div>
                         <div className="streak">Streak: {streak} days 🔥</div>
                         <button onClick={() => generateWorkout(new Date().getDay())} className="refresh-btn">
                             🔄
@@ -2011,6 +2192,7 @@
                     <div className="button-row">
                         <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
                         <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
+                        <button onClick={handleLogout} className="btn logout-btn">Logout</button>
                     </div>
 
                     <div className="workout-list">
