@@ -1194,11 +1194,22 @@
                         );
 
                         if (!alreadyWorkedOut) {
-                            generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
-                        } else {
-                            setWorkoutComplete(true);
-                        }
-                    }
+    const saved = localStorage.getItem('currentWorkout');
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        const todayStr = new Date().toISOString().split('T')[0];
+        if (parsed.date === todayStr && parsed.workout.length > 0) {
+            setWorkout(parsed.workout);
+            setWorkoutComplete(false);
+        } else {
+            generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
+        }
+    } else {
+        generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
+    }
+} else {
+    setWorkoutComplete(true);
+}
                 } catch (error) {
                     console.error('Error loading data:', error);
                 }
@@ -1317,6 +1328,11 @@
                 setLog({});
                 setHardMode({});
                 setWorkoutComplete(false);
+
+                localStorage.setItem('currentWorkout', JSON.stringify({
+        date: new Date().toISOString().split('T')[0],
+        workout: selected
+    }));
             };
 
             const saveStretchCategories = async (cats) => {
@@ -1369,6 +1385,7 @@
         setHistory(updatedHistory);
         calculateStreak(updatedHistory, customRestDay);
         setWorkoutComplete(true);
+        localStorage.removeItem('currentWorkout');
     } catch (error) {
         console.error('Error saving workout:', error);
     }
