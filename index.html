@@ -960,6 +960,17 @@
 
         const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+        const saveWorkoutState = (workout, completedWorkout, log, hardMode) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    localStorage.setItem('currentWorkout', JSON.stringify({
+        date: todayStr,
+        workout,
+        completedWorkout,
+        log,
+        hardMode
+    }));
+};
+        
         // Auth Component
         function AuthScreen() {
             const [isSignUp, setIsSignUp] = useState(false);
@@ -1196,12 +1207,18 @@
                         if (!alreadyWorkedOut) {
     const saved = localStorage.getItem('currentWorkout');
     if (saved) {
-        const parsed = JSON.parse(saved);
-        const todayStr = new Date().toISOString().split('T')[0];
-        if (parsed.date === todayStr && parsed.workout.length > 0) {
-            setWorkout(parsed.workout);
-            setWorkoutComplete(false);
-        } else {
+        try {
+            const parsed = JSON.parse(saved);
+            if (parsed.date === todayDateStr && parsed.workout && parsed.workout.length > 0) {
+                setWorkout(parsed.workout);
+                setCompletedWorkout(parsed.completedWorkout || []);
+                setLog(parsed.log || {});
+                setHardMode(parsed.hardMode || {});
+                setWorkoutComplete(false);
+            } else {
+                generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
+            }
+        } catch (e) {
             generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
         }
     } else {
@@ -1328,11 +1345,7 @@
                 setLog({});
                 setHardMode({});
                 setWorkoutComplete(false);
-
-                localStorage.setItem('currentWorkout', JSON.stringify({
-        date: new Date().toISOString().split('T')[0],
-        workout: selected
-    }));
+                saveWorkoutState(selected, [], {}, {});
             };
 
             const saveStretchCategories = async (cats) => {
@@ -1438,12 +1451,16 @@
             };
 
             const logRep = (id, setIdx, value) => {
-                setLog({ ...log, [`${id}-${setIdx}`]: value });
-            };
+    const newLog = { ...log, [`${id}-${setIdx}`]: value };
+    setLog(newLog);
+    saveWorkoutState(workout, completedWorkout, newLog, hardMode);
+};
 
             const toggleHardMode = (id) => {
-                setHardMode({ ...hardMode, [id]: !hardMode[id] });
-            };
+    const newHardMode = { ...hardMode, [id]: !hardMode[id] };
+    setHardMode(newHardMode);
+    saveWorkoutState(workout, completedWorkout, log, newHardMode);
+};
 
             const isComplete = (ex) => {
                 const isHard = hardMode[ex.id];
@@ -1464,6 +1481,8 @@
     setCompletedWorkout(newCompleted);
     if (newWorkout.length === 0 && !workoutComplete) {
         saveWorkoutToHistoryWith(newCompleted);
+    } else {
+        saveWorkoutState(newWorkout, newCompleted, log, hardMode);
     }
 };
 
