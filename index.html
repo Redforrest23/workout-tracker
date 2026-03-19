@@ -1100,12 +1100,6 @@
                 };
             }, []);
 
-            useEffect(() => {
-                if (user) {
-                    finishWorkout();
-                }
-            }, [workout, completedWorkout, user]);
-
             const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     setUser(session?.user ?? null);
@@ -1346,32 +1340,39 @@
                 }
             };
 
-            const saveWorkoutToHistory = async () => {
-                if (!user) return;
-
-                try {
-                    const d = new Date();
-                    const workoutData = {
-                        user_id: user.id,
-                        date: d.toISOString().split('T')[0],
-                        workout_type: dayName,
-                        exercises: [...workout, ...completedWorkout].map(ex => {
-                            const isHard = hardMode[ex.id];
-                            const prefix = isHard ? 'hard' : 'reg';
-                            const numSets = isHard ? ex.hardSets : ex.sets;
-                            const loggedSets = [];
-
-                            for (let i = 0; i < numSets; i++) {
-                                loggedSets.push(log[`${ex.id}-${prefix}-${i}`] || '0');
-                            }
-
-                            return {
-                                ...ex,
-                                isHard: isHard,
-                                loggedSets: loggedSets
-                            };
-                        })
-                    };
+            const saveWorkoutToHistoryWith = async (finalCompleted) => {
+    if (!user) return;
+    try {
+        const d = new Date();
+        const workoutData = {
+            user_id: user.id,
+            date: d.toISOString().split('T')[0],
+            workout_type: dayName,
+            exercises: finalCompleted.map(ex => {
+                const isHard = hardMode[ex.id];
+                const prefix = isHard ? 'hard' : 'reg';
+                const numSets = isHard ? ex.hardSets : ex.sets;
+                const loggedSets = [];
+                for (let i = 0; i < numSets; i++) {
+                    loggedSets.push(log[`${ex.id}-${prefix}-${i}`] || '0');
+                }
+                return { ...ex, isHard, loggedSets };
+            })
+        };
+        const { data, error } = await supabase
+            .from('workout_history')
+            .insert(workoutData)
+            .select()
+            .single();
+        if (error) throw error;
+        const updatedHistory = [data, ...history];
+        setHistory(updatedHistory);
+        calculateStreak(updatedHistory, customRestDay);
+        setWorkoutComplete(true);
+    } catch (error) {
+        console.error('Error saving workout:', error);
+    }
+};
 
                     const { data, error } = await supabase
                         .from('workout_history')
@@ -1387,12 +1388,6 @@
                     setWorkoutComplete(true);
                 } catch (error) {
                     console.error('Error saving workout:', error);
-                }
-            };
-
-            const finishWorkout = () => {
-                if (workout.length === 0 && completedWorkout.length > 0 && !workoutComplete) {
-                    saveWorkoutToHistory();
                 }
             };
 
@@ -1463,9 +1458,14 @@
             };
 
             const completeExercise = (ex) => {
-                setWorkout(prev => prev.filter(e => e.id !== ex.id));
-                setCompletedWorkout(prev => [...prev, ex]);
-            };
+    const newWorkout = workout.filter(e => e.id !== ex.id);
+    const newCompleted = [...completedWorkout, ex];
+    setWorkout(newWorkout);
+    setCompletedWorkout(newCompleted);
+    if (newWorkout.length === 0 && !workoutComplete) {
+        saveWorkoutToHistoryWith(newCompleted);
+    }
+};
 
             const viewDesc = (ex) => {
                 setSelected(ex);
