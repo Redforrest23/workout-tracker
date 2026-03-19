@@ -1374,23 +1374,6 @@
     }
 };
 
-                    const { data, error } = await supabase
-                        .from('workout_history')
-                        .insert(workoutData)
-                        .select()
-                        .single();
-
-                    if (error) throw error;
-
-                    const updatedHistory = [data, ...history];
-                    setHistory(updatedHistory);
-                    calculateStreak(updatedHistory, customRestDay);
-                    setWorkoutComplete(true);
-                } catch (error) {
-                    console.error('Error saving workout:', error);
-                }
-            };
-
             const toggleEx = async (category, id) => {
                 const updated = JSON.parse(JSON.stringify(exercises));
                 if (category === 'apt') {
