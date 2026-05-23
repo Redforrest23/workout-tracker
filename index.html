@@ -271,12 +271,12 @@
 
     // ── Schedule helpers ───────────────────────────────────────────────────
     const WORKOUT_ROTATION = [
-        { name: 'Legs', focus: ['squats'], includeCore: true  },
-        { name: 'Push', focus: ['push'],   includeCore: true  },
-        { name: 'Pull', focus: ['pull'],   includeCore: false },
-        { name: 'Legs', focus: ['squats'], includeCore: true  },
-        { name: 'Push', focus: ['push'],   includeCore: true  },
-        { name: 'Pull', focus: ['pull'],   includeCore: false },
+        { name: 'Legs', focus: ['squats'],              includeCore: true,  includeShoulder: false },
+        { name: 'Push', focus: ['push'],                includeCore: true,  includeShoulder: true  },
+        { name: 'Pull', focus: ['pull', 'rearDelt'],    includeCore: false, includeShoulder: false },
+        { name: 'Legs', focus: ['squats'],              includeCore: true,  includeShoulder: false },
+        { name: 'Push', focus: ['push'],                includeCore: true,  includeShoulder: true  },
+        { name: 'Pull', focus: ['pull', 'rearDelt'],    includeCore: false, includeShoulder: false },
     ];
 
     function getWorkoutSchedule(dayOfWeek, restDay) {
@@ -301,9 +301,9 @@
     const DEFAULT_EXERCISES = {
         pullTrack: 'bar',
         push: [
-            { id:'p1', name:'Wall Push-ups',            difficulty:1, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Stand facing wall. Hands at shoulder height. Lean in and push back. Keep body straight.', videoUrl:'https://www.hybridcalisthenics.com/wall-pushups' },
+            { id:'p1', name:'Wall Push-ups',            difficulty:1, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Stand facing wall. Hands at shoulder height. Lean in and push back. Keep body straight.', videoUrl:'https://www.hybridcalisthenics.com/wall-pushups' },
             { id:'p2', name:'Incline Push-ups',          difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Hands on elevated surface. Lower chest, push up. Keep core tight and body in a straight line.', videoUrl:'https://www.hybridcalisthenics.com/incline-pushups' },
-            { id:'p3', name:'Regular Push-ups',          difficulty:3, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Plank position. Lower chest to ground, elbows at 45°. Push back up. Maintain straight body line.', videoUrl:'https://www.hybridcalisthenics.com/full-pushups' },
+            { id:'p3', name:'Regular Push-ups',          difficulty:3, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Plank position. Lower chest to ground, elbows at 45°. Push back up. Maintain straight body line.', videoUrl:'https://www.hybridcalisthenics.com/full-pushups' },
             { id:'p4', name:'Diamond Push-ups',          difficulty:4, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Thumbs and index fingers form diamond. Keep elbows close. Heavily targets triceps.', videoUrl:null },
             { id:'p5', name:'Decline Push-ups',          difficulty:5, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Feet elevated. Hands on ground. Harder than regular, emphasizes upper chest.', videoUrl:null },
             { id:'p6', name:'Archer Push-ups',           difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Wide hands. Lower to one side while the other arm extends. Alternate. Advanced.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
@@ -320,17 +320,27 @@
             { id:'pu8', name:'Archer Pull-ups',     difficulty:7, sets:3, reps:4,  hardSets:3, hardReps:6,  isTime:false, enabled:false, desc:'Pull to one hand while other extends. Very advanced. Builds one-arm pulling strength.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
         ],
         pullDb: [
-            { id:'pd1', name:'Bent-Over Row',             difficulty:1, sets:3, reps:15, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Hip-width stance, hinge forward ~45°. Row both dumbbells to hips, squeeze shoulder blades. 15–20 lbs.', videoUrl:null },
-            { id:'pd2', name:'Single-Arm Row (light)',     difficulty:2, sets:3, reps:12, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Support on bench — opposite hand and knee. Row dumbbell to hip. Keep back flat. 20–25 lbs.', videoUrl:null },
-            { id:'pd3', name:'Single-Arm Row',             difficulty:3, sets:3, reps:10, hardSets:4, hardReps:10, isTime:false, enabled:true, desc:'Single-arm row with full range of motion. Focus on controlled lowering. 25–30 lbs.', videoUrl:null },
+            { id:'pd1', name:'Bent-Over Row',             difficulty:1, sets:3, reps:15, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Hip-width stance, hinge forward ~45°. Row both dumbbells to hips, squeeze shoulder blades. 15–20 lbs.', videoUrl:'https://www.youtube.com/watch?v=gfUg6qWohTk' },
+            { id:'pd2', name:'Single-Arm Row (light)',     difficulty:2, sets:3, reps:12, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Support on bench — opposite hand and knee. Row dumbbell to hip. Keep back flat. 20–25 lbs.', videoUrl:'https://www.youtube.com/watch?v=fURsHPHgssI' },
+            { id:'pd3', name:'Single-Arm Row',             difficulty:3, sets:3, reps:10, hardSets:4, hardReps:10, isTime:false, enabled:true, desc:'Single-arm row with full range of motion. Focus on controlled lowering. 25–30 lbs.', videoUrl:'https://www.youtube.com/watch?v=gfUg6qWohTk' },
             { id:'pd4', name:'Heavy Single-Arm Row',       difficulty:4, sets:3, reps:8,  hardSets:4, hardReps:8,  isTime:false, enabled:false, desc:'Single-arm row, 3-second lowering phase. Build maximum pulling strength. 30–35 lbs.', videoUrl:null },
             { id:'pd5', name:'Pause Row',                  difficulty:5, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Single-arm row with 2-second hold at top. Maximizes time under tension. 35–40 lbs.', videoUrl:null },
             { id:'pd6', name:'Renegade Row',               difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Plank on dumbbells. Row one side while stabilizing with the other. Anti-rotation core challenge. 20–25 lbs each.', videoUrl:null },
             { id:'pd7', name:'Archer Row',                 difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:6,  isTime:false, enabled:false, desc:'Wide stance, row to one side while the other arm extends straight. Mimics archer pull-up. 25–30 lbs.', videoUrl:null },
         ],
+        rearDelt: [
+            { id:'rd1', name:'Prone Rear Delt Fly',    difficulty:1, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Lie face-down on the floor or a flat surface. Hold light dumbbells (5–10 lbs), arms hanging. Raise arms out to sides keeping a slight elbow bend, squeezing shoulder blades together at the top. Lower slowly. No bench needed. Trains the exact muscle that counters your forward shoulder pattern from rib flare.', videoUrl:'https://www.youtube.com/watch?v=buuYPLVXsJg' },
+            { id:'rd2', name:'Rear Delt Fly',          difficulty:2, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true,  desc:'Stand hip-width, hinge forward ~45°. Hold light dumbbells (8–15 lbs). Raise arms out to sides leading with elbows — not your hands. Squeeze shoulder blades together at the top. Lower controlled. Directly counters the internal rotation that accompanies your rib flare and APT. Go lighter than you think — most people cheat this with their traps.', videoUrl:'https://www.youtube.com/watch?v=d1QEddtoOq0' },
+            { id:'rd3', name:'Incline Rear Delt Fly',  difficulty:3, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Set bench to ~30° incline. Lie chest-down. Arms hang. Raise out to sides, leading with elbows. The incline eliminates hip drive and trunk momentum, isolating rear delt and mid-traps more than the bent-over version. 8–15 lbs.', videoUrl:'https://www.youtube.com/watch?v=buuYPLVXsJg' },
+        ],
+        overhead: [
+            { id:'oh1', name:'Pike Push-ups',           difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Start in downward-dog position (hips high, inverted V). Bend elbows to bring the top of your head toward the floor, press back up. This is bodyweight overhead pressing — it trains the front and side deltoids and builds the pattern for handstand push-ups. No equipment needed.', videoUrl:'https://www.youtube.com/watch?v=s_aK83TWYkA' },
+            { id:'oh2', name:'DB Overhead Press',       difficulty:2, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Seated or standing. Start with dumbbells at shoulder height, palms forward, elbows at ~90°. Press overhead until arms are fully extended. Lower with control. With bench access, do this seated — takes APT out of the equation and forces your core to stabilize without cheating. Start around 15–20 lbs and build from there. This fills the vertical push pattern missing from horizontal push-ups.', videoUrl:'https://www.youtube.com/watch?v=bj53-0DYKFo' },
+            { id:'oh3', name:'Arnold Press',            difficulty:3, sets:3, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Start with dumbbells in front of you, palms facing you (as if finishing a curl). As you press up, rotate palms forward. Reverse on the way down. Hits all three deltoid heads through a larger range of motion than standard press. 12–20 lbs. Named after Arnold Schwarzenegger.', videoUrl:'https://www.youtube.com/watch?v=Did01dFR3Lk' },
+        ],
         squats: [
-            { id:'sq1', name:'Assisted Squats',        difficulty:1, sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Hold a chair or wall. Squat down, stand back up. Build foundational strength.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
-            { id:'sq2', name:'Regular Squats',         difficulty:2, sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:false, desc:'Feet shoulder-width. Lower hips back and down. Chest up. Knees track over toes.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
+            { id:'sq1', name:'Assisted Squats',        difficulty:1, sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Hold a chair or wall. Squat down, stand back up. Build foundational strength.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
+            { id:'sq2', name:'Regular Squats',         difficulty:2, sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:true,  desc:'Feet shoulder-width. Lower hips back and down. Chest up. Knees track over toes.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
             { id:'sq3', name:'Close Stance Squats',    difficulty:3, sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Feet close together. More balance challenge. Increased quad emphasis.', videoUrl:null },
             { id:'sq4', name:'Bulgarian Split Squats', difficulty:4, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Back foot elevated. Front foot forward. Lower into lunge. Single-leg strength.', videoUrl:null },
             { id:'sq5', name:'Jump Squats',            difficulty:4, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Squat down, explode into a jump. Land soft. Builds power and explosiveness.', videoUrl:null },
@@ -626,18 +636,28 @@
             // All mandatory exercises every session — consistent warm-up and wrist prep
             exData.mandatory.filter(e => e.enabled).forEach(e => items.push({ ...e, category: 'Warm-Up' }));
 
-            // Main lift
+            // Main lift(s)
             schedule.focus.forEach(cat => {
-                const pool = cat === 'pull'
-                    ? (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled)
-                    : exData[cat].filter(e => e.enabled);
-                if (pool.length > 0) items.push({ ...pool[0], category: schedule.name });
+                let pool;
+                if (cat === 'pull') {
+                    pool = (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled);
+                } else {
+                    pool = (exData[cat] || []).filter(e => e.enabled);
+                }
+                const catLabel = cat === 'rearDelt' ? 'Rear Delt' : schedule.name;
+                if (pool.length > 0) items.push({ ...pool[0], category: catLabel });
             });
 
             // Core on Push and Legs days
             if (schedule.includeCore) {
                 const pool = exData.core.filter(e => e.enabled);
                 if (pool.length > 0) items.push({ ...pool[0], category: 'Core' });
+            }
+
+            // Overhead press on Push days
+            if (schedule.includeShoulder) {
+                const pool = (exData.overhead || []).filter(e => e.enabled);
+                if (pool.length > 0) items.push({ ...pool[0], category: 'Shoulders' });
             }
 
             // APT corrective work on mobility days only (exactly 2 exercises)
@@ -853,12 +873,14 @@
                                 {renderExerciseSection('Mobility', 'mandatory', null, 'Appears on 3 evenly-spaced workout days each week')}
                                 <div className="settings-section-title">Main Lifts</div>
                                 {renderExerciseSection('Push', 'push')}
+                                {renderExerciseSection('Shoulders (Push days)', 'overhead', null, 'Overhead press — appears on every Push day')}
                                 {renderExerciseSection('Pull — Bar Track', 'pull', null, 'Active when Pull Track is set to Bar')}
                                 {renderExerciseSection('Pull — Dumbbell Track', 'pullDb', null, 'Active when Pull Track is set to Dumbbells')}
+                                {renderExerciseSection('Rear Delt (Pull days)', 'rearDelt', null, 'Posture work — appears on every Pull day')}
                                 {renderExerciseSection('Legs', 'squats')}
                                 {renderExerciseSection('Core', 'core')}
-                                <div className="settings-section-title">Daily Extras</div>
-                                {renderExerciseSection('APT Correction', 'apt')}
+                                <div className="settings-section-title">Corrective & Mobility</div>
+                                {renderExerciseSection('APT Correction', 'apt', null, 'Rotates 2 exercises on mobility days (Sun / Tue / Thu)')}
                                 <div className="settings-section-title">Stretching (rotates through all categories)</div>
                                 {renderExerciseSection('Hip Flexor', 'stretches', 'hipFlexor')}
                                 {renderExerciseSection('Hamstring', 'stretches', 'hamstring')}
