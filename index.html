@@ -1,2323 +1,1135 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1f1f1f">
+    <meta name="theme-color" content="#0F1419">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Workout">
     <title>Workout Tracker</title>
-
-    <!-- Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><rect width='180' height='180' fill='%231f1f1f'/><text x='50%' y='50%' font-size='80' text-anchor='middle' dominant-baseline='middle' fill='%23bb86fc'>💪</text></svg>">
-
-    <!-- PWA Manifest -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'><rect width='180' height='180' fill='%230F1419'/><text x='50%' y='50%' font-size='80' text-anchor='middle' dominant-baseline='middle' fill='%235B8DB8'>💪</text></svg>">
     <link rel="manifest" href="manifest.json">
-
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --bg:          #0F1419;
+            --surface:     #1A2332;
+            --raised:      #1F2B3E;
+            --border:      #2A3A52;
+            --accent:      #5B8DB8;
+            --accent-lt:   #7BA7C9;
+            --success:     #5B9E7A;
+            --success-bg:  #0E2018;
+            --danger:      #A05555;
+            --hard-accent: #B87A4A;
+            --hard-bg:     #1E1810;
+            --hard-border: #3A2810;
+            --txt:         #D8E2EC;
+            --txt-sub:     #7A8FA0;
+            --txt-muted:   #4A6070;
         }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #121212;
-            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--txt);
             overflow-x: hidden;
         }
 
-        /* Auth Screen Styles */
+        /* ── Auth ──────────────────────────────────────────── */
         .auth-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 20px;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
         }
-
         .auth-container {
-            background-color: #1e1e1e;
-            border-radius: 12px;
-            padding: 30px;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid #333;
+            background: var(--surface); border-radius: 16px;
+            padding: 32px 28px; width: 100%; max-width: 380px;
+            border: 1px solid var(--border);
         }
-
-        .auth-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #bb86fc;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .auth-subtitle {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
+        .auth-title { font-size: 26px; font-weight: 700; color: var(--accent-lt); margin-bottom: 6px; text-align: center; }
+        .auth-subtitle { font-size: 13px; color: var(--txt-muted); margin-bottom: 24px; text-align: center; }
         .auth-input {
-            width: 100%;
-            background-color: #2a2a2a;
-            color: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            border: 1px solid #444;
-            margin-bottom: 15px;
+            width: 100%; background: var(--raised); color: var(--txt);
+            padding: 13px 15px; border-radius: 10px; font-size: 15px;
+            border: 1px solid var(--border); margin-bottom: 12px; outline: none;
         }
-
-        .auth-input:focus {
-            outline: none;
-            border-color: #bb86fc;
-        }
-
+        .auth-input:focus { border-color: var(--accent); }
         .auth-btn {
-            width: 100%;
-            background-color: #03dac6;
-            padding: 15px;
-            border-radius: 8px;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 10px;
+            width: 100%; background: var(--accent); padding: 13px; border-radius: 10px;
+            border: none; color: #fff; font-weight: 700; font-size: 15px;
+            cursor: pointer; margin-bottom: 10px;
         }
+        .auth-btn:disabled { background: var(--raised); color: var(--txt-muted); cursor: not-allowed; }
+        .auth-btn-secondary { background: var(--raised); color: var(--txt-sub); border: 1px solid var(--border); }
+        .auth-error { color: #C47070; font-size: 13px; margin-top: 8px; text-align: center; }
+        .auth-success { color: var(--success); font-size: 13px; margin-top: 8px; text-align: center; }
+        .loading-screen { display: flex; justify-content: center; align-items: center; min-height: 100vh; font-size: 15px; color: var(--txt-muted); }
 
-        .auth-btn:active {
-            opacity: 0.8;
-        }
+        /* ── Layout ────────────────────────────────────────── */
+        .container { max-width: 600px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
 
-        .auth-btn:disabled {
-            background-color: #333;
-            color: #666;
-            cursor: not-allowed;
-        }
-
-        .auth-btn-secondary {
-            background-color: #333;
-            color: #fff;
-        }
-
-        .auth-error {
-            color: #cf6679;
-            font-size: 14px;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .auth-success {
-            color: #03dac6;
-            font-size: 14px;
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .auth-link {
-            color: #bb86fc;
-            text-decoration: none;
-            font-size: 14px;
-            text-align: center;
-            display: block;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-
-        .loading-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-size: 18px;
-            color: #bb86fc;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header {
-            background-color: #1f1f1f;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #333;
-        }
-
-        .header-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #bb86fc;
-        }
-
-        .header-date {
-            font-size: 14px;
-            color: #ccc;
-            margin-top: 5px;
-        }
-
-        .user-email {
-            font-size: 12px;
-            color: #888;
-            margin-top: 3px;
-        }
-
-        .streak {
-            font-size: 16px;
-            color: #03dac6;
-            margin-top: 5px;
-            font-weight: 600;
-        }
-
+        /* ── Header ────────────────────────────────────────── */
+        .header { background: var(--surface); padding: 16px 16px 14px; border-bottom: 1px solid var(--border); }
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .header-day { font-size: 22px; font-weight: 700; color: var(--txt); letter-spacing: -0.02em; }
+        .header-date { font-size: 13px; color: var(--txt-sub); margin-top: 2px; }
+        .header-email { font-size: 11px; color: var(--txt-muted); margin-top: 2px; }
         .refresh-btn {
-            background-color: #333;
-            border-radius: 25px;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: none;
-            cursor: pointer;
-            font-size: 24px;
-            color: #bb86fc;
-            margin: 10px auto 0;
+            background: var(--raised); border: 1px solid var(--border); border-radius: 8px;
+            width: 34px; height: 34px; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; font-size: 15px; color: var(--txt-muted); flex-shrink: 0;
         }
-
-        .button-row {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px;
-            background-color: #1a1a1a;
-            gap: 10px;
+        .streak-chip {
+            display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+            background: var(--raised); border: 1px solid var(--border); border-radius: 20px;
+            padding: 5px 12px; font-size: 13px; font-weight: 600; color: var(--accent-lt);
         }
+        .streak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 
+        /* ── Button row ────────────────────────────────────── */
+        .btn-row {
+            display: flex; gap: 8px; padding: 10px 14px;
+            background: var(--bg); border-bottom: 1px solid var(--border);
+        }
         .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            color: #fff;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            flex: 1;
+            padding: 9px 14px; border-radius: 9px; border: 1px solid var(--border);
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            background: var(--surface); color: var(--txt-sub);
         }
+        .btn-danger { background: transparent; border-color: var(--danger); color: #C47070; margin-left: auto; }
+        .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
 
-        .settings-btn {
-            background-color: #333;
-        }
+        /* ── Workout list ──────────────────────────────────── */
+        .workout-list { flex: 1; overflow-y: auto; padding: 12px; }
+        .progress-wrap { margin-bottom: 14px; }
+        .progress-bar-bg { background: var(--raised); border-radius: 4px; height: 4px; overflow: hidden; margin-bottom: 5px; }
+        .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+        .progress-label { font-size: 11px; color: var(--txt-muted); text-align: right; }
 
-        .history-btn {
-            background-color: #444;
-        }
-
-        .postpone-btn {
-            background-color: #bb86fc;
-            color: #000;
-        }
-
-        .logout-btn {
-            background-color: #cf6679;
-            color: #fff;
-        }
-
-        .workout-list {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 20px;
-        }
-
-        .card {
-            background-color: #1e1e1e;
-            margin: 10px;
-            border-radius: 12px;
-            padding: 15px;
-            border: 1px solid #333;
-        }
-
-        .completed-card {
-            opacity: 0.7;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-
-        .ex-info {
-            flex: 1;
-        }
-
-        .ex-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #fff;
-        }
-
-        .ex-cat {
-            font-size: 12px;
-            color: #bb86fc;
-            margin-top: 2px;
-        }
-
-        .header-right {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 8px;
-        }
-
-        .diff-toggle {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .diff-label {
-            font-size: 12px;
-            color: #666;
-        }
-
-        .diff-label-active {
-            color: #fff;
-            font-weight: bold;
-        }
-
+        /* ── Cards ─────────────────────────────────────────── */
+        .card { background: var(--surface); margin-bottom: 10px; border-radius: 14px; padding: 16px; border: 1px solid var(--border); }
+        .card.hard-card { border-color: var(--hard-border); }
+        .card.done-card { opacity: 0.45; }
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .ex-info { flex: 1; min-width: 0; }
+        .ex-name { font-size: 17px; font-weight: 700; color: var(--txt); }
+        .ex-name-done { color: var(--success); }
+        .ex-cat { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--txt-muted); margin-top: 3px; }
+        .card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; margin-left: 12px; }
+        .mode-toggle { display: flex; align-items: center; gap: 6px; }
+        .mode-label { font-size: 12px; color: var(--txt-muted); }
+        .mode-label-active { color: var(--txt); font-weight: 600; }
         .toggle-switch {
-            width: 40px;
-            height: 20px;
-            background-color: #03dac6;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            width: 38px; height: 20px; background: var(--accent); border-radius: 10px;
+            position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
         }
-
-        .toggle-switch.hard {
-            background-color: #cf6679;
-        }
-
+        .toggle-switch.on { background: var(--hard-accent); }
         .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #fff;
-            top: 2px;
-            left: 2px;
-            transition: left 0.3s;
+            content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+            background: #fff; top: 3px; left: 3px; transition: left 0.2s;
         }
-
-        .toggle-switch.hard::after {
-            left: 22px;
+        .toggle-switch.on::after { left: 21px; }
+        .detail-btn {
+            background: none; border: none; color: var(--txt-muted); font-size: 12px;
+            cursor: pointer; text-decoration: underline; text-underline-offset: 2px; padding: 0;
         }
-
-        .desc-btn {
-            background-color: #333;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: none;
-            color: #03dac6;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
+        .set-section { background: var(--raised); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; }
+        .set-section.hard-section { background: var(--hard-bg); }
+        .section-label { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+        .section-label.hard { color: var(--hard-accent); }
+        .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+        .set-row:last-child { margin-bottom: 0; }
+        .set-num { font-size: 13px; color: var(--txt-sub); width: 46px; flex-shrink: 0; }
+        .set-input {
+            flex: 1; background: var(--surface); border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 10px; color: var(--txt); font-size: 14px; outline: none;
         }
-
-        .reg-section {
-            background-color: #1a1a1a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .hard-section {
-            background-color: #2a1a1a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #cf6679;
-        }
-
-        .diff-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #03dac6;
-            margin-bottom: 10px;
-        }
-
-        .diff-title-hard {
-            font-size: 14px;
-            font-weight: 600;
-            color: #cf6679;
-            margin-bottom: 10px;
-        }
-
-        .set-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 10px;
-        }
-
-        .set-label {
-            font-size: 14px;
-            color: #ccc;
-            width: 60px;
-        }
-
-        .input {
-            flex: 1;
-            background-color: #2a2a2a;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 14px;
-            border: 1px solid #444;
-        }
-
-        .completed-set-value {
-            flex: 1;
-            color: #03dac6;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
+        .set-input:focus { border-color: var(--accent); }
+        .set-value { flex: 1; font-size: 14px; font-weight: 600; color: var(--success); }
         .complete-btn {
-            background-color: #03dac6;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
+            width: 100%; padding: 13px; border-radius: 10px; border: none;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            background: var(--accent); color: #fff; letter-spacing: 0.01em;
         }
+        .complete-btn:disabled { background: var(--raised); color: var(--txt-muted); cursor: not-allowed; }
+        .complete-btn.hard { background: var(--hard-accent); }
+        .done-check { color: var(--success); font-size: 18px; }
 
-        .complete-btn:disabled {
-            background-color: #333;
-            opacity: 0.5;
-            color: #666;
-            cursor: not-allowed;
-        }
+        /* ── Completed divider ─────────────────────────────── */
+        .completed-divider { display: flex; align-items: center; gap: 10px; margin: 6px 0 10px; }
+        .completed-divider::before, .completed-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+        .completed-divider-text { font-size: 11px; font-weight: 600; color: var(--success); letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; }
 
-        .completed-divider {
-            background-color: #2a2a2a;
-            padding: 12px 15px;
-            margin: 20px 10px 0;
-            border-radius: 8px;
-        }
+        /* ── Center screens ────────────────────────────────── */
+        .center-screen { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 32px 24px; text-align: center; }
+        .center-title { font-size: 22px; font-weight: 700; color: var(--accent-lt); margin-bottom: 10px; }
+        .center-text { font-size: 15px; color: var(--txt-sub); line-height: 24px; }
 
-        .completed-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #03dac6;
-            text-align: center;
-        }
-
-        .completed-text {
-            color: #03dac6;
-        }
-
-        .completed-summary {
-            font-size: 14px;
-            color: #aaa;
-            margin-top: 5px;
-            text-align: center;
-        }
-
-        .category-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            padding: 5px 0;
-        }
-
-        .category-title-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex: 1;
-        }
-
-        .category-arrow {
-            font-size: 16px;
-            transition: transform 0.3s;
-        }
-
-        .category-arrow.collapsed {
-            transform: rotate(-90deg);
-        }
-
-        .toggle-all-btn {
-            background-color: #444;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: none;
-            color: #03dac6;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .category-exercises {
-            max-height: 2000px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-
-        .category-exercises.collapsed {
-            max-height: 0;
-        }
-
-        .rest-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 30px;
-        }
-
-        .rest-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #03dac6;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .rest-text {
-            font-size: 16px;
-            color: #ccc;
-            text-align: center;
-            line-height: 24px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
+        /* ── Modal ─────────────────────────────────────────── */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.72); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
         .modal-content {
-            background-color: #1e1e1e;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            border: 1px solid #444;
-            display: flex;
-            flex-direction: column;
+            background: var(--surface); border-radius: 16px; width: 92%; max-width: 520px;
+            max-height: 86vh; border: 1px solid var(--border); display: flex; flex-direction: column;
         }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        .modal-title { font-size: 18px; font-weight: 700; color: var(--txt); }
+        .modal-close { font-size: 15px; color: var(--accent); font-weight: 600; background: none; border: none; cursor: pointer; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--bg); flex-shrink: 0; }
+        .tab { flex: 1; padding: 11px; background: none; border: none; color: var(--txt-muted); font-size: 13px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab.active { color: var(--accent-lt); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .modal-scroll { flex: 1; overflow-y: auto; padding: 16px; }
 
-        .modal-full {
-            width: 90%;
-            height: 80vh;
+        /* ── Settings ──────────────────────────────────────── */
+        .settings-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--txt-muted); margin-bottom: 8px; margin-top: 20px; }
+        .settings-section-title:first-child { margin-top: 0; }
+        .settings-note { font-size: 12px; color: var(--txt-muted); font-style: italic; margin-bottom: 8px; }
+        .cat-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px 0; user-select: none; }
+        .cat-header-left { display: flex; align-items: center; gap: 8px; }
+        .cat-arrow { font-size: 11px; color: var(--txt-muted); transition: transform 0.2s; }
+        .cat-arrow.collapsed { transform: rotate(-90deg); }
+        .cat-name { font-size: 14px; font-weight: 600; color: var(--txt); }
+        .toggle-all-btn { background: var(--raised); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; color: var(--txt-muted); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .cat-exercises { overflow: hidden; max-height: 2000px; transition: max-height 0.25s ease; }
+        .cat-exercises.collapsed { max-height: 0; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0 9px 20px; border-bottom: 1px solid var(--border); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-ex-name { font-size: 14px; color: var(--txt-sub); flex: 1; }
+        .checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent); }
+        .track-toggle { display: flex; background: var(--raised); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+        .track-option { flex: 1; padding: 10px; background: none; border: none; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--txt-muted); text-align: center; }
+        .track-option.active { background: var(--accent); color: #fff; }
+        .rest-day-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .rest-day-btn { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; color: var(--txt-sub); font-size: 13px; font-weight: 600; cursor: pointer; }
+        .rest-day-btn.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .info-box { background: var(--raised); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+        .info-box-title { font-size: 14px; font-weight: 700; color: var(--txt); margin-bottom: 6px; }
+        .info-box-text { font-size: 13px; color: var(--txt-sub); line-height: 20px; }
+
+        /* ── History ───────────────────────────────────────── */
+        .history-card { background: var(--raised); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 8px; cursor: pointer; }
+        .history-date { font-size: 15px; font-weight: 700; color: var(--accent-lt); margin-bottom: 3px; }
+        .history-type { font-size: 13px; color: var(--txt-sub); margin-bottom: 4px; }
+        .history-count { font-size: 12px; color: var(--txt-muted); }
+        .empty-msg { font-size: 14px; color: var(--txt-muted); text-align: center; margin-top: 24px; }
+
+        /* ── Description modal ─────────────────────────────── */
+        .desc-modal-inner {
+            background: var(--surface); border-radius: 16px; padding: 22px;
+            width: 88%; max-width: 420px; max-height: 75vh;
+            border: 1px solid var(--border); overflow-y: auto;
         }
+        .desc-name { font-size: 20px; font-weight: 700; color: var(--txt); margin-bottom: 12px; }
+        .desc-text { font-size: 14px; color: var(--txt-sub); line-height: 22px; margin-bottom: 14px; }
+        .desc-btn { width: 100%; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 8px; }
+        .desc-video-btn { background: var(--accent); color: #fff; }
+        .desc-pdf-btn { background: var(--success); color: #fff; }
+        .desc-close-btn { background: var(--raised); color: var(--txt-sub); border: 1px solid var(--border); }
+        .pdf-note { background: var(--raised); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+        .pdf-note-label { font-size: 12px; font-weight: 600; color: var(--accent); margin-bottom: 2px; }
+        .pdf-note-page { font-size: 12px; color: var(--txt-sub); }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #333;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #bb86fc;
-        }
-
-        .modal-done {
-            font-size: 16px;
-            color: #03dac6;
-            font-weight: 600;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .modal-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #333;
-            background-color: #1a1a1a;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px;
-            background: none;
-            border: none;
-            color: #888;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-        }
-
-        .tab.active {
-            color: #bb86fc;
-            border-bottom-color: #bb86fc;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .desc-modal-content {
-            background-color: #1e1e1e;
-            border-radius: 12px;
-            padding: 20px;
-            width: 85%;
-            max-height: 70vh;
-            border: 1px solid #444;
-            overflow-y: auto;
-        }
-
-        .desc-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #bb86fc;
-            margin-bottom: 15px;
-        }
-
-        .desc-text {
-            font-size: 14px;
-            color: #ccc;
-            line-height: 20px;
-            margin-bottom: 15px;
-        }
-
-        .video-link-btn {
-            background-color: #bb86fc;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .pdf-info-box {
-            background-color: #2a2a2a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #444;
-        }
-
-        .pdf-info-text {
-            font-size: 14px;
-            color: #03dac6;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .pdf-page-text {
-            font-size: 13px;
-            color: #fff;
-            font-style: italic;
-        }
-
-        .pdf-link-btn {
-            background-color: #03dac6;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .close-btn {
-            background-color: #333;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            color: #fff;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .cat-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            margin-bottom: 10px;
-            margin-top: 20px;
-        }
-
-        .cat-title:first-child {
-            margin-top: 0;
-        }
-
-        .settings-subtitle {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
-
-        .settings-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #2a2a2a;
-        }
-
-        .settings-name {
-            font-size: 14px;
-            color: #ccc;
-            flex: 1;
-        }
-
-        .checkbox {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        .rest-day-selector {
-            background-color: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-
-        .rest-day-label {
-            font-size: 14px;
-            color: #ccc;
-            margin-bottom: 10px;
-        }
-
-        .rest-day-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .rest-day-option {
-            background-color: #333;
-            padding: 10px 15px;
-            border-radius: 8px;
-            border: 2px solid #444;
-            color: #ccc;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .rest-day-option.selected {
-            background-color: #bb86fc;
-            color: #000;
-            border-color: #bb86fc;
-        }
-
-        .info-section {
-            background-color: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .info-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #bb86fc;
-            margin-bottom: 8px;
-        }
-
-        .info-text {
-            font-size: 14px;
-            color: #ccc;
-            line-height: 20px;
-        }
-
-        .empty-history {
-            font-size: 14px;
-            color: #888;
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .history-card {
-            background-color: #2a2a2a;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #444;
-            cursor: pointer;
-        }
-
-        .history-date {
-            font-size: 16px;
-            font-weight: bold;
-            color: #03dac6;
-            margin-bottom: 5px;
-        }
-
-        .history-type {
-            font-size: 14px;
-            color: #bb86fc;
-            margin-bottom: 8px;
-        }
-
-        .history-exercises {
-            font-size: 12px;
-            color: #aaa;
-            margin-bottom: 5px;
-        }
-
-        .tap-to-view {
-            font-size: 11px;
-            color: #666;
-            font-style: italic;
-            margin-top: 5px;
-        }
-
-        @media (max-width: 600px) {
-            .header-title {
-                font-size: 20px;
-            }
-
-            .card {
-                margin: 10px 5px;
-            }
+        @media (max-width: 480px) {
+            .header-day { font-size: 20px; }
+            .card { border-radius: 12px; }
         }
     </style>
 </head>
-
 <body>
-    <div id="root"></div>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+    const { useState, useEffect } = React;
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    const SUPABASE_URL = 'https://gnxwcdwqmderpghmtddy.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    // ── Date helpers (always local, never UTC-shifted) ─────────────────────
+    function toLocalDate(d = new Date()) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    function parseLocalDate(str) {
+        const [y, m, d] = str.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    }
 
-        // Initialize Supabase client
-        const SUPABASE_URL = 'https://gnxwcdwqmderpghmtddy.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const DEFAULT_EXERCISES = {
-            push: [
-                { id: 'p1', name: 'Wall Push-ups', difficulty: 1, sets: 3, reps: 10, hardSets: 4, hardReps: 15, isTime: false, enabled: true, desc: 'Stand facing wall. Hands on wall at shoulder height. Lean in, push back. Keep body straight throughout.', videoUrl: 'https://www.hybridcalisthenics.com/wall-pushups' },
-                { id: 'p2', name: 'Incline Push-ups', difficulty: 2, sets: 3, reps: 10, hardSets: 4, hardReps: 12, isTime: false, enabled: false, desc: 'Hands on elevated surface. Lower chest to surface, push up. Keep core tight, body in straight line.', videoUrl: 'https://www.hybridcalisthenics.com/incline-pushups' },
-                { id: 'p3', name: 'Regular Push-ups', difficulty: 3, sets: 3, reps: 10, hardSets: 4, hardReps: 15, isTime: false, enabled: false, desc: 'Plank position. Lower chest to ground, elbows 45°. Push back up. Maintain straight body line.', videoUrl: 'https://www.hybridcalisthenics.com/full-pushups' },
-                { id: 'p4', name: 'Diamond Push-ups', difficulty: 4, sets: 3, reps: 8, hardSets: 3, hardReps: 12, isTime: false, enabled: false, desc: 'Thumbs and index fingers form diamond. Keep elbows close. Targets triceps heavily.', videoUrl: null },
-                { id: 'p5', name: 'Decline Push-ups', difficulty: 5, sets: 3, reps: 10, hardSets: 4, hardReps: 12, isTime: false, enabled: false, desc: 'Feet elevated. Hands on ground. Harder than regular push-ups. Emphasizes upper chest.', videoUrl: null },
-                { id: 'p6', name: 'Archer Push-ups', difficulty: 6, sets: 3, reps: 6, hardSets: 3, hardReps: 10, isTime: false, enabled: false, desc: 'Wide hands. Lower to one side, other arm extends. Alternate sides. Advanced strength.', videoUrl: 'https://www.hybridcalisthenics.com/pushups' },
-                { id: 'p7', name: 'One-Arm Push-up Progression', difficulty: 7, sets: 3, reps: 5, hardSets: 3, hardReps: 8, isTime: false, enabled: false, desc: 'Progress toward one-arm. Start wide stance. Gradually narrow. Ultimate push variation.', videoUrl: 'https://www.hybridcalisthenics.com/pushups' }
+    // ── Schedule helpers ───────────────────────────────────────────────────
+    const WORKOUT_ROTATION = [
+        { name: 'Legs', focus: ['squats'], includeCore: false },
+        { name: 'Push', focus: ['push'],   includeCore: true  },
+        { name: 'Pull', focus: ['pull'],   includeCore: false },
+        { name: 'Legs', focus: ['squats'], includeCore: false },
+        { name: 'Push', focus: ['push'],   includeCore: true  },
+        { name: 'Pull', focus: ['pull'],   includeCore: false },
+    ];
+
+    function getWorkoutSchedule(dayOfWeek, restDay) {
+        if (dayOfWeek === restDay) return { name: 'Rest', focus: [], includeCore: false };
+        let pos = 0;
+        for (let d = 0; d < dayOfWeek; d++) { if (d !== restDay) pos++; }
+        return WORKOUT_ROTATION[pos % 6];
+    }
+
+    // 1st, 3rd, and 5th non-rest day of the week get mandatory mobility
+    function isMobilityDay(dayOfWeek, restDay) {
+        if (dayOfWeek === restDay) return false;
+        let count = 0;
+        for (let d = 0; d <= dayOfWeek; d++) { if (d !== restDay) count++; }
+        return count === 1 || count === 3 || count === 5;
+    }
+
+    const STRETCH_CATS = ['hipFlexor', 'hamstring', 'hipGlute', 'shoulder', 'backSpine', 'fullBody'];
+    const DAYS_OF_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+    // ── Default exercises ──────────────────────────────────────────────────
+    const DEFAULT_EXERCISES = {
+        pullTrack: 'bar',
+        push: [
+            { id:'p1', name:'Wall Push-ups',            difficulty:1, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Stand facing wall. Hands at shoulder height. Lean in and push back. Keep body straight.', videoUrl:'https://www.hybridcalisthenics.com/wall-pushups' },
+            { id:'p2', name:'Incline Push-ups',          difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Hands on elevated surface. Lower chest, push up. Keep core tight and body in a straight line.', videoUrl:'https://www.hybridcalisthenics.com/incline-pushups' },
+            { id:'p3', name:'Regular Push-ups',          difficulty:3, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Plank position. Lower chest to ground, elbows at 45°. Push back up. Maintain straight body line.', videoUrl:'https://www.hybridcalisthenics.com/full-pushups' },
+            { id:'p4', name:'Diamond Push-ups',          difficulty:4, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Thumbs and index fingers form diamond. Keep elbows close. Heavily targets triceps.', videoUrl:null },
+            { id:'p5', name:'Decline Push-ups',          difficulty:5, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Feet elevated. Hands on ground. Harder than regular, emphasizes upper chest.', videoUrl:null },
+            { id:'p6', name:'Archer Push-ups',           difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Wide hands. Lower to one side while the other arm extends. Alternate. Advanced.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
+            { id:'p7', name:'One-Arm Push-up Prog.',     difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Progress toward one-arm. Start wide stance, gradually narrow feet.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
+        ],
+        pull: [
+            { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:null },
+            { id:'pu2', name:'Australian Pull-ups', difficulty:2, sets:3, reps:8,  hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Low bar. Hang underneath, body straight. Pull chest to bar. Lower with control.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu3', name:'Negative Pull-ups',   difficulty:3, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Jump to top position. Lower slowly (5–10 seconds). Builds strength for full pull-ups.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu4', name:'Assisted Pull-ups',   difficulty:4, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Use a band for assistance. Pull chin over bar. Focus on using your back muscles.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu5', name:'Regular Pull-ups',    difficulty:5, sets:3, reps:5,  hardSets:4, hardReps:8,  isTime:false, enabled:false, desc:'Hang from bar, palms away. Pull chin over bar. Lower controlled. Engage core.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu6', name:'Chin-ups',            difficulty:5, sets:3, reps:6,  hardSets:4, hardReps:10, isTime:false, enabled:false, desc:'Palms facing you. More bicep involvement. Pull chin over bar.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu7', name:'Wide Grip Pull-ups',  difficulty:6, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Hands wider than shoulders. Targets lats more. Harder than regular pull-ups.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu8', name:'Archer Pull-ups',     difficulty:7, sets:3, reps:4,  hardSets:3, hardReps:6,  isTime:false, enabled:false, desc:'Pull to one hand while other extends. Very advanced. Builds one-arm pulling strength.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+        ],
+        pullDb: [
+            { id:'pd1', name:'Bent-Over Row',             difficulty:1, sets:3, reps:15, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Hip-width stance, hinge forward ~45°. Row both dumbbells to hips, squeeze shoulder blades. 15–20 lbs.', videoUrl:null },
+            { id:'pd2', name:'Single-Arm Row (light)',     difficulty:2, sets:3, reps:12, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Support on bench — opposite hand and knee. Row dumbbell to hip. Keep back flat. 20–25 lbs.', videoUrl:null },
+            { id:'pd3', name:'Single-Arm Row',             difficulty:3, sets:3, reps:10, hardSets:4, hardReps:10, isTime:false, enabled:true, desc:'Single-arm row with full range of motion. Focus on controlled lowering. 25–30 lbs.', videoUrl:null },
+            { id:'pd4', name:'Heavy Single-Arm Row',       difficulty:4, sets:3, reps:8,  hardSets:4, hardReps:8,  isTime:false, enabled:false, desc:'Single-arm row, 3-second lowering phase. Build maximum pulling strength. 30–35 lbs.', videoUrl:null },
+            { id:'pd5', name:'Pause Row',                  difficulty:5, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Single-arm row with 2-second hold at top. Maximizes time under tension. 35–40 lbs.', videoUrl:null },
+            { id:'pd6', name:'Renegade Row',               difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Plank on dumbbells. Row one side while stabilizing with the other. Anti-rotation core challenge. 20–25 lbs each.', videoUrl:null },
+            { id:'pd7', name:'Archer Row',                 difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:6,  isTime:false, enabled:false, desc:'Wide stance, row to one side while the other arm extends straight. Mimics archer pull-up. 25–30 lbs.', videoUrl:null },
+        ],
+        squats: [
+            { id:'sq1', name:'Assisted Squats',        difficulty:1, sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Hold a chair or wall. Squat down, stand back up. Build foundational strength.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
+            { id:'sq2', name:'Regular Squats',         difficulty:2, sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:false, desc:'Feet shoulder-width. Lower hips back and down. Chest up. Knees track over toes.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
+            { id:'sq3', name:'Close Stance Squats',    difficulty:3, sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Feet close together. More balance challenge. Increased quad emphasis.', videoUrl:null },
+            { id:'sq4', name:'Bulgarian Split Squats', difficulty:4, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Back foot elevated. Front foot forward. Lower into lunge. Single-leg strength.', videoUrl:null },
+            { id:'sq5', name:'Jump Squats',            difficulty:4, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Squat down, explode into a jump. Land soft. Builds power and explosiveness.', videoUrl:null },
+            { id:'sq6', name:'Assisted Pistol Squat',  difficulty:5, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'One-leg squat with support. Other leg extended forward. Progress toward full pistol.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
+            { id:'sq7', name:'Pistol Squats',          difficulty:6, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Full one-leg squat, other leg extended. Very challenging movement.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
+            { id:'sq8', name:'Dragon Squats',          difficulty:7, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Deep squat on one leg, other extended to side. Hold. Advanced mobility and strength.', videoUrl:null },
+            { id:'sq9', name:'Copenhagen Plank',       difficulty:4, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on your side. Place your top foot on an elevated surface (bench, chair). Lift your hips so your body is in a straight line, supported only by your top foot and your forearm. Hold. Targets the hip adductors in a way skating does NOT develop — skating builds external rotation but not closed-chain adductor force production. This fills a specific gap for you and protects your knees long-term.', videoUrl:null },
+        ],
+        core: [
+            { id:'c1', name:'Tuck Hollow Hold',  difficulty:1, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:false, desc:'Lie on back, press lower back into floor. Bring knees to chest, arms overhead. Hold. The goal is zero space between lower back and floor — this directly counters APT and rib flare.', videoUrl:null },
+            { id:'c2', name:'Hollow Body Hold',   difficulty:2, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on back, lower back pressed flat. Extend arms overhead and legs low to floor. Hold. Ribs pull DOWN, not flared. This is the foundation for visible abs and fixing your extension pattern. Start with legs higher if needed.', videoUrl:null },
+            { id:'c3', name:'Hollow Body Rock',   difficulty:3, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Hold the hollow body position and rock forward and back like a rocking chair. Maintain tension throughout — no sagging at the bottom. Builds dynamic core stability.', videoUrl:null },
+            { id:'c4', name:'Tuck L-Sit',         difficulty:4, sets:3, reps:10, hardSets:3, hardReps:15, isTime:true,  enabled:false, desc:'On the floor or parallettes, press down through hands and lift knees to chest. Hold. Combines compression strength with the hollow position. Use your skating hip awareness to keep pelvis neutral.', videoUrl:null },
+            { id:'c5', name:'L-Sit',              difficulty:5, sets:3, reps:10, hardSets:3, hardReps:20, isTime:true,  enabled:false, desc:'Press down through hands, legs extended horizontal. Advanced compression and ab strength. This is the full expression of the hollow body skill.', videoUrl:null },
+        ],
+        mandatory: [
+            { id:'m1', name:'Elephant Walks',  sets:2, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Stand, bend forward to touch toes. Alternate bending knees, lifting heels. Dynamic hamstring prep.', videoUrl:'https://www.youtube.com/shorts/jDFH__6aRGQ' },
+            { id:'m2', name:'Single Leg RDL',  sets:2, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Stand on one leg. Hinge at hip, reach down with opposite hand. Keep back straight. Other leg extends behind.', videoUrl:'https://www.youtube.com/shorts/jDFH__6aRGQ' },
+            { id:'m3', name:'Pike Pull Stretch',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Sit or stand in pike. Grab something stable. Pull head toward feet. Deep hamstring and back stretch.', videoUrl:'https://www.youtube.com/shorts/jDFH__6aRGQ' },
+            { id:'m4', name:'Wrist Circles',     sets:1, reps:20, hardSets:1, hardReps:30, isTime:false, enabled:true, desc:'Extend arms forward, fists loose. Rotate wrists in full circles — 10 each direction. Slow and controlled, feeling the full range. Clears stiffness and lubricates the joint before any loading. Do this every single session before touching a weight or doing a push.', videoUrl:null },
+            { id:'m5', name:'Wrist Flexor Stretch', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Arm out, palm up. Use other hand to pull fingers back (bending wrist toward you). Hold. You should feel the stretch on the underside of the forearm. This targets the flexors — overloaded from years of typing, mouse use, and programming. Counter to the pull of chronic keyboard posture.', videoUrl:null },
+            { id:'m6', name:'Wrist Extensor Stretch', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Arm out, palm down. Bend wrist down (fingers pointing toward floor), pull lightly with other hand. Hold. Stretches the extensors — specifically the muscles strained by Osu! (high-frequency wrist deviation and aim movements). These are likely your tightest and most irritated wrist muscles. Be gentle here.', videoUrl:null },
+        ],
+        apt: [
+            { id:'a1',  name:'Glute Bridges',      sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, knees bent. Lift hips by squeezing glutes until straight line. Lower slow.', videoUrl:null },
+            { id:'a2',  name:'Dead Bugs',           sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back flat, arms up, knees 90°. Extend opposite limbs. Maintain posterior pelvic tilt.', videoUrl:null },
+            { id:'a3',  name:'Plank with PPT',      sets:3, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Plank position. Tuck tailbone, engage abs. Squeeze glutes. Lower back rounds slightly.', videoUrl:null },
+            { id:'a4',  name:'Couch Stretch',       sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Back knee against wall, shin vertical. Front foot forward. Upright torso, squeeze glutes.', videoUrl:null },
+            { id:'a5',  name:'RDLs',                sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hip-width stance. Hinge at hips, push back. Keep back straight. Stand by squeezing glutes.', videoUrl:null },
+            { id:'a6',  name:'Cat-Cow',             sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Hands and knees. Cat: round spine, tuck tail. Cow: arch back, lift tail. Focus on tucked position.', videoUrl:null },
+            { id:'a7',  name:'Clamshells',          sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:true, desc:'Side-lying, knees 90°. Keep feet touching, lift top knee. Works glutes and hip rotators.', videoUrl:null },
+            { id:'a8',  name:'Reverse Plank',       sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Sit, legs extended, hands behind. Lift hips straight. Squeeze glutes hard.', videoUrl:null },
+            { id:'a9',  name:'Wall Pelvic Tilts',   sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back against wall, feet forward. Press lower back flat to wall. Release. Teaches posterior tilt.', videoUrl:null },
+            { id:'a10', name:'90/90 Hip Lift',      sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly.', videoUrl:null },
+            { id:'a11', name:'Band Hip Extension',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
+            { id:'a12', name:'Bird Dogs',           sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level.', videoUrl:null },
+            { id:'a13', name:'Pelvic Clock',        sets:2, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:true, desc:'Lie on back, knees bent. Imagine clock on pelvis. Tilt through each hour. 12:00 is posterior tilt.', videoUrl:null },
+            { id:'a14', name:'Side Plank',          sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked.', videoUrl:null },
+            { id:'a15', name:'Frog Stretch',        sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:true, desc:'Hands and knees, spread knees wide. Push hips back, lower down. Opens hips and adductors.', videoUrl:null },
+            { id:'a16', name:"World's Greatest",    sets:2, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true, desc:'Lunge. Hands inside front foot. Drop elbow down. Rotate and reach up. Full-body mobility.', videoUrl:null },
+            { id:'a17', name:'Band Hip Distraction',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
+            { id:'a18', name:"Child's Pose PPT",    sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:true, desc:'Sit on heels, arms forward. Tuck tailbone posteriorly. Gently round lower back. Breathe deep.', videoUrl:null },
+            { id:'a19', name:'Serratus Punches',    sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, arm pointing straight up holding a light dumbbell (5–10 lbs) or fist. Without bending the elbow, push your fist/dumbbell toward the ceiling by protracting your shoulder blade — like a slow punch. Lower back down. This directly targets the serratus anterior, the muscle that holds your ribs flat against your thorax. This is the primary fix for rib flare.', videoUrl:null },
+            { id:'a20', name:'RKC Plank',           sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Get into a plank. Now maximally squeeze everything simultaneously: posteriorly tilt your pelvis (tuck tailbone hard), brace abs as if taking a punch, squeeze glutes as hard as possible, try to drag elbows toward your toes. You should be shaking within 10 seconds. Far more effective than a standard plank for your APT pattern.', videoUrl:null },
+            { id:'a21', name:'Single-Leg Glute Bridge', sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Glute bridge on one leg. Extend one leg straight, foot flexed. Drive hips up through the planted foot by squeezing the glute — not your back. Lower slowly. Your skating balance makes this accessible where most beginners struggle. Forces each glute to work independently, exposing and fixing asymmetries common in APT.', videoUrl:null },
+            { id:'a22', name:'Reverse Wrist Curls', sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Sit with forearm on thigh, palm facing down, holding a light dumbbell (5–10 lbs). Curl the wrist upward, then lower slowly. This directly strengthens the wrist extensors — the exact muscles strained by Osu! aim movements. Most people only train flexors (gripping), leaving extensors chronically weak and injury-prone. Start light and go slow; these muscles fatigue fast.', videoUrl:null },
+            { id:'a23', name:'Hammer Rotations',   sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hold a light dumbbell (5–8 lbs) vertically like a hammer. Keeping elbow bent at 90° and pinned to your side, rotate palm up (supination), then palm down (pronation). Slow and controlled. The Osu! mouse grip pattern locks you in a narrow pronation range — this restores full pronation/supination strength and reduces the cumulative stress on the radioulnar joint.', videoUrl:null },
+        ],
+        stretches: {
+            hipFlexor: [
+                { id:'sh1', name:'Kneeling Hip Flexor', sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Kneel on one knee. Keep upright. Push hips forward. Squeeze glute of kneeling leg.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage:'Week 2 Day 2' },
+                { id:'sh2', name:'Couch Stretch',       sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Knee against wall. Shin vertical. Front foot forward. Upright torso. Squeeze glutes.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage:'Week 4 Day 1' },
+                { id:'sh3', name:'Frog Stretch',        sets:2, reps:45, hardSets:3, hardReps:60, isTime:true, enabled:true, desc:'Knees wide. Push hips back. Lower toward ground. Opens hips and adductors.', videoUrl:null, pdfUrl:null, pdfPage:null },
             ],
-            pull: [
-                { id: 'pu1', name: 'Wall Pull-ups', difficulty: 1, sets: 3, reps: 8, hardSets: 3, hardReps: 12, isTime: false, enabled: true, desc: 'Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using back.', videoUrl: null },
-                { id: 'pu2', name: 'Australian Pull-ups', difficulty: 2, sets: 3, reps: 8, hardSets: 4, hardReps: 12, isTime: false, enabled: false, desc: 'Low bar. Hang underneath, body straight. Pull chest to bar. Lower with control.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' },
-                { id: 'pu3', name: 'Negative Pull-ups', difficulty: 3, sets: 3, reps: 5, hardSets: 3, hardReps: 8, isTime: false, enabled: false, desc: 'Jump to top position. Lower slowly (5-10 seconds). Builds strength for full pull-ups.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' },
-                { id: 'pu4', name: 'Assisted Pull-ups', difficulty: 4, sets: 3, reps: 6, hardSets: 3, hardReps: 10, isTime: false, enabled: false, desc: 'Use band or chair for assistance. Pull chin over bar. Focus on back muscles.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' },
-                { id: 'pu5', name: 'Regular Pull-ups', difficulty: 5, sets: 3, reps: 5, hardSets: 4, hardReps: 8, isTime: false, enabled: false, desc: 'Hang from bar, palms away. Pull chin over bar. Lower controlled. Engage core.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' },
-                { id: 'pu6', name: 'Chin-ups', difficulty: 5, sets: 3, reps: 6, hardSets: 4, hardReps: 10, isTime: false, enabled: false, desc: 'Palms facing you. Slightly easier. More bicep involvement. Pull chin over bar.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' },
-                { id: 'pu7', name: 'Wide Grip Pull-ups', difficulty: 6, sets: 3, reps: 5, hardSets: 3, hardReps: 8, isTime: false, enabled: false, desc: 'Hands wider than shoulders. Targets lats more. Harder than regular pull-ups.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' },
-                { id: 'pu8', name: 'Archer Pull-ups', difficulty: 7, sets: 3, reps: 4, hardSets: 3, hardReps: 6, isTime: false, enabled: false, desc: 'Pull to one hand, other extends. Very advanced. Builds one-arm pulling strength.', videoUrl: 'https://www.hybridcalisthenics.com/pullups' }
+            hamstring: [
+                { id:'sh4', name:'Standing Hamstring',    sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Heel forward on elevated surface. Straight leg. Hinge at hips. Reach toward toes.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hamstring-V2.pdf', pdfPage:'Week 3 Day 3' },
+                { id:'sh5', name:'Seated Hamstring',      sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Sit, legs extended. Hinge at hips. Reach forward. Keep back straight.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hamstring-V2.pdf', pdfPage:'Week 1 Day 1' },
+                { id:'sh6', name:'Single-Leg Hamstring',  sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Sit with one leg extended. Other bent. Reach toward extended leg.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hamstring-V2.pdf', pdfPage:'Week 1 Day 1' },
             ],
-            squats: [
-                { id: 'sq1', name: 'Assisted Squats', difficulty: 1, sets: 3, reps: 12, hardSets: 4, hardReps: 15, isTime: false, enabled: true, desc: 'Hold chair or wall. Squat down low as comfortable. Stand back up. Build strength.', videoUrl: 'https://www.hybridcalisthenics.com/squats' },
-                { id: 'sq2', name: 'Regular Squats', difficulty: 2, sets: 3, reps: 15, hardSets: 4, hardReps: 20, isTime: false, enabled: false, desc: 'Feet shoulder-width. Lower hips back and down. Chest up. Knees track over toes.', videoUrl: 'https://www.hybridcalisthenics.com/squats' },
-                { id: 'sq3', name: 'Close Stance Squats', difficulty: 3, sets: 3, reps: 12, hardSets: 4, hardReps: 15, isTime: false, enabled: false, desc: 'Feet close together. More balance challenge. Increased quad emphasis.', videoUrl: null },
-                { id: 'sq4', name: 'Bulgarian Split Squats', difficulty: 4, sets: 3, reps: 10, hardSets: 3, hardReps: 12, isTime: false, enabled: false, desc: 'Back foot elevated. Front foot forward. Lower into lunge. Single-leg strength.', videoUrl: null },
-                { id: 'sq5', name: 'Jump Squats', difficulty: 4, sets: 3, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: false, desc: 'Squat down, explode into jump. Land soft. Builds power and explosiveness.', videoUrl: null },
-                { id: 'sq6', name: 'Assisted Pistol Squat', difficulty: 5, sets: 3, reps: 6, hardSets: 3, hardReps: 8, isTime: false, enabled: false, desc: 'One-leg with support. Other leg extended forward. Progress toward full pistol.', videoUrl: 'https://www.hybridcalisthenics.com/squats' },
-                { id: 'sq7', name: 'Pistol Squats', difficulty: 6, sets: 3, reps: 5, hardSets: 3, hardReps: 8, isTime: false, enabled: false, desc: 'One leg, other extended. Squat on standing leg. Very challenging movement.', videoUrl: 'https://www.hybridcalisthenics.com/squats' },
-                { id: 'sq8', name: 'Dragon Squats', difficulty: 7, sets: 3, reps: 20, hardSets: 3, hardReps: 30, isTime: true, enabled: false, desc: 'Deep squat on one leg, other extended to side. Hold. Advanced mobility and strength.', videoUrl: null }
+            hipGlute: [
+                { id:'sh7', name:'Figure-4',  sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Lie on back. Cross ankle over knee. Pull thigh to chest. Stretches piriformis and glutes.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage:'Week 3 Day 3' },
+                { id:'sh8', name:'Pigeon Pose',sets:2, reps:45, hardSets:3, hardReps:60, isTime:true, enabled:true, desc:'Front leg bent 90°. Back leg extended. Lower hips down. Deep glute stretch.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage:'Week 1 Day 1' },
+                { id:'sh9', name:'90/90 Hip',  sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Both legs bent 90°. One internal, one external rotation. Lean forward. Hip mobility.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage:'Week 1 Day 2' },
             ],
-            core: [
-                { id: 'c1', name: 'Knee Raises', difficulty: 1, sets: 3, reps: 10, hardSets: 4, hardReps: 12, isTime: false, enabled: true, desc: 'Lie on back or hang. Bring knees to chest. Lower controlled. Beginner core.', videoUrl: null },
-                { id: 'c2', name: 'Dead Bugs', difficulty: 2, sets: 3, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: false, desc: 'Back on ground. Extend opposite arm and leg. Alternate. Keep lower back pressed down.', videoUrl: null },
-                { id: 'c3', name: 'Leg Raises', difficulty: 3, sets: 3, reps: 8, hardSets: 3, hardReps: 12, isTime: false, enabled: false, desc: 'Lie flat. Raise straight legs to 90°. Lower slowly. Don\'t let back arch.', videoUrl: null },
-                { id: 'c4', name: 'Hanging Knee Raises', difficulty: 4, sets: 3, reps: 8, hardSets: 3, hardReps: 12, isTime: false, enabled: false, desc: 'Hang from bar. Bring knees to chest. Lower slow. Avoid swinging.', videoUrl: null },
-                { id: 'c5', name: 'Hanging Leg Raises', difficulty: 5, sets: 3, reps: 6, hardSets: 3, hardReps: 10, isTime: false, enabled: false, desc: 'Hang from bar. Raise straight legs horizontal. Advanced core strength required.', videoUrl: null }
+            shoulder: [
+                { id:'sh10', name:'Shoulder Dislocates', sets:2, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hold band wide. Straight arms. Bring overhead and behind back. Return. Mobility drill.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/01/FS-Shoulders-V2.pdf', pdfPage:'Week 3 Day 3' },
+                { id:'sh11', name:'Cross-Body Shoulder', sets:2, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Pull arm across body. Keep shoulders down. Stretches back of shoulder.', videoUrl:null, pdfUrl:null, pdfPage:null },
+                { id:'sh12', name:'Wall Slides',         sets:2, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back to wall. Arms in goal post. Slide up overhead. Keep contact with wall.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/01/FS-Shoulders-V2.pdf', pdfPage:'Week 4 Day 1' },
             ],
-            mandatory: [
-                { id: 'm1', name: 'Elephant Walks', sets: 2, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Stand, bend forward to touch toes. Alternate bending knees, lifting heels. Dynamic hamstring stretch. Prepares body for deeper stretching.', videoUrl: 'https://www.youtube.com/shorts/jDFH__6aRGQ' },
-                { id: 'm2', name: 'Single Leg RDL', sets: 2, reps: 8, hardSets: 3, hardReps: 12, isTime: false, enabled: true, desc: 'Stand on one leg. Hinge at hip, reach down with opposite hand. Keep back straight. Other leg extends behind for balance. Hamstring and balance work.', videoUrl: 'https://www.youtube.com/shorts/jDFH__6aRGQ' },
-                { id: 'm3', name: 'Pike Pull Stretch', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Sit or stand in pike position. Grab something stable (bar, pole, bench). Pull your head toward your feet. Deep hamstring and back stretch.', videoUrl: 'https://www.youtube.com/shorts/jDFH__6aRGQ' }
+            backSpine: [
+                { id:'sh13', name:'Cat-Cow',       sets:2, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Hands and knees. Alternate arching (cow) and rounding (cat). Mobilizes spine.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Spine-V2.pdf', pdfPage:'Week 1 Day 1' },
+                { id:'sh14', name:"Child's Pose",  sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:true, desc:'Sit on heels. Arms extended forward. Relax and breathe. Back and shoulder stretch.', videoUrl:null, pdfUrl:null, pdfPage:null },
+                { id:'sh15', name:'Cobra',         sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Face down. Push up through hands. Lift chest. Hips stay down. Extends spine.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Spine-V2.pdf', pdfPage:'Week 3 Day 2' },
             ],
-            apt: [
-                { id: 'a1', name: 'Glute Bridges', sets: 3, reps: 12, hardSets: 4, hardReps: 15, isTime: false, enabled: true, desc: 'Lie on back, knees bent. Lift hips by squeezing glutes until straight line. Lower slow. Use glutes, not back.', videoUrl: null },
-                { id: 'a2', name: 'Dead Bugs', sets: 3, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Back flat, arms up, knees 90°. Extend opposite limbs. Maintain posterior pelvic tilt throughout.', videoUrl: null },
-                { id: 'a3', name: 'Plank with PPT', sets: 3, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Plank position. Tuck tailbone, engage abs. Squeeze glutes. Lower back should round slightly.', videoUrl: null },
-                { id: 'a4', name: 'Couch Stretch', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Back knee against wall, shin vertical. Front foot forward. Upright torso, squeeze glutes. Deep hip flexor stretch.', videoUrl: null },
-                { id: 'a5', name: 'RDLs', sets: 3, reps: 10, hardSets: 3, hardReps: 12, isTime: false, enabled: true, desc: 'Hip-width stance. Hinge at hips, push back. Keep back straight. Feel hamstring stretch. Stand by squeezing glutes.', videoUrl: null },
-                { id: 'a6', name: 'Cat-Cow', sets: 3, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Hands and knees. Cat: round spine, tuck tail. Cow: arch back, lift tail. Focus on tucked position for APT.', videoUrl: null },
-                { id: 'a7', name: 'Clamshells', sets: 3, reps: 15, hardSets: 4, hardReps: 20, isTime: false, enabled: true, desc: 'Side-lying, knees 90°. Keep feet touching, lift top knee. Lower slow. Works glutes and hip rotators.', videoUrl: null },
-                { id: 'a8', name: 'Reverse Plank', sets: 3, reps: 20, hardSets: 3, hardReps: 30, isTime: true, enabled: true, desc: 'Sit, legs extended, hands behind. Lift hips straight. Squeeze glutes hard. Maintain posterior pelvic tilt.', videoUrl: null },
-                { id: 'a9', name: 'Wall Pelvic Tilts', sets: 3, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Back against wall, feet forward. Press lower back flat to wall (posterior tilt). Release. Teaches movement pattern.', videoUrl: null },
-                { id: 'a10', name: '90/90 Hip Lift', sets: 3, reps: 8, hardSets: 3, hardReps: 12, isTime: false, enabled: true, desc: 'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly. Advanced core control.', videoUrl: null },
-                { id: 'a11', name: 'Band Hip Extension', sets: 3, reps: 12, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Don\'t arch back.', videoUrl: null },
-                { id: 'a12', name: 'Bird Dogs', sets: 3, reps: 10, hardSets: 3, hardReps: 12, isTime: false, enabled: true, desc: 'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level. Stability and control.', videoUrl: null },
-                { id: 'a13', name: 'Pelvic Clock', sets: 2, reps: 8, hardSets: 3, hardReps: 10, isTime: false, enabled: true, desc: 'Lie on back, knees bent. Imagine clock on pelvis. Tilt through each hour. 12:00 is posterior tilt.', videoUrl: null },
-                { id: 'a14', name: 'Side Plank', sets: 3, reps: 20, hardSets: 3, hardReps: 30, isTime: true, enabled: true, desc: 'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked. Optional: lift top leg.', videoUrl: null },
-                { id: 'a15', name: 'Frog Stretch', sets: 2, reps: 45, hardSets: 3, hardReps: 60, isTime: true, enabled: true, desc: 'Hands and knees, spread knees wide. Push hips back, lower down. Opens hips, stretches adductors.', videoUrl: null },
-                { id: 'a16', name: 'World\'s Greatest', sets: 2, reps: 5, hardSets: 3, hardReps: 8, isTime: false, enabled: true, desc: 'Lunge. Hands inside front foot. Drop elbow down. Rotate and reach up. Full-body mobility.', videoUrl: null },
-                { id: 'a17', name: 'Band Hip Distraction', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently. Advanced technique.', videoUrl: null },
-                { id: 'a18', name: 'Child\'s Pose PPT', sets: 2, reps: 45, hardSets: 3, hardReps: 60, isTime: true, enabled: true, desc: 'Sit on heels, arms forward. Tuck tailbone posteriorly. Gently round lower back. Breathe deep.', videoUrl: null }
+            fullBody: [
+                { id:'sh16', name:"World's Greatest", sets:2, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true, desc:'Lunge. Hands inside front foot. Elbow down. Rotate and reach up. Full mobility.', videoUrl:null, pdfUrl:null, pdfPage:null },
+                { id:'sh17', name:'Downward Dog',     sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Inverted V. Hands and feet down. Hips high. Push heels down. Full body stretch.', videoUrl:null, pdfUrl:null, pdfPage:null },
             ],
-            stretches: {
-                hipFlexor: [
-                    { id: 'sh1', name: 'Kneeling Hip Flexor', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Kneel on one knee. Keep upright. Push hips forward. Squeeze glute of kneeling leg.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage: 'Week 2 Day 2' },
-                    { id: 'sh2', name: 'Couch Stretch', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Knee against wall. Shin vertical. Front foot forward. Upright torso. Squeeze glutes.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage: 'Week 4 Day 1' },
-                    { id: 'sh3', name: 'Frog Stretch', sets: 2, reps: 45, hardSets: 3, hardReps: 60, isTime: true, enabled: true, desc: 'Knees wide. Push hips back. Lower toward ground. Opens hips and adductors.', videoUrl: null, pdfUrl: null, pdfPage: null }
-                ],
-                hamstring: [
-                    { id: 'sh4', name: 'Standing Hamstring', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Heel forward on elevated surface. Straight leg. Hinge at hips. Reach toward toes.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hamstring-V2.pdf', pdfPage: 'Week 3 Day 3' },
-                    { id: 'sh5', name: 'Seated Hamstring', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Sit, legs extended. Hinge at hips. Reach forward. Keep back straight.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hamstring-V2.pdf', pdfPage: 'Week 1 Day 1' },
-                    { id: 'sh6', name: 'Single-Leg Hamstring', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Sit with one leg extended. Other bent. Reach toward extended leg.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hamstring-V2.pdf', pdfPage: 'Week 1 Day 1' }
-                ],
-                hipGlute: [
-                    { id: 'sh7', name: 'Figure-4', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Lie on back. Cross ankle over knee. Pull thigh to chest. Stretches piriformis and glutes.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage: 'Week 3 Day 3' },
-                    { id: 'sh8', name: 'Pigeon Pose', sets: 2, reps: 45, hardSets: 3, hardReps: 60, isTime: true, enabled: true, desc: 'Front leg bent 90°. Back leg extended. Lower hips down. Deep glute stretch.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage: 'Week 1 Day 1' },
-                    { id: 'sh9', name: '90/90 Hip', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Both legs bent 90°. One internal, one external rotation. Lean forward. Hip mobility.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage: 'Week 1 Day 2' }
-                ],
-                shoulder: [
-                    { id: 'sh10', name: 'Shoulder Dislocates', sets: 2, reps: 10, hardSets: 3, hardReps: 12, isTime: false, enabled: true, desc: 'Hold band wide. Straight arms. Bring overhead and behind back. Return. Mobility drill.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/01/FS-Shoulders-V2.pdf', pdfPage: 'Week 3 Day 3' },
-                    { id: 'sh11', name: 'Cross-Body Shoulder', sets: 2, reps: 20, hardSets: 3, hardReps: 30, isTime: true, enabled: true, desc: 'Pull arm across body. Keep shoulders down. Stretch back of shoulder.', videoUrl: null, pdfUrl: null, pdfPage: null },
-                    { id: 'sh12', name: 'Wall Slides', sets: 2, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Back to wall. Arms in goal post. Slide up overhead. Keep contact with wall.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/01/FS-Shoulders-V2.pdf', pdfPage: 'Week 4 Day 1' }
-                ],
-                backSpine: [
-                    { id: 'sh13', name: 'Cat-Cow', sets: 2, reps: 10, hardSets: 3, hardReps: 15, isTime: false, enabled: true, desc: 'Hands and knees. Alternate arching (cow) and rounding (cat). Mobilizes spine.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Spine-V2.pdf', pdfPage: 'Week 1 Day 1' },
-                    { id: 'sh14', name: 'Child\'s Pose', sets: 2, reps: 45, hardSets: 3, hardReps: 60, isTime: true, enabled: true, desc: 'Sit on heels. Arms extended forward. Relax and breathe. Back and shoulder stretch.', videoUrl: null, pdfUrl: null, pdfPage: null },
-                    { id: 'sh15', name: 'Cobra', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Face down. Push up through hands. Lift chest. Hips stay down. Extends spine.', videoUrl: null, pdfUrl: 'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Spine-V2.pdf', pdfPage: 'Week 3 Day 2' }
-                ],
-                fullBody: [
-                    { id: 'sh16', name: 'World\'s Greatest', sets: 2, reps: 5, hardSets: 3, hardReps: 8, isTime: false, enabled: true, desc: 'Lunge. Hands inside front foot. Elbow down. Rotate and reach up. Full mobility.', videoUrl: null, pdfUrl: null, pdfPage: null },
-                    { id: 'sh17', name: 'Downward Dog', sets: 2, reps: 30, hardSets: 3, hardReps: 45, isTime: true, enabled: true, desc: 'Inverted V. Hands and feet down. Hips high. Push heels down. Full body stretch.', videoUrl: null, pdfUrl: null, pdfPage: null }
-                ]
+        },
+    };
+
+    // ── Auth component ─────────────────────────────────────────────────────
+    function AuthScreen() {
+        const [isSignUp, setIsSignUp] = useState(false);
+        const [email, setEmail] = useState('');
+        const [password, setPassword] = useState('');
+        const [loading, setLoading] = useState(false);
+        const [message, setMessage] = useState('');
+        const [error, setError] = useState('');
+
+        const handleSubmit = async (e) => {
+            e.preventDefault();
+            setLoading(true); setError(''); setMessage('');
+            if (isSignUp) {
+                const { error } = await supabase.auth.signUp({ email, password });
+                setLoading(false);
+                if (error) setError(error.message);
+                else setMessage('Check your email to confirm your account!');
+            } else {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                setLoading(false);
+                if (error) setError(error.message);
             }
         };
 
-        const WEEK_SCHEDULE = {
-            0: { name: 'Legs', focus: ['squats'], includeCore: false },
-            1: { name: 'Push', focus: ['push'], includeCore: true },
-            2: { name: 'Pull', focus: ['pull'], includeCore: false },
-            3: { name: 'Legs', focus: ['squats'], includeCore: false },
-            4: { name: 'Push', focus: ['push'], includeCore: true },
-            5: { name: 'Pull', focus: ['pull'], includeCore: false },
-            6: { name: 'Rest', focus: [], includeCore: false }
+        return (
+            <div className="auth-screen">
+                <div className="auth-container">
+                    <div className="auth-title">Workout Tracker</div>
+                    <div className="auth-subtitle">{isSignUp ? 'Create your account' : 'Sign in to your account'}</div>
+                    <form onSubmit={handleSubmit}>
+                        <input type="email" className="auth-input" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
+                        <input type="password" className="auth-input" placeholder="Password (min 6 characters)" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+                        <button type="submit" className="auth-btn" disabled={loading}>
+                            {loading ? 'Loading…' : (isSignUp ? 'Sign Up' : 'Sign In')}
+                        </button>
+                    </form>
+                    <button className="auth-btn auth-btn-secondary" onClick={() => { setIsSignUp(!isSignUp); setError(''); setMessage(''); }}>
+                        {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
+                    </button>
+                    {message && <div className="auth-success">{message}</div>}
+                    {error   && <div className="auth-error">{error}</div>}
+                </div>
+            </div>
+        );
+    }
+
+    // ── Main App ───────────────────────────────────────────────────────────
+    function App() {
+        const [user, setUser]                         = useState(null);
+        const [loading, setLoading]                   = useState(true);
+        const [exercises, setExercises]               = useState(DEFAULT_EXERCISES);
+        const [workout, setWorkout]                   = useState([]);
+        const [completedWorkout, setCompletedWorkout] = useState([]);
+        const [log, setLog]                           = useState({});
+        const [hardMode, setHardMode]                 = useState({});
+        const [showSettings, setShowSettings]         = useState(false);
+        const [activeTab, setActiveTab]               = useState('exercises');
+        const [showDesc, setShowDesc]                 = useState(false);
+        const [showHistory, setShowHistory]           = useState(false);
+        const [selectedEx, setSelectedEx]             = useState(null);
+        const [date, setDate]                         = useState('');
+        const [dayName, setDayName]                   = useState('');
+        const [isRest, setIsRest]                     = useState(false);
+        const [streak, setStreak]                     = useState(0);
+        const [history, setHistory]                   = useState([]);
+        const [stretchIndex, setStretchIndex]         = useState(0);
+        const [viewingHistory, setViewingHistory]     = useState(null);
+        const [showHistoryDetail, setShowHistoryDetail] = useState(false);
+        const [workoutComplete, setWorkoutComplete]   = useState(false);
+        const [customRestDay, setCustomRestDay]       = useState(6);
+        const [restDayPostponed, setRestDayPostponed] = useState(false);
+        const [collapsed, setCollapsed]               = useState({});
+
+        useEffect(() => {
+            checkUser();
+            const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+                setUser(session?.user ?? null);
+                if (session?.user) loadData(session.user.id);
+            });
+            return () => listener.subscription.unsubscribe();
+        }, []);
+
+        useEffect(() => {
+            if (user) finishWorkout();
+        }, [workout, completedWorkout]);
+
+        const checkUser = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(session?.user ?? null);
+            if (session?.user) await loadData(session.user.id);
+            setLoading(false);
         };
 
-        const DAYS_OF_WEEK = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const loadData = async (uid) => {
+            try {
+                const { data: settingsData } = await supabase
+                    .from('exercise_settings').select('exercise_data').eq('user_id', uid).single();
 
-        // Auth Component
-        function AuthScreen() {
-            const [isSignUp, setIsSignUp] = useState(false);
-            const [email, setEmail] = useState('');
-            const [password, setPassword] = useState('');
-            const [loading, setLoading] = useState(false);
-            const [message, setMessage] = useState('');
-            const [error, setError] = useState('');
+                let exData = DEFAULT_EXERCISES;
+                if (settingsData) {
+                    const saved = settingsData.exercise_data;
+                    exData = {
+                        ...DEFAULT_EXERCISES,
+                        ...saved,
+                        pullDb: saved.pullDb || DEFAULT_EXERCISES.pullDb,
+                        stretches: saved.stretches
+                            ? { ...DEFAULT_EXERCISES.stretches, ...saved.stretches }
+                            : DEFAULT_EXERCISES.stretches,
+                    };
+                }
+                setExercises(exData);
 
-            const handleSignUp = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                setError('');
-                setMessage('');
+                const { data: profileData } = await supabase
+                    .from('user_profiles').select('custom_rest_day').eq('id', uid).single();
+                const restDay = profileData ? profileData.custom_rest_day : 6;
+                setCustomRestDay(restDay);
 
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                });
+                const todayStr = toLocalDate();
+                const { data: postponeData } = await supabase
+                    .from('rest_day_postponements')
+                    .select('*').eq('user_id', uid).eq('postponed_date', todayStr).single();
+                const isPostponed = !!postponeData;
+                setRestDayPostponed(isPostponed);
 
-                setLoading(false);
+                const { data: historyData } = await supabase
+                    .from('workout_history').select('*').eq('user_id', uid).order('date', { ascending: false });
+                const hist = historyData || [];
+                setHistory(hist);
+                calculateStreak(hist, restDay);
 
-                if (error) {
-                    setError(error.message);
+                const { data: stretchData } = await supabase
+                    .from('stretch_categories').select('last_categories').eq('user_id', uid).single();
+                let si = 0;
+                if (stretchData && typeof stretchData.last_categories === 'number') {
+                    si = stretchData.last_categories;
+                }
+                setStretchIndex(si);
+
+                const d = new Date();
+                const dayOfWeek = d.getDay();
+                setDate(d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
+
+                const isRestDay = isPostponed ? false : dayOfWeek === restDay;
+                setIsRest(isRestDay);
+
+                if (isRestDay) {
+                    setDayName('Rest');
                 } else {
-                    setMessage('Check your email to confirm your account!');
+                    const schedule = getWorkoutSchedule(dayOfWeek, restDay);
+                    setDayName(schedule.name);
+                    const alreadyDone = hist.some(h => h.date === todayStr);
+                    if (!alreadyDone) {
+                        generateWorkoutWith(dayOfWeek, exData, si, restDay, uid);
+                    } else {
+                        setWorkoutComplete(true);
+                    }
                 }
-            };
+            } catch (err) {
+                console.error('loadData error:', err);
+            }
+        };
 
-            const handleSignIn = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                setError('');
-                setMessage('');
+        const calculateStreak = (hist, restDay) => {
+            if (!hist || hist.length === 0) { setStreak(0); return; }
+            const todayStr = toLocalDate();
+            const hasTodayWorkout = hist.some(h => h.date === todayStr);
 
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
-                });
+            let count = 0;
+            const check = new Date();
+            check.setHours(0, 0, 0, 0);
+            if (!hasTodayWorkout) check.setDate(check.getDate() - 1);
 
-                setLoading(false);
-
-                if (error) {
-                    setError(error.message);
+            while (count <= 365) {
+                const dow = check.getDay();
+                if (dow === restDay) { check.setDate(check.getDate() - 1); continue; }
+                const ds = toLocalDate(check);
+                if (hist.some(h => h.date === ds)) {
+                    count++;
+                    check.setDate(check.getDate() - 1);
+                } else {
+                    break;
                 }
-            };
+            }
+            setStreak(count);
+        };
 
+        const generateWorkout = () => {
+            const d = new Date();
+            generateWorkoutWith(d.getDay(), exercises, stretchIndex, customRestDay, user?.id);
+        };
+
+        const generateWorkoutWith = (dayOfWeek, exData, si, restDay, uid) => {
+            const schedule = getWorkoutSchedule(dayOfWeek, restDay);
+            if (schedule.focus.length === 0) return;
+            const items = [];
+
+            if (isMobilityDay(dayOfWeek, restDay)) {
+                exData.mandatory.filter(e => e.enabled).forEach(e => items.push({ ...e, category: 'Mobility' }));
+            }
+
+            schedule.focus.forEach(cat => {
+                const pool = cat === 'pull'
+                    ? (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled)
+                    : exData[cat].filter(e => e.enabled);
+                if (pool.length > 0) items.push({ ...pool[0], category: schedule.name });
+            });
+
+            if (schedule.includeCore) {
+                const pool = exData.core.filter(e => e.enabled);
+                if (pool.length > 0) items.push({ ...pool[0], category: 'Core' });
+            }
+
+            const aptEnabled = exData.apt.filter(e => e.enabled);
+            const numApt = Math.floor(Math.random() * 2) + 2;
+            const aptPool = [...aptEnabled];
+            for (let i = 0; i < Math.min(numApt, aptPool.length); i++) {
+                const idx = Math.floor(Math.random() * aptPool.length);
+                items.push({ ...aptPool[idx], category: 'APT' });
+                aptPool.splice(idx, 1);
+            }
+
+            // Deterministic stretch rotation: 2 categories per session
+            const cat1 = STRETCH_CATS[si % 6];
+            const cat2 = STRETCH_CATS[(si + 1) % 6];
+            const newSi = (si + 2) % 6;
+            [cat1, cat2].forEach(catName => {
+                const pool = (exData.stretches[catName] || []).filter(e => e.enabled);
+                if (pool.length > 0) {
+                    items.push({ ...pool[Math.floor(Math.random() * pool.length)], category: 'Stretch' });
+                }
+            });
+
+            saveStretchIndex(newSi, uid);
+            setStretchIndex(newSi);
+            setWorkout(items);
+            setCompletedWorkout([]);
+            setLog({});
+            setHardMode({});
+            setWorkoutComplete(false);
+        };
+
+        const saveStretchIndex = async (idx, uid) => {
+            const id = uid || user?.id;
+            if (!id) return;
+            const { data: ex } = await supabase.from('stretch_categories').select('id').eq('user_id', id).single();
+            if (ex) {
+                await supabase.from('stretch_categories').update({ last_categories: idx, updated_at: new Date().toISOString() }).eq('user_id', id);
+            } else {
+                await supabase.from('stretch_categories').insert({ user_id: id, last_categories: idx });
+            }
+        };
+
+        const saveExerciseSettings = async (data, uid) => {
+            const id = uid || user?.id;
+            if (!id) return;
+            const { data: ex } = await supabase.from('exercise_settings').select('id').eq('user_id', id).single();
+            if (ex) {
+                await supabase.from('exercise_settings').update({ exercise_data: data, updated_at: new Date().toISOString() }).eq('user_id', id);
+            } else {
+                await supabase.from('exercise_settings').insert({ user_id: id, exercise_data: data });
+            }
+        };
+
+        const saveWorkoutToHistory = async () => {
+            if (!user) return;
+            try {
+                const todayStr = toLocalDate();
+                const payload = {
+                    user_id: user.id,
+                    date: todayStr,
+                    workout_type: dayName,
+                    exercises: [...workout, ...completedWorkout].map(ex => {
+                        const isHard = hardMode[ex.id];
+                        const prefix = isHard ? 'hard' : 'reg';
+                        const numSets = isHard ? ex.hardSets : ex.sets;
+                        return {
+                            ...ex, isHard,
+                            loggedSets: Array.from({ length: numSets }, (_, i) => log[`${ex.id}-${prefix}-${i}`] || '0'),
+                        };
+                    }),
+                };
+                const { data, error } = await supabase.from('workout_history').insert(payload).select().single();
+                if (error) throw error;
+                const updated = [data, ...history];
+                setHistory(updated);
+                calculateStreak(updated, customRestDay);
+                setWorkoutComplete(true);
+            } catch (err) {
+                console.error('saveWorkoutToHistory error:', err);
+            }
+        };
+
+        const finishWorkout = () => {
+            if (workout.length === 0 && completedWorkout.length > 0 && !workoutComplete) {
+                saveWorkoutToHistory();
+            }
+        };
+
+        const toggleEx = async (category, id) => {
+            const updated = JSON.parse(JSON.stringify(exercises));
+            if (category === 'stretches') {
+                for (const sub of Object.keys(updated.stretches)) {
+                    const ex = updated.stretches[sub].find(e => e.id === id);
+                    if (ex) { ex.enabled = !ex.enabled; break; }
+                }
+            } else {
+                const ex = updated[category]?.find(e => e.id === id);
+                if (ex) ex.enabled = !ex.enabled;
+            }
+            setExercises(updated);
+            await saveExerciseSettings(updated);
+        };
+
+        const toggleAllInCategory = async (category, sub = null) => {
+            const updated = JSON.parse(JSON.stringify(exercises));
+            const list = sub ? updated.stretches[sub] : updated[category];
+            const allOn = list.every(e => e.enabled);
+            list.forEach(e => { e.enabled = !allOn; });
+            setExercises(updated);
+            await saveExerciseSettings(updated);
+        };
+
+        const changePullTrack = async (track) => {
+            const updated = { ...exercises, pullTrack: track };
+            setExercises(updated);
+            await saveExerciseSettings(updated);
+        };
+
+        const changeRestDay = async (day) => {
+            setCustomRestDay(day);
+            await supabase.from('user_profiles').update({ custom_rest_day: day, updated_at: new Date().toISOString() }).eq('id', user.id);
+        };
+
+        const postponeRestDay = async () => {
+            if (!user) return;
+            if (window.confirm("Move rest day to tomorrow and work out today instead?")) {
+                await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
+                window.location.reload();
+            }
+        };
+
+        const logRep = (id, key, value) => setLog(prev => ({ ...prev, [`${id}-${key}`]: value }));
+        const toggleHardMode = (id) => setHardMode(prev => ({ ...prev, [id]: !prev[id] }));
+        const toggleCollapsed = (key) => setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
+
+        const isComplete = (ex) => {
+            const isHard = hardMode[ex.id];
+            const numSets = isHard ? ex.hardSets : ex.sets;
+            const prefix = isHard ? 'hard' : 'reg';
+            for (let i = 0; i < numSets; i++) {
+                if (!log[`${ex.id}-${prefix}-${i}`]?.trim()) return false;
+            }
+            return true;
+        };
+
+        const completeExercise = (ex) => {
+            setWorkout(prev => prev.filter(e => e.id !== ex.id));
+            setCompletedWorkout(prev => [...prev, ex]);
+        };
+
+        const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); };
+
+        if (loading) return <div className="loading-screen">Loading…</div>;
+        if (!user)   return <AuthScreen />;
+
+        // ── Modals ─────────────────────────────────────────────────────────
+        const renderExerciseSection = (label, category, sub = null, note = null) => {
+            const key = sub || category;
+            const list = sub ? exercises.stretches[sub] : exercises[category];
             return (
-                <div className="auth-screen">
-                    <div className="auth-container">
-                        <div className="auth-title">💪 Workout Tracker</div>
-                        <div className="auth-subtitle">
-                            {isSignUp ? 'Create your account' : 'Sign in to your account'}
+                <div key={key}>
+                    <div className="cat-header" onClick={() => toggleCollapsed(key)}>
+                        <div className="cat-header-left">
+                            <span className={`cat-arrow ${collapsed[key] ? 'collapsed' : ''}`}>▼</span>
+                            <span className="cat-name">{label}</span>
                         </div>
-
-                        <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
-                            <input
-                                type="email"
-                                className="auth-input"
-                                placeholder="Email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                autoFocus
-                            />
-                            <input
-                                type="password"
-                                className="auth-input"
-                                placeholder="Password (min 6 characters)"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                minLength={6}
-                            />
-
-                            <button type="submit" className="auth-btn" disabled={loading}>
-                                {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
-                            </button>
-                        </form>
-
-                        <button
-                            className="auth-btn auth-btn-secondary"
-                            onClick={() => {
-                                setIsSignUp(!isSignUp);
-                                setError('');
-                                setMessage('');
-                            }}
-                        >
-                            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-                        </button>
-
-                        {message && <div className="auth-success">{message}</div>}
-                        {error && <div className="auth-error">{error}</div>}
+                        <button className="toggle-all-btn" onClick={e => { e.stopPropagation(); toggleAllInCategory(category, sub); }}>Toggle All</button>
+                    </div>
+                    {note && <div className="settings-note">{note}</div>}
+                    <div className={`cat-exercises ${collapsed[key] ? 'collapsed' : ''}`}>
+                        {list.map(ex => (
+                            <div key={ex.id} className="settings-row">
+                                <span className="settings-ex-name">{ex.name}</span>
+                                <input type="checkbox" className="checkbox" checked={ex.enabled} onChange={() => toggleEx(category, ex.id)} />
+                            </div>
+                        ))}
                     </div>
                 </div>
             );
-        }
-        // Main App Component
-        function App() {
-            const [user, setUser] = useState(null);
-            const [loading, setLoading] = useState(true);
-            const [exercises, setExercises] = useState(DEFAULT_EXERCISES);
-            const [workout, setWorkout] = useState([]);
-            const [completedWorkout, setCompletedWorkout] = useState([]);
-            const [log, setLog] = useState({});
-            const [hardMode, setHardMode] = useState({});
-            const [showSettings, setShowSettings] = useState(false);
-            const [activeSettingsTab, setActiveSettingsTab] = useState('exercises');
-            const [showDesc, setShowDesc] = useState(false);
-            const [showHistory, setShowHistory] = useState(false);
-            const [selected, setSelected] = useState(null);
-            const [date, setDate] = useState('');
-            const [dayName, setDayName] = useState('');
-            const [isRest, setIsRest] = useState(false);
-            const [streak, setStreak] = useState(0);
-            const [history, setHistory] = useState([]);
-            const [lastStretchCats, setLastStretchCats] = useState([]);
-            const [viewingHistoryWorkout, setViewingHistoryWorkout] = useState(null);
-            const [showHistoryDetail, setShowHistoryDetail] = useState(false);
-            const [workoutComplete, setWorkoutComplete] = useState(false);
-            const [customRestDay, setCustomRestDay] = useState(6);
-            const [restDayPostponed, setRestDayPostponed] = useState(false);
-            const [collapsedCategories, setCollapsedCategories] = useState({});
-
-            useEffect(() => {
-                checkUser();
-
-                const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-                    setUser(session?.user ?? null);
-                    if (session?.user) {
-                        loadData(session.user.id);
-                    }
-                });
-
-                return () => {
-                    authListener.subscription.unsubscribe();
-                };
-            }, []);
-
-            useEffect(() => {
-                if (user) {
-                    finishWorkout();
-                }
-            }, [workout, completedWorkout, user]);
-
-            const checkUser = async () => {
-                const { data: { session } } = await supabase.auth.getSession();
-                setUser(session?.user ?? null);
-                if (session?.user) {
-                    await loadData(session.user.id);
-                }
-                setLoading(false);
-            };
-
-            const loadData = async (userId) => {
-                try {
-                    // Load exercise settings
-                    const { data: settingsData } = await supabase
-                        .from('exercise_settings')
-                        .select('exercise_data')
-                        .eq('user_id', userId)
-                        .single();
-
-                    if (settingsData) {
-                        setExercises(settingsData.exercise_data);
-                    }
-
-                    // Load user profile (rest day)
-                    const { data: profileData } = await supabase
-                        .from('user_profiles')
-                        .select('custom_rest_day')
-                        .eq('id', userId)
-                        .single();
-
-                    let currentRestDay = 6;
-                    if (profileData) {
-                        currentRestDay = profileData.custom_rest_day;
-                        setCustomRestDay(currentRestDay);
-                    }
-
-                    // Check for rest day postponement
-                    const today = new Date().toDateString();
-                    const { data: postponementData } = await supabase
-                        .from('rest_day_postponements')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .eq('postponed_date', new Date().toISOString().split('T')[0])
-                        .single();
-
-                    const isPostponed = !!postponementData;
-                    setRestDayPostponed(isPostponed);
-
-                    // Load workout history
-                    const { data: historyData } = await supabase
-                        .from('workout_history')
-                        .select('*')
-                        .eq('user_id', userId)
-                        .order('date', { ascending: false });
-
-                    if (historyData) {
-                        setHistory(historyData);
-                        calculateStreak(historyData, currentRestDay);
-                    }
-
-                    // Load stretch categories
-                    const { data: stretchData } = await supabase
-                        .from('stretch_categories')
-                        .select('last_categories')
-                        .eq('user_id', userId)
-                        .single();
-
-                    let loadedStretchCats = [];
-                    if (stretchData) {
-                        loadedStretchCats = stretchData.last_categories;
-                        setLastStretchCats(loadedStretchCats);
-                    }
-
-                    // Generate workout
-                    const d = new Date();
-                    const day = d.getDay();
-                    setDate(d.toDateString());
-
-                    let isRestDay;
-                    if (isPostponed && day === currentRestDay) {
-                        isRestDay = false;
-                    } else {
-                        isRestDay = day === currentRestDay;
-                    }
-
-                    setIsRest(isRestDay);
-
-                    if (isRestDay) {
-                        setDayName('Rest');
-                    } else {
-                        setDayName(WEEK_SCHEDULE[day].name);
-
-                        const todayDateStr = d.toISOString().split('T')[0];
-                        const alreadyWorkedOut = historyData?.some(h =>
-                            new Date(h.date).toISOString().split('T')[0] === todayDateStr
-                        );
-
-                        if (!alreadyWorkedOut) {
-                            generateWorkoutWithExercises(day, settingsData?.exercise_data || DEFAULT_EXERCISES, loadedStretchCats);
-                        } else {
-                            setWorkoutComplete(true);
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error loading data:', error);
-                }
-            };
-
-            const calculateStreak = (historyData, restDay) => {
-                if (!historyData || historyData.length === 0) {
-                    setStreak(0);
-                    return;
-                }
-
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-
-                let currentStreak = 0;
-                let checkDate = new Date(today);
-
-                while (true) {
-                    const dayOfWeek = checkDate.getDay();
-
-                    if (dayOfWeek === restDay) {
-                        checkDate.setDate(checkDate.getDate() - 1);
-                        continue;
-                    }
-
-                    const dateStr = checkDate.toISOString().split('T')[0];
-                    const workedOut = historyData.some(h =>
-                        new Date(h.date).toISOString().split('T')[0] === dateStr
-                    );
-
-                    if (workedOut) {
-                        currentStreak++;
-                        checkDate.setDate(checkDate.getDate() - 1);
-                    } else {
-                        break;
-                    }
-
-                    if (currentStreak > 100) break;
-                }
-
-                setStreak(currentStreak);
-            };
-
-            const generateWorkout = (dayNum) => {
-                generateWorkoutWithExercises(dayNum, exercises, lastStretchCats);
-            };
-
-            const generateWorkoutWithExercises = (dayNum, exercisesData, prevStretchCats) => {
-                const schedule = WEEK_SCHEDULE[dayNum];
-                const selected = [];
-
-                if (dayNum === 1 || dayNum === 3 || dayNum === 5) {
-                    const mandatoryEnabled = exercisesData.mandatory.filter(e => e.enabled);
-                    for (const ex of mandatoryEnabled) {
-                        selected.push({ ...ex, category: 'Mobility' });
-                    }
-                }
-
-                for (const category of schedule.focus) {
-                    const enabled = exercisesData[category].filter(e => e.enabled);
-                    if (enabled.length > 0) {
-                        selected.push({ ...enabled[0], category: schedule.name });
-                    }
-                }
-
-                if (schedule.includeCore) {
-                    const enabledCore = exercisesData.core.filter(e => e.enabled);
-                    if (enabledCore.length > 0) {
-                        selected.push({ ...enabledCore[0], category: 'Core' });
-                    }
-                }
-
-                const aptEnabled = exercisesData.apt.filter(e => e.enabled);
-                const numAPT = Math.floor(Math.random() * 2) + 2;
-                const aptCopy = [...aptEnabled];
-                for (let i = 0; i < Math.min(numAPT, aptCopy.length); i++) {
-                    const idx = Math.floor(Math.random() * aptCopy.length);
-                    selected.push({ ...aptCopy[idx], category: 'APT' });
-                    aptCopy.splice(idx, 1);
-                }
-
-                const availableCats = Object.keys(exercisesData.stretches).filter(
-                    cat => !prevStretchCats.includes(cat)
-                );
-
-                const stretchPool = [];
-                for (const cat of availableCats) {
-                    stretchPool.push(...exercisesData.stretches[cat].filter(e => e.enabled));
-                }
-
-                const numStretches = Math.floor(Math.random() * 2) + 2;
-                const stretchCopy = [...stretchPool];
-                const usedCats = [];
-
-                for (let i = 0; i < Math.min(numStretches, stretchCopy.length); i++) {
-                    const idx = Math.floor(Math.random() * stretchCopy.length);
-                    const stretch = stretchCopy[idx];
-                    selected.push({ ...stretch, category: 'Stretch' });
-
-                    for (const [catName, catExercises] of Object.entries(exercisesData.stretches)) {
-                        if (catExercises.some(e => e.id === stretch.id)) {
-                            if (!usedCats.includes(catName)) {
-                                usedCats.push(catName);
-                            }
-                        }
-                    }
-
-                    stretchCopy.splice(idx, 1);
-                }
-
-                setLastStretchCats(usedCats);
-                saveStretchCategories(usedCats);
-
-                setWorkout(selected);
-                setCompletedWorkout([]);
-                setLog({});
-                setHardMode({});
-                setWorkoutComplete(false);
-            };
-
-            const saveStretchCategories = async (cats) => {
-                if (!user) return;
-
-                const { data: existing } = await supabase
-                    .from('stretch_categories')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (existing) {
-                    await supabase
-                        .from('stretch_categories')
-                        .update({ last_categories: cats, updated_at: new Date().toISOString() })
-                        .eq('user_id', user.id);
-                } else {
-                    await supabase
-                        .from('stretch_categories')
-                        .insert({ user_id: user.id, last_categories: cats });
-                }
-            };
-
-            const saveWorkoutToHistory = async () => {
-                if (!user) return;
-
-                try {
-                    const d = new Date();
-                    const workoutData = {
-                        user_id: user.id,
-                        date: d.toISOString().split('T')[0],
-                        workout_type: dayName,
-                        exercises: [...workout, ...completedWorkout].map(ex => {
-                            const isHard = hardMode[ex.id];
-                            const prefix = isHard ? 'hard' : 'reg';
-                            const numSets = isHard ? ex.hardSets : ex.sets;
-                            const loggedSets = [];
-
-                            for (let i = 0; i < numSets; i++) {
-                                loggedSets.push(log[`${ex.id}-${prefix}-${i}`] || '0');
-                            }
-
-                            return {
-                                ...ex,
-                                isHard: isHard,
-                                loggedSets: loggedSets
-                            };
-                        })
-                    };
-
-                    const { data, error } = await supabase
-                        .from('workout_history')
-                        .insert(workoutData)
-                        .select()
-                        .single();
-
-                    if (error) throw error;
-
-                    const updatedHistory = [data, ...history];
-                    setHistory(updatedHistory);
-                    calculateStreak(updatedHistory, customRestDay);
-                    setWorkoutComplete(true);
-                } catch (error) {
-                    console.error('Error saving workout:', error);
-                }
-            };
-
-            const finishWorkout = () => {
-                if (workout.length === 0 && completedWorkout.length > 0 && !workoutComplete) {
-                    saveWorkoutToHistory();
-                }
-            };
-
-            const toggleEx = async (category, id) => {
-                const updated = JSON.parse(JSON.stringify(exercises));
-                if (category === 'apt') {
-                    const ex = updated.apt.find(e => e.id === id);
-                    if (ex) ex.enabled = !ex.enabled;
-                } else if (category === 'mandatory') {
-                    const ex = updated.mandatory.find(e => e.id === id);
-                    if (ex) ex.enabled = !ex.enabled;
-                } else if (category === 'stretches') {
-                    for (const subcat of Object.keys(updated.stretches)) {
-                        const ex = updated.stretches[subcat].find(e => e.id === id);
-                        if (ex) {
-                            ex.enabled = !ex.enabled;
-                            break;
-                        }
-                    }
-                } else {
-                    const ex = updated[category].find(e => e.id === id);
-                    if (ex) ex.enabled = !ex.enabled;
-                }
-
-                setExercises(updated);
-                await saveExerciseSettings(updated);
-            };
-
-            const saveExerciseSettings = async (exerciseData) => {
-                if (!user) return;
-
-                const { data: existing } = await supabase
-                    .from('exercise_settings')
-                    .select('id')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (existing) {
-                    await supabase
-                        .from('exercise_settings')
-                        .update({ exercise_data: exerciseData, updated_at: new Date().toISOString() })
-                        .eq('user_id', user.id);
-                } else {
-                    await supabase
-                        .from('exercise_settings')
-                        .insert({ user_id: user.id, exercise_data: exerciseData });
-                }
-            };
-
-            const logRep = (id, setIdx, value) => {
-                setLog({ ...log, [`${id}-${setIdx}`]: value });
-            };
-
-            const toggleHardMode = (id) => {
-                setHardMode({ ...hardMode, [id]: !hardMode[id] });
-            };
-
-            const isComplete = (ex) => {
-                const isHard = hardMode[ex.id];
-                const numSets = isHard ? ex.hardSets : ex.sets;
-                const prefix = isHard ? 'hard' : 'reg';
-                for (let i = 0; i < numSets; i++) {
-                    if (!log[`${ex.id}-${prefix}-${i}`] || log[`${ex.id}-${prefix}-${i}`].trim() === '') {
-                        return false;
-                    }
-                }
-                return true;
-            };
-
-            const completeExercise = (ex) => {
-                setWorkout(prev => prev.filter(e => e.id !== ex.id));
-                setCompletedWorkout(prev => [...prev, ex]);
-            };
-
-            const viewDesc = (ex) => {
-                setSelected(ex);
-                setShowDesc(true);
-            };
-
-            const openVideo = (url) => {
-                window.open(url, '_blank');
-            };
-
-            const postponeRestDay = async () => {
-                if (!user) return;
-
-                if (window.confirm('Move rest day to tomorrow? You can do today\'s workout instead.')) {
-                    const today = new Date().toISOString().split('T')[0];
-
-                    await supabase
-                        .from('rest_day_postponements')
-                        .insert({ user_id: user.id, postponed_date: today });
-
-                    window.location.reload();
-                }
-            };
-
-            const changeRestDay = async (day) => {
-                if (!user) return;
-
-                setCustomRestDay(day);
-
-                await supabase
-                    .from('user_profiles')
-                    .update({ custom_rest_day: day, updated_at: new Date().toISOString() })
-                    .eq('id', user.id);
-            };
-
-            const toggleCategory = (categoryKey) => {
-                setCollapsedCategories(prev => ({
-                    ...prev,
-                    [categoryKey]: !prev[categoryKey]
-                }));
-            };
-
-            const toggleAllInCategory = async (category, subcategory = null) => {
-                const updated = JSON.parse(JSON.stringify(exercises));
-                let exerciseList = [];
-
-                if (category === 'stretches' && subcategory) {
-                    exerciseList = updated.stretches[subcategory];
-                } else {
-                    exerciseList = updated[category];
-                }
-
-                const allEnabled = exerciseList.every(ex => ex.enabled);
-
-                exerciseList.forEach(ex => {
-                    ex.enabled = !allEnabled;
-                });
-
-                setExercises(updated);
-                await saveExerciseSettings(updated);
-            };
-
-            const handleLogout = async () => {
-                await supabase.auth.signOut();
-                setUser(null);
-            };
-
-            if (loading) {
-                return <div className="loading-screen">Loading...</div>;
-            }
-
-            if (!user) {
-                return <AuthScreen />;
-            }
-            // Render modals and UI components
-            const renderModals = () => (
-                <>
-                    {/* Settings Modal */}
-                    <div className={`modal ${showSettings ? 'show' : ''}`}>
-                        <div className="modal-content modal-full">
-                            <div className="modal-header">
-                                <div className="modal-title">Settings</div>
-                                <button onClick={() => setShowSettings(false)} className="modal-done">Done</button>
+        };
+
+        const modals = (
+            <>
+                {/* Settings */}
+                <div className={`modal ${showSettings ? 'show' : ''}`}>
+                    <div className="modal-content" style={{ height: '86vh' }}>
+                        <div className="modal-header">
+                            <span className="modal-title">Settings</span>
+                            <button className="modal-close" onClick={() => setShowSettings(false)}>Done</button>
+                        </div>
+                        <div className="tabs">
+                            {['exercises','schedule','about'].map(t => (
+                                <button key={t} className={`tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)}>
+                                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="modal-scroll">
+                            <div className={`tab-content ${activeTab === 'exercises' ? 'active' : ''}`}>
+                                <div className="settings-section-title">Mandatory Mobility (3× / week)</div>
+                                {renderExerciseSection('Mobility', 'mandatory', null, 'Appears on 3 evenly-spaced workout days each week')}
+                                <div className="settings-section-title">Main Lifts</div>
+                                {renderExerciseSection('Push', 'push')}
+                                {renderExerciseSection('Pull — Bar Track', 'pull', null, 'Active when Pull Track is set to Bar')}
+                                {renderExerciseSection('Pull — Dumbbell Track', 'pullDb', null, 'Active when Pull Track is set to Dumbbells')}
+                                {renderExerciseSection('Legs', 'squats')}
+                                {renderExerciseSection('Core', 'core')}
+                                <div className="settings-section-title">Daily Extras</div>
+                                {renderExerciseSection('APT Correction', 'apt')}
+                                <div className="settings-section-title">Stretching (rotates through all categories)</div>
+                                {renderExerciseSection('Hip Flexor', 'stretches', 'hipFlexor')}
+                                {renderExerciseSection('Hamstring', 'stretches', 'hamstring')}
+                                {renderExerciseSection('Hip / Glute', 'stretches', 'hipGlute')}
+                                {renderExerciseSection('Shoulder', 'stretches', 'shoulder')}
+                                {renderExerciseSection('Back / Spine', 'stretches', 'backSpine')}
+                                {renderExerciseSection('Full Body', 'stretches', 'fullBody')}
                             </div>
 
-                            <div className="tabs">
-                                <button
-                                    className={`tab ${activeSettingsTab === 'exercises' ? 'active' : ''}`}
-                                    onClick={() => setActiveSettingsTab('exercises')}
-                                >
-                                    Exercises
-                                </button>
-                                <button
-                                    className={`tab ${activeSettingsTab === 'restday' ? 'active' : ''}`}
-                                    onClick={() => setActiveSettingsTab('restday')}
-                                >
-                                    Rest Day
-                                </button>
-                                <button
-                                    className={`tab ${activeSettingsTab === 'about' ? 'active' : ''}`}
-                                    onClick={() => setActiveSettingsTab('about')}
-                                >
-                                    About
-                                </button>
-                            </div>
+                            <div className={`tab-content ${activeTab === 'schedule' ? 'active' : ''}`}>
+                                <div className="settings-section-title">Pull Track</div>
+                                <div className="info-box" style={{ marginBottom: 12 }}>
+                                    <div className="info-box-text">Choose which pull exercises to use. Switch when your equipment changes.</div>
+                                </div>
+                                <div className="track-toggle">
+                                    <button className={`track-option ${exercises.pullTrack !== 'dumbbells' ? 'active' : ''}`} onClick={() => changePullTrack('bar')}>Bar / Pull-ups</button>
+                                    <button className={`track-option ${exercises.pullTrack === 'dumbbells' ? 'active' : ''}`} onClick={() => changePullTrack('dumbbells')}>Dumbbells</button>
+                                </div>
 
-                            <div className="modal-scroll">
-                                {/* Exercises Tab */}
-                                <div className={`tab-content ${activeSettingsTab === 'exercises' ? 'active' : ''}`}>
-                                    {/* Mandatory Mobility */}
-                                    <div className="category-header" onClick={() => toggleCategory('mandatory')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['mandatory'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Mandatory Mobility (3x per week)</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('mandatory');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className="settings-subtitle">These exercises automatically appear Mon/Wed/Fri</div>
-                                    <div className={`category-exercises ${collapsedCategories['mandatory'] ? 'collapsed' : ''}`}>
-                                        {exercises.mandatory.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('mandatory', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
+                                <div className="settings-section-title">Rest Day</div>
+                                <div className="rest-day-options">
+                                    {DAYS_OF_WEEK.map((day, i) => (
+                                        <button key={i} className={`rest-day-btn ${customRestDay === i ? 'selected' : ''}`} onClick={() => changeRestDay(i)}>{day}</button>
+                                    ))}
+                                </div>
 
-                                    {/* Push Exercises */}
-                                    <div className="category-header" onClick={() => toggleCategory('push')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['push'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Push Exercises</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('push');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['push'] ? 'collapsed' : ''}`}>
-                                        {exercises.push.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('push', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Pull Exercises */}
-                                    <div className="category-header" onClick={() => toggleCategory('pull')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['pull'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Pull Exercises</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('pull');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['pull'] ? 'collapsed' : ''}`}>
-                                        {exercises.pull.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('pull', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Squats */}
-                                    <div className="category-header" onClick={() => toggleCategory('squats')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['squats'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Squats</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('squats');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['squats'] ? 'collapsed' : ''}`}>
-                                        {exercises.squats.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('squats', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Core */}
-                                    <div className="category-header" onClick={() => toggleCategory('core')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['core'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Core</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('core');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['core'] ? 'collapsed' : ''}`}>
-                                        {exercises.core.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('core', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* APT */}
-                                    <div className="category-header" onClick={() => toggleCategory('apt')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['apt'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>APT</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('apt');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['apt'] ? 'collapsed' : ''}`}>
-                                        {exercises.apt.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('apt', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Hip Flexor Stretches */}
-                                    <div className="category-header" onClick={() => toggleCategory('hipFlexor')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['hipFlexor'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Hip Flexor Stretches</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('stretches', 'hipFlexor');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['hipFlexor'] ? 'collapsed' : ''}`}>
-                                        {exercises.stretches.hipFlexor.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('stretches', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Hamstring Stretches */}
-                                    <div className="category-header" onClick={() => toggleCategory('hamstring')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['hamstring'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Hamstring Stretches</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('stretches', 'hamstring');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['hamstring'] ? 'collapsed' : ''}`}>
-                                        {exercises.stretches.hamstring.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('stretches', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Hip/Glute Stretches */}
-                                    <div className="category-header" onClick={() => toggleCategory('hipGlute')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['hipGlute'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Hip/Glute Stretches</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('stretches', 'hipGlute');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['hipGlute'] ? 'collapsed' : ''}`}>
-                                        {exercises.stretches.hipGlute.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('stretches', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Shoulder Stretches */}
-                                    <div className="category-header" onClick={() => toggleCategory('shoulder')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['shoulder'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Shoulder Stretches</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('stretches', 'shoulder');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['shoulder'] ? 'collapsed' : ''}`}>
-                                        {exercises.stretches.shoulder.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('stretches', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Back/Spine Stretches */}
-                                    <div className="category-header" onClick={() => toggleCategory('backSpine')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['backSpine'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Back/Spine Stretches</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('stretches', 'backSpine');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['backSpine'] ? 'collapsed' : ''}`}>
-                                        {exercises.stretches.backSpine.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('stretches', ex.id)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {/* Full Body Stretches */}
-                                    <div className="category-header" onClick={() => toggleCategory('fullBody')}>
-                                        <div className="category-title-wrapper">
-                                            <span className={`category-arrow ${collapsedCategories['fullBody'] ? 'collapsed' : ''}`}>▼</span>
-                                            <div className="cat-title" style={{ marginTop: 0, marginBottom: 0 }}>Full Body Stretches</div>
-                                        </div>
-                                        <button
-                                            className="toggle-all-btn"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleAllInCategory('stretches', 'fullBody');
-                                            }}
-                                        >
-                                            Toggle All
-                                        </button>
-                                    </div>
-                                    <div className={`category-exercises ${collapsedCategories['fullBody'] ? 'collapsed' : ''}`}>
-                                        {exercises.stretches.fullBody.map(ex => (
-                                            <div key={ex.id} className="settings-row">
-                                                <div className="settings-name">{ex.name}</div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="checkbox"
-                                                    checked={ex.enabled}
-                                                    onChange={() => toggleEx('stretches', ex.id)}
-                                                />
+                                <div className="settings-section-title" style={{ marginTop: 20 }}>Current Schedule</div>
+                                <div className="info-box">
+                                    <div className="info-box-text">
+                                        {DAYS_OF_WEEK.map((day, i) => (
+                                            <div key={i}>
+                                                <strong>{day}:</strong>{' '}
+                                                {i === customRestDay ? 'Rest Day' : getWorkoutSchedule(i, customRestDay).name + ' Day'}
                                             </div>
                                         ))}
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Rest Day Tab */}
-                                <div className={`tab-content ${activeSettingsTab === 'restday' ? 'active' : ''}`}>
-                                    <div className="info-section">
-                                        <div className="info-title">Rest Day Configuration</div>
-                                        <div className="info-text">
-                                            Choose which day of the week should be your rest day. You can also postpone rest day by one day using the "Postpone Rest" button on rest days.
-                                        </div>
-                                    </div>
-
-                                    <div className="rest-day-selector">
-                                        <div className="rest-day-label">Select Rest Day:</div>
-                                        <div className="rest-day-options">
-                                            {DAYS_OF_WEEK.map((day, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className={`rest-day-option ${customRestDay === idx ? 'selected' : ''}`}
-                                                    onClick={() => changeRestDay(idx)}
-                                                >
-                                                    {day}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="info-section" style={{ marginTop: '20px' }}>
-                                        <div className="info-title">Current Schedule</div>
-                                        <div className="info-text">
-                                            {DAYS_OF_WEEK.map((day, idx) => {
-                                                if (idx === customRestDay) {
-                                                    return <div key={idx}><strong>{day}:</strong> Rest Day 💤</div>;
-                                                } else {
-                                                    return <div key={idx}><strong>{day}:</strong> {WEEK_SCHEDULE[idx].name} Day 💪</div>;
-                                                }
-                                            })}
-                                        </div>
+                            <div className={`tab-content ${activeTab === 'about' ? 'active' : ''}`}>
+                                <div className="info-box">
+                                    <div className="info-box-title">Workout Tracker</div>
+                                    <div className="info-box-text">A progressive calisthenics tracker with automatic daily workout generation, cloud sync, and adaptive scheduling.</div>
+                                </div>
+                                <div className="info-box">
+                                    <div className="info-box-title">How It Works</div>
+                                    <div className="info-box-text">
+                                        Each day generates one main lift (at your current difficulty), mandatory mobility 3× per week, 2–3 APT correction exercises, and stretches that rotate through all 6 body areas over 3 sessions. Complete all sets to log the workout.
                                     </div>
                                 </div>
-
-                                {/* About Tab */}
-                                <div className={`tab-content ${activeSettingsTab === 'about' ? 'active' : ''}`}>
-                                    <div className="info-section">
-                                        <div className="info-title">Workout Tracker</div>
-                                        <div className="info-text">
-                                            A progressive workout tracker with automatic daily workout generation based on a Push/Pull/Legs split schedule. Now with cloud sync!
-                                        </div>
-                                    </div>
-
-                                    <div className="info-section">
-                                        <div className="info-title">Features</div>
-                                        <div className="info-text">
-                                            • Cloud-synced data across all devices<br />
-                                            • Secure user authentication<br />
-                                            • Automatic daily workout generation<br />
-                                            • Regular and Hard mode for each exercise<br />
-                                            • Workout history and streak tracking<br />
-                                            • Customizable exercise selection<br />
-                                            • Configurable rest days<br />
-                                            • APT correction exercises<br />
-                                            • Mandatory mobility work (3x/week)<br />
-                                            • Progressive overload tracking
-                                        </div>
-                                    </div>
-
-                                    <div className="info-section">
-                                        <div className="info-title">How It Works</div>
-                                        <div className="info-text">
-                                            Each day, the app generates a workout based on your schedule. Complete all sets and reps, then mark exercises as complete. Your workout history and streak are automatically tracked and synced to the cloud.
-                                        </div>
-                                    </div>
+                                <div className="info-box">
+                                    <div className="info-box-title">Pull Track</div>
+                                    <div className="info-box-text">Switch between bar pull-ups and dumbbell rows in Settings → Schedule. Enable the difficulty level you're currently working at in the Exercises list.</div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    {/* History Modal */}
-                    <div className={`modal ${showHistory ? 'show' : ''}`}>
-                        <div className="modal-content modal-full">
-                            <div className="modal-header">
-                                <div className="modal-title">Workout History</div>
-                                <button onClick={() => setShowHistory(false)} className="modal-done">Done</button>
-                            </div>
-                            <div className="modal-scroll">
-                                {history.length === 0 && <div className="empty-history">No workout history yet. Complete your first workout!</div>}
-                                {history.map((h, idx) => (
-                                    <div key={idx} className="history-card" onClick={() => {
-                                        setViewingHistoryWorkout(h);
-                                        setShowHistoryDetail(true);
-                                        setShowHistory(false);
-                                    }}>
-                                        <div className="history-date">{new Date(h.date).toLocaleDateString()}</div>
-                                        <div className="history-type">{h.workout_type} Day</div>
-                                        <div className="history-exercises">
-                                            {h.exercises.length} exercises completed
-                                        </div>
-                                        <div className="tap-to-view">Tap to view details</div>
-                                    </div>
-                                ))}
-                            </div>
+                {/* History list */}
+                <div className={`modal ${showHistory ? 'show' : ''}`}>
+                    <div className="modal-content" style={{ height: '86vh' }}>
+                        <div className="modal-header">
+                            <span className="modal-title">History</span>
+                            <button className="modal-close" onClick={() => setShowHistory(false)}>Done</button>
+                        </div>
+                        <div className="modal-scroll">
+                            {history.length === 0 && <div className="empty-msg">No workouts logged yet.</div>}
+                            {history.map((h, i) => (
+                                <div key={i} className="history-card" onClick={() => { setViewingHistory(h); setShowHistoryDetail(true); setShowHistory(false); }}>
+                                    <div className="history-date">{parseLocalDate(h.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                                    <div className="history-type">{h.workout_type} Day</div>
+                                    <div className="history-count">{h.exercises.length} exercises · tap to view</div>
+                                </div>
+                            ))}
                         </div>
                     </div>
+                </div>
 
-                    {/* History Detail Modal */}
-                    <div className={`modal ${showHistoryDetail ? 'show' : ''}`}>
-                        <div className="modal-content modal-full">
-                            <div className="modal-header">
-                                <div className="modal-title">Workout Details</div>
-                                <button onClick={() => {
-                                    setShowHistoryDetail(false);
-                                    setShowHistory(true);
-                                }} className="modal-done">Back</button>
-                            </div>
-                            <div className="modal-scroll">
-                                {viewingHistoryWorkout && (
-                                    <>
-                                        <div className="info-section">
-                                            <div className="info-title">{new Date(viewingHistoryWorkout.date).toLocaleDateString()}</div>
-                                            <div className="info-text">{viewingHistoryWorkout.workout_type} Day</div>
-                                        </div>
-
-                                        {viewingHistoryWorkout.exercises.map((ex, idx) => (
-                                            <div key={idx} className="card completed-card">
-                                                <div className="card-header">
-                                                    <div className="ex-info">
-                                                        <div className="ex-name">{ex.name}</div>
-                                                        <div className="ex-cat">{ex.category}</div>
-                                                    </div>
-                                                </div>
-
-                                                <div className={ex.isHard ? 'hard-section' : 'reg-section'}>
-                                                    <div className={ex.isHard ? 'diff-title-hard' : 'diff-title'}>
-                                                        {ex.isHard ? 'Hard Mode' : 'Regular Mode'}
-                                                    </div>
-                                                    {ex.loggedSets.map((value, setIdx) => (
-                                                        <div key={setIdx} className="set-row">
-                                                            <div className="set-label">Set {setIdx + 1}:</div>
-                                                            <div className="completed-set-value">
-                                                                {value} {ex.isTime ? 'seconds' : 'reps'}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </>
-                                )}
-                            </div>
+                {/* History detail */}
+                <div className={`modal ${showHistoryDetail ? 'show' : ''}`}>
+                    <div className="modal-content" style={{ height: '86vh' }}>
+                        <div className="modal-header">
+                            <span className="modal-title">Workout Details</span>
+                            <button className="modal-close" onClick={() => { setShowHistoryDetail(false); setShowHistory(true); }}>Back</button>
                         </div>
-                    </div>
-
-                    {/* Description Modal */}
-                    <div className={`modal ${showDesc ? 'show' : ''}`} onClick={() => setShowDesc(false)}>
-                        <div className="desc-modal-content" onClick={(e) => e.stopPropagation()}>
-                            {selected && (
+                        <div className="modal-scroll">
+                            {viewingHistory && (
                                 <>
-                                    <div className="desc-title">{selected.name}</div>
-                                    <div className="desc-text">{selected.desc}</div>
-                                    {selected.videoUrl && (
-                                        <button onClick={() => openVideo(selected.videoUrl)} className="video-link-btn">
-                                            Watch Video Tutorial
-                                        </button>
-                                    )}
-                                    {selected.pdfUrl && (
-                                        <>
-                                            <div className="pdf-info-box">
-                                                <div className="pdf-info-text">Movement by David Stretching Program</div>
-                                                {selected.pdfPage && (
-                                                    <div className="pdf-page-text">See: {selected.pdfPage}</div>
-                                                )}
-                                            </div>
-                                            <button onClick={() => openVideo(selected.pdfUrl)} className="pdf-link-btn">
-                                                Open PDF Guide
-                                            </button>
-                                        </>
-                                    )}
-                                    <button onClick={() => setShowDesc(false)} className="close-btn">Close</button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                </>
-            );
-
-            // Rest Day View
-            if (isRest) {
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <div className="header-title">Rest Day</div>
-                            <div className="header-date">{date}</div>
-                            <div className="user-email">{user.email}</div>
-                            <div className="streak">Streak: {streak} days</div>
-                        </div>
-
-                        <div className="button-row">
-                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
-                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
-                            <button onClick={postponeRestDay} className="btn postpone-btn">Postpone Rest</button>
-                            <button onClick={handleLogout} className="btn logout-btn">Logout</button>
-                        </div>
-
-                        <div className="rest-container">
-                            <div className="rest-title">{DAYS_OF_WEEK[new Date().getDay()]} Rest Day</div>
-                            <div className="rest-text">Recovery is when you get stronger. Rest up for tomorrow!</div>
-                        </div>
-
-                        {renderModals()}
-                    </div>
-                );
-            }
-
-            // Workout Complete View
-            if (workoutComplete) {
-                return (
-                    <div className="container">
-                        <div className="header">
-                            <div className="header-title">{dayName} Day</div>
-                            <div className="header-date">{date}</div>
-                            <div className="user-email">{user.email}</div>
-                            <div className="streak">Streak: {streak} days 🔥</div>
-                        </div>
-
-                        <div className="button-row">
-                            <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
-                            <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
-                            <button onClick={handleLogout} className="btn logout-btn">Logout</button>
-                        </div>
-
-                        <div className="rest-container">
-                            <div className="rest-title">Workout Complete! 💪</div>
-                            <div className="rest-text">Great job! You've already completed today's workout.</div>
-                        </div>
-
-                        {renderModals()}
-                    </div>
-                );
-            }
-
-            // Main Workout View
-            return (
-                <div className="container">
-                    <div className="header">
-                        <div className="header-title">{dayName} Day</div>
-                        <div className="header-date">{date}</div>
-                        <div className="user-email">{user.email}</div>
-                        <div className="streak">Streak: {streak} days 🔥</div>
-                        <button onClick={() => generateWorkout(new Date().getDay())} className="refresh-btn">
-                            🔄
-                        </button>
-                    </div>
-
-                    <div className="button-row">
-                        <button onClick={() => setShowSettings(true)} className="btn settings-btn">Settings</button>
-                        <button onClick={() => setShowHistory(true)} className="btn history-btn">History</button>
-                        <button onClick={handleLogout} className="btn logout-btn">Logout</button>
-                    </div>
-
-                    <div className="workout-list">
-                        {workout.map(ex => (
-                            <div key={ex.id} className="card">
-                                <div className="card-header">
-                                    <div className="ex-info">
-                                        <div className="ex-name">{ex.name}</div>
-                                        <div className="ex-cat">{ex.category}</div>
+                                    <div className="info-box">
+                                        <div className="info-box-title">{parseLocalDate(viewingHistory.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</div>
+                                        <div className="info-box-text">{viewingHistory.workout_type} Day · {viewingHistory.exercises.length} exercises</div>
                                     </div>
-                                    <div className="header-right">
-                                        <div className="diff-toggle">
-                                            <span className={`diff-label ${!hardMode[ex.id] ? 'diff-label-active' : ''}`}>
-                                                Reg
-                                            </span>
-                                            <div
-                                                className={`toggle-switch ${hardMode[ex.id] ? 'hard' : ''}`}
-                                                onClick={() => toggleHardMode(ex.id)}
-                                            ></div>
-                                            <span className={`diff-label ${hardMode[ex.id] ? 'diff-label-active' : ''}`}>
-                                                Hard
-                                            </span>
-                                        </div>
-                                        <button onClick={() => viewDesc(ex)} className="desc-btn">
-                                            View Details
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {!hardMode[ex.id] && (
-                                    <div className="reg-section">
-                                        <div className="diff-title">Regular Mode: {ex.sets} sets × {ex.reps} {ex.isTime ? 'seconds' : 'reps'}</div>
-                                        {Array.from({ length: ex.sets }).map((_, i) => (
-                                            <div key={i} className="set-row">
-                                                <div className="set-label">Set {i + 1}:</div>
-                                                <input
-                                                    type="number"
-                                                    className="input"
-                                                    placeholder={ex.isTime ? 'Seconds' : 'Reps'}
-                                                    value={log[`${ex.id}-reg-${i}`] || ''}
-                                                    onChange={(e) => logRep(ex.id, `reg-${i}`, e.target.value)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {hardMode[ex.id] && (
-                                    <div className="hard-section">
-                                        <div className="diff-title-hard">Hard Mode: {ex.hardSets} sets × {ex.hardReps} {ex.isTime ? 'seconds' : 'reps'}</div>
-                                        {Array.from({ length: ex.hardSets }).map((_, i) => (
-                                            <div key={i} className="set-row">
-                                                <div className="set-label">Set {i + 1}:</div>
-                                                <input
-                                                    type="number"
-                                                    className="input"
-                                                    placeholder={ex.isTime ? 'Seconds' : 'Reps'}
-                                                    value={log[`${ex.id}-hard-${i}`] || ''}
-                                                    onChange={(e) => logRep(ex.id, `hard-${i}`, e.target.value)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                <button
-                                    className="complete-btn"
-                                    disabled={!isComplete(ex)}
-                                    onClick={() => completeExercise(ex)}
-                                >
-                                    {isComplete(ex) ? 'Complete Exercise' : 'Fill All Sets'}
-                                </button>
-                            </div>
-                        ))}
-
-                        {completedWorkout.length > 0 && (
-                            <>
-                                <div className="completed-divider">
-                                    <div className="completed-title">Completed Exercises</div>
-                                    <div className="completed-summary">
-                                        {completedWorkout.length} of {workout.length + completedWorkout.length} complete
-                                    </div>
-                                </div>
-
-                                {completedWorkout.map(ex => {
-                                    const isHard = hardMode[ex.id];
-                                    const numSets = isHard ? ex.hardSets : ex.sets;
-                                    const prefix = isHard ? 'hard' : 'reg';
-
-                                    return (
-                                        <div key={ex.id} className="card completed-card">
-                                            <div className="card-header">
+                                    {viewingHistory.exercises.map((ex, i) => (
+                                        <div key={i} className={`card ${ex.isHard ? 'hard-card' : ''} done-card`} style={{ opacity: 1 }}>
+                                            <div className="card-top" style={{ marginBottom: 8 }}>
                                                 <div className="ex-info">
-                                                    <div className="ex-name completed-text">{ex.name}</div>
+                                                    <div className="ex-name">{ex.name}</div>
                                                     <div className="ex-cat">{ex.category}</div>
                                                 </div>
                                             </div>
-
-                                            <div className={isHard ? 'hard-section' : 'reg-section'}>
-                                                <div className={isHard ? 'diff-title-hard' : 'diff-title'}>
-                                                    {isHard ? 'Hard Mode' : 'Regular Mode'}
-                                                </div>
-                                                {Array.from({ length: numSets }).map((_, i) => (
-                                                    <div key={i} className="set-row">
-                                                        <div className="set-label">Set {i + 1}:</div>
-                                                        <div className="completed-set-value">
-                                                            {log[`${ex.id}-${prefix}-${i}`]} {ex.isTime ? 'seconds' : 'reps'}
-                                                        </div>
+                                            <div className={`set-section ${ex.isHard ? 'hard-section' : ''}`}>
+                                                <div className={`section-label ${ex.isHard ? 'hard' : ''}`}>{ex.isHard ? 'Hard Mode' : 'Regular Mode'}</div>
+                                                {ex.loggedSets.map((val, si) => (
+                                                    <div key={si} className="set-row">
+                                                        <span className="set-num">Set {si + 1}</span>
+                                                        <span className="set-value">{val} {ex.isTime ? 'sec' : 'reps'}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
-                                    );
-                                })}
+                                    ))}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Description */}
+                <div className={`modal ${showDesc ? 'show' : ''}`} onClick={() => setShowDesc(false)}>
+                    <div className="desc-modal-inner" onClick={e => e.stopPropagation()}>
+                        {selectedEx && (
+                            <>
+                                <div className="desc-name">{selectedEx.name}</div>
+                                <div className="desc-text">{selectedEx.desc}</div>
+                                {selectedEx.videoUrl && (
+                                    <button className="desc-btn desc-video-btn" onClick={() => window.open(selectedEx.videoUrl, '_blank')}>Watch Video Tutorial</button>
+                                )}
+                                {selectedEx.pdfUrl && (
+                                    <>
+                                        <div className="pdf-note">
+                                            <div className="pdf-note-label">Movement by David — Stretching Program</div>
+                                            {selectedEx.pdfPage && <div className="pdf-note-page">See: {selectedEx.pdfPage}</div>}
+                                        </div>
+                                        <button className="desc-btn desc-pdf-btn" onClick={() => window.open(selectedEx.pdfUrl, '_blank')}>Open PDF Guide</button>
+                                    </>
+                                )}
+                                <button className="desc-btn desc-close-btn" onClick={() => setShowDesc(false)}>Close</button>
                             </>
                         )}
                     </div>
+                </div>
+            </>
+        );
 
-                    {renderModals()}
+        // ── Shared header + buttons ────────────────────────────────────────
+        const header = (title, showRefresh = false) => (
+            <div className="header">
+                <div className="header-top">
+                    <div>
+                        <div className="header-day">{title}</div>
+                        <div className="header-date">{date}</div>
+                        <div className="header-email">{user.email}</div>
+                    </div>
+                    {showRefresh && (
+                        <button className="refresh-btn" onClick={generateWorkout} title="Regenerate workout">↺</button>
+                    )}
+                </div>
+                <div className="streak-chip">
+                    <span className="streak-dot"></span>
+                    {streak} day streak
+                </div>
+            </div>
+        );
+
+        const buttons = (extraBtns = null) => (
+            <div className="btn-row">
+                <button className="btn" onClick={() => setShowSettings(true)}>Settings</button>
+                <button className="btn" onClick={() => setShowHistory(true)}>History</button>
+                {extraBtns}
+                <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
+            </div>
+        );
+
+        // ── Rest day view ──────────────────────────────────────────────────
+        if (isRest) {
+            return (
+                <div className="container">
+                    {header('Rest Day')}
+                    {buttons(<button className="btn btn-accent" onClick={postponeRestDay}>Train Today</button>)}
+                    <div className="center-screen">
+                        <div className="center-title">{DAYS_OF_WEEK[new Date().getDay()]} — Rest Day</div>
+                        <div className="center-text">Recovery is where you get stronger.<br />See you tomorrow.</div>
+                    </div>
+                    {modals}
                 </div>
             );
         }
 
-        ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
-</body>
+        // ── Workout complete view ──────────────────────────────────────────
+        if (workoutComplete) {
+            return (
+                <div className="container">
+                    {header(`${dayName} Day`)}
+                    {buttons()}
+                    <div className="center-screen">
+                        <div className="center-title">Done for Today</div>
+                        <div className="center-text">Great work. Today's {dayName} session is logged.</div>
+                    </div>
+                    {modals}
+                </div>
+            );
+        }
 
+        // ── Main workout view ──────────────────────────────────────────────
+        const total = workout.length + completedWorkout.length;
+        const done  = completedWorkout.length;
+        const pct   = total > 0 ? (done / total) * 100 : 0;
+
+        return (
+            <div className="container">
+                {header(`${dayName} Day`, true)}
+                {buttons()}
+                <div className="workout-list">
+                    <div className="progress-wrap">
+                        <div className="progress-bar-bg">
+                            <div className="progress-bar-fill" style={{ width: `${pct}%` }}></div>
+                        </div>
+                        <div className="progress-label">{done} / {total} complete</div>
+                    </div>
+
+                    {workout.map(ex => {
+                        const isHard = hardMode[ex.id];
+                        const prefix = isHard ? 'hard' : 'reg';
+                        const numSets = isHard ? ex.hardSets : ex.sets;
+                        const reps = isHard ? ex.hardReps : ex.reps;
+                        const unit = ex.isTime ? 'sec' : 'reps';
+                        return (
+                            <div key={ex.id} className={`card ${isHard ? 'hard-card' : ''}`}>
+                                <div className="card-top">
+                                    <div className="ex-info">
+                                        <div className="ex-name">{ex.name}</div>
+                                        <div className="ex-cat">{ex.category}</div>
+                                    </div>
+                                    <div className="card-right">
+                                        <div className="mode-toggle">
+                                            <span className={`mode-label ${!isHard ? 'mode-label-active' : ''}`}>Reg</span>
+                                            <div className={`toggle-switch ${isHard ? 'on' : ''}`} onClick={() => toggleHardMode(ex.id)}></div>
+                                            <span className={`mode-label ${isHard ? 'mode-label-active' : ''}`}>Hard</span>
+                                        </div>
+                                        <button className="detail-btn" onClick={() => { setSelectedEx(ex); setShowDesc(true); }}>Details</button>
+                                    </div>
+                                </div>
+                                <div className={`set-section ${isHard ? 'hard-section' : ''}`}>
+                                    <div className={`section-label ${isHard ? 'hard' : ''}`}>{numSets} sets × {reps} {unit}{isHard ? ' — Hard Mode' : ''}</div>
+                                    {Array.from({ length: numSets }).map((_, i) => (
+                                        <div key={i} className="set-row">
+                                            <span className="set-num">Set {i + 1}</span>
+                                            <input
+                                                type="number"
+                                                className="set-input"
+                                                placeholder={unit}
+                                                value={log[`${ex.id}-${prefix}-${i}`] || ''}
+                                                onChange={e => logRep(ex.id, `${prefix}-${i}`, e.target.value)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                                <button
+                                    className={`complete-btn ${isHard ? 'hard' : ''}`}
+                                    disabled={!isComplete(ex)}
+                                    onClick={() => completeExercise(ex)}
+                                >
+                                    {isComplete(ex) ? 'Mark Complete' : 'Fill All Sets to Complete'}
+                                </button>
+                            </div>
+                        );
+                    })}
+
+                    {completedWorkout.length > 0 && (
+                        <>
+                            <div className="completed-divider">
+                                <span className="completed-divider-text">Completed — {done} of {total}</span>
+                            </div>
+                            {completedWorkout.map(ex => {
+                                const isHard = hardMode[ex.id];
+                                const prefix = isHard ? 'hard' : 'reg';
+                                const numSets = isHard ? ex.hardSets : ex.sets;
+                                return (
+                                    <div key={ex.id} className="card done-card">
+                                        <div className="card-top" style={{ marginBottom: 8 }}>
+                                            <div className="ex-info">
+                                                <div className={`ex-name ex-name-done`}>{ex.name}</div>
+                                                <div className="ex-cat">{ex.category}</div>
+                                            </div>
+                                            <span className="done-check">✓</span>
+                                        </div>
+                                        <div className={`set-section ${isHard ? 'hard-section' : ''}`}>
+                                            <div className={`section-label ${isHard ? 'hard' : ''}`}>{isHard ? 'Hard Mode' : 'Regular Mode'}</div>
+                                            {Array.from({ length: numSets }).map((_, i) => (
+                                                <div key={i} className="set-row">
+                                                    <span className="set-num">Set {i + 1}</span>
+                                                    <span className="set-value">{log[`${ex.id}-${prefix}-${i}`]} {ex.isTime ? 'sec' : 'reps'}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </>
+                    )}
+                </div>
+                {modals}
+            </div>
+        );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+</script>
+</body>
 </html>

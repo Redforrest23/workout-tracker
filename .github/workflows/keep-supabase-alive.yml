@@ -1,0 +1,24 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Runs every 3 days at 12:00 UTC — well within Supabase's 1-week inactivity window
+    - cron: '0 12 */3 * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://gnxwcdwqmderpghmtddy.supabase.co/rest/v1/" \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA" \
+            -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA")
+          echo "Supabase responded with HTTP $response"
+          if [ "$response" -lt 200 ] || [ "$response" -ge 500 ]; then
+            echo "Unexpected response — project may be paused or unreachable"
+            exit 1
+          fi
+          echo "Supabase project is active"

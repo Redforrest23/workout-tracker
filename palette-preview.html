@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palette Preview</title>
+<style>
+  :root {
+    --bg:        #0F1419;
+    --surface:   #1A2332;
+    --raised:    #1F2B3E;
+    --border:    #2A3A52;
+    --accent:    #5B8DB8;
+    --accent-lt: #7BA7C9;
+    --success:   #5B9E7A;
+    --danger:    #A05555;
+    --hard:      #B87A4A;
+    --txt:       #D8E2EC;
+    --txt-sub:   #7A8FA0;
+    --txt-muted: #4A6070;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--txt);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 24px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  h2 {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--txt-muted);
+    margin-bottom: 12px;
+    margin-top: 28px;
+  }
+  h2:first-child { margin-top: 0; }
+
+  /* ── Swatches ─────────────────────────────── */
+  .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+  .swatch {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 11px; color: var(--txt-sub);
+  }
+  .swatch-box {
+    width: 52px; height: 36px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* ── Header mock ──────────────────────────── */
+  .header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px 14px;
+    margin-bottom: 4px;
+  }
+  .header-day { font-size: 22px; font-weight: 700; color: var(--txt); letter-spacing: -0.02em; }
+  .header-date { font-size: 13px; color: var(--txt-sub); margin-top: 2px; }
+  .header-email { font-size: 11px; color: var(--txt-muted); margin-top: 2px; }
+  .header-streak {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 10px;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 13px; font-weight: 600; color: var(--accent-lt);
+  }
+  .streak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+  /* ── Button row ───────────────────────────── */
+  .btn-row { display: flex; gap: 8px; margin: 8px 0; }
+  .btn {
+    flex: 1; padding: 10px 8px; border-radius: 10px; border: none;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    letter-spacing: 0.01em;
+  }
+  .btn-ghost {
+    background: var(--surface); color: var(--txt-sub);
+    border: 1px solid var(--border);
+  }
+  .btn-danger { background: var(--danger); color: #f0d0d0; }
+
+  /* ── Exercise card ────────────────────────── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .ex-name { font-size: 17px; font-weight: 700; color: var(--txt); }
+  .ex-tag {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+    background: var(--raised); color: var(--accent); border: 1px solid var(--border);
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .detail-btn {
+    background: none; border: none; color: var(--txt-muted);
+    font-size: 12px; cursor: pointer; margin-top: 3px; text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .mode-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .mode-label { font-size: 12px; color: var(--txt-muted); }
+  .mode-label.active { color: var(--txt); font-weight: 600; }
+  .toggle {
+    width: 38px; height: 20px; background: var(--accent); border-radius: 10px;
+    position: relative;
+  }
+  .toggle::after {
+    content: ''; position: absolute; width: 14px; height: 14px;
+    background: #fff; border-radius: 50%; top: 3px; left: 3px;
+  }
+  .set-section {
+    background: var(--raised); border-radius: 10px; padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .section-label { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+  .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+  .set-row:last-child { margin-bottom: 0; }
+  .set-num { font-size: 13px; color: var(--txt-sub); width: 46px; flex-shrink: 0; }
+  .set-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; padding: 7px 10px; color: var(--txt); font-size: 14px;
+    outline: none;
+  }
+  .set-input:focus { border-color: var(--accent); }
+  .complete-btn {
+    width: 100%; padding: 13px; border-radius: 10px; border: none;
+    background: var(--accent); color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.02em;
+  }
+
+  /* Hard mode card variant */
+  .card.hard { border-color: #4A3828; }
+  .set-section.hard { background: #1E1812; }
+  .section-label.hard { color: var(--hard); }
+  .complete-btn.hard { background: var(--hard); }
+
+  /* Completed card */
+  .card.done { opacity: 0.55; }
+  .ex-name.done { color: var(--success); }
+  .check-icon { color: var(--success); font-size: 18px; }
+
+  /* Divider */
+  .divider {
+    text-align: center; font-size: 13px; font-weight: 600;
+    color: var(--success); margin: 16px 0 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* Rest day card */
+  .rest-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 32px 20px; text-align: center;
+  }
+  .rest-title { font-size: 20px; font-weight: 700; color: var(--accent-lt); margin-bottom: 8px; }
+  .rest-text { font-size: 14px; color: var(--txt-sub); line-height: 22px; }
+</style>
+</head>
+<body>
+
+<h2>Palette</h2>
+<div class="swatches">
+  <div class="swatch"><div class="swatch-box" style="background:#0F1419"></div>bg</div>
+  <div class="swatch"><div class="swatch-box" style="background:#1A2332"></div>surface</div>
+  <div class="swatch"><div class="swatch-box" style="background:#1F2B3E"></div>raised</div>
+  <div class="swatch"><div class="swatch-box" style="background:#2A3A52"></div>border</div>
+  <div class="swatch"><div class="swatch-box" style="background:#5B8DB8"></div>accent</div>
+  <div class="swatch"><div class="swatch-box" style="background:#7BA7C9"></div>accent lt</div>
+  <div class="swatch"><div class="swatch-box" style="background:#5B9E7A"></div>success</div>
+  <div class="swatch"><div class="swatch-box" style="background:#A05555"></div>danger</div>
+  <div class="swatch"><div class="swatch-box" style="background:#B87A4A"></div>hard</div>
+</div>
+
+<h2>Header</h2>
+<div class="header">
+  <div class="header-day">Push Day</div>
+  <div class="header-date">Friday, May 23</div>
+  <div class="header-email">you@email.com</div>
+  <div class="header-streak">
+    <span class="streak-dot"></span> 4 day streak
+  </div>
+</div>
+
+<h2>Buttons</h2>
+<div class="btn-row">
+  <button class="btn btn-ghost">Settings</button>
+  <button class="btn btn-ghost">History</button>
+  <button class="btn btn-danger">Logout</button>
+</div>
+
+<h2>Exercise Card — Regular mode</h2>
+<div class="card">
+  <div class="card-top">
+    <div>
+      <div class="ex-name">Regular Push-ups</div>
+      <button class="detail-btn">View details</button>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <span class="ex-tag">Push</span>
+      <div class="mode-row" style="margin:0">
+        <span class="mode-label active">Reg</span>
+        <div class="toggle"></div>
+        <span class="mode-label">Hard</span>
+      </div>
+    </div>
+  </div>
+  <div class="set-section">
+    <div class="section-label">3 sets × 10 reps</div>
+    <div class="set-row"><span class="set-num">Set 1</span><input class="set-input" type="number" placeholder="Reps"></div>
+    <div class="set-row"><span class="set-num">Set 2</span><input class="set-input" type="number" placeholder="Reps"></div>
+    <div class="set-row"><span class="set-num">Set 3</span><input class="set-input" type="number" placeholder="Reps"></div>
+  </div>
+  <button class="complete-btn">Fill All Sets to Complete</button>
+</div>
+
+<h2>Exercise Card — Hard mode</h2>
+<div class="card hard">
+  <div class="card-top">
+    <div>
+      <div class="ex-name">Regular Push-ups</div>
+      <button class="detail-btn">View details</button>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+      <span class="ex-tag" style="color:var(--hard)">Push</span>
+      <div class="mode-row" style="margin:0">
+        <span class="mode-label">Reg</span>
+        <div class="toggle" style="background:var(--hard)"></div>
+        <span class="mode-label active">Hard</span>
+      </div>
+    </div>
+  </div>
+  <div class="set-section hard">
+    <div class="section-label hard">4 sets × 15 reps — Hard Mode</div>
+    <div class="set-row"><span class="set-num">Set 1</span><input class="set-input" type="number" placeholder="Reps"></div>
+    <div class="set-row"><span class="set-num">Set 2</span><input class="set-input" type="number" placeholder="Reps"></div>
+    <div class="set-row"><span class="set-num">Set 3</span><input class="set-input" type="number" placeholder="Reps"></div>
+    <div class="set-row"><span class="set-num">Set 4</span><input class="set-input" type="number" placeholder="Reps"></div>
+  </div>
+  <button class="complete-btn hard">Fill All Sets to Complete</button>
+</div>
+
+<h2>Completed Exercise</h2>
+<div class="divider">✓ Completed</div>
+<div class="card done">
+  <div class="card-top" style="margin:0">
+    <div>
+      <div class="ex-name done">Wall Push-ups</div>
+      <div style="font-size:12px;color:var(--txt-muted);margin-top:2px">Push · Regular · 3×10</div>
+    </div>
+    <span class="check-icon">✓</span>
+  </div>
+</div>
+
+<h2>Rest Day</h2>
+<div class="rest-card">
+  <div class="rest-title">Rest Day</div>
+  <div class="rest-text">Recovery is when you get stronger.<br>See you tomorrow.</div>
+</div>
+
+</body>
+</html>
