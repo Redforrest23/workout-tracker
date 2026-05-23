@@ -271,10 +271,10 @@
 
     // ── Schedule helpers ───────────────────────────────────────────────────
     const WORKOUT_ROTATION = [
-        { name: 'Legs', focus: ['squats'], includeCore: false },
+        { name: 'Legs', focus: ['squats'], includeCore: true  },
         { name: 'Push', focus: ['push'],   includeCore: true  },
         { name: 'Pull', focus: ['pull'],   includeCore: false },
-        { name: 'Legs', focus: ['squats'], includeCore: false },
+        { name: 'Legs', focus: ['squats'], includeCore: true  },
         { name: 'Push', focus: ['push'],   includeCore: true  },
         { name: 'Pull', focus: ['pull'],   includeCore: false },
     ];
@@ -337,47 +337,47 @@
             { id:'sq6', name:'Assisted Pistol Squat',  difficulty:5, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'One-leg squat with support. Other leg extended forward. Progress toward full pistol.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
             { id:'sq7', name:'Pistol Squats',          difficulty:6, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Full one-leg squat, other leg extended. Very challenging movement.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
             { id:'sq8', name:'Dragon Squats',          difficulty:7, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Deep squat on one leg, other extended to side. Hold. Advanced mobility and strength.', videoUrl:null },
-            { id:'sq9', name:'Copenhagen Plank',       difficulty:4, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on your side. Place your top foot on an elevated surface (bench, chair). Lift your hips so your body is in a straight line, supported only by your top foot and your forearm. Hold. Targets the hip adductors in a way skating does NOT develop — skating builds external rotation but not closed-chain adductor force production. This fills a specific gap for you and protects your knees long-term.', videoUrl:null },
+            { id:'sq9', name:'Copenhagen Plank',       difficulty:4, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on your side. Place your top foot on an elevated surface (bench, chair). Lift your hips so your body is in a straight line, supported only by your top foot and your forearm. Hold. Targets the hip adductors in a way skating does NOT develop — skating builds external rotation but not closed-chain adductor force production. This fills a specific gap for you and protects your knees long-term.', videoUrl:'https://www.youtube.com/watch?v=48wlc5zn02A' },
         ],
         core: [
-            { id:'c1', name:'Tuck Hollow Hold',  difficulty:1, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:false, desc:'Lie on back, press lower back into floor. Bring knees to chest, arms overhead. Hold. The goal is zero space between lower back and floor — this directly counters APT and rib flare.', videoUrl:null },
-            { id:'c2', name:'Hollow Body Hold',   difficulty:2, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on back, lower back pressed flat. Extend arms overhead and legs low to floor. Hold. Ribs pull DOWN, not flared. This is the foundation for visible abs and fixing your extension pattern. Start with legs higher if needed.', videoUrl:null },
-            { id:'c3', name:'Hollow Body Rock',   difficulty:3, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Hold the hollow body position and rock forward and back like a rocking chair. Maintain tension throughout — no sagging at the bottom. Builds dynamic core stability.', videoUrl:null },
-            { id:'c4', name:'Tuck L-Sit',         difficulty:4, sets:3, reps:10, hardSets:3, hardReps:15, isTime:true,  enabled:false, desc:'On the floor or parallettes, press down through hands and lift knees to chest. Hold. Combines compression strength with the hollow position. Use your skating hip awareness to keep pelvis neutral.', videoUrl:null },
-            { id:'c5', name:'L-Sit',              difficulty:5, sets:3, reps:10, hardSets:3, hardReps:20, isTime:true,  enabled:false, desc:'Press down through hands, legs extended horizontal. Advanced compression and ab strength. This is the full expression of the hollow body skill.', videoUrl:null },
+            { id:'c1', name:'Tuck Hollow Hold',  difficulty:1, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:false, desc:'Lie on back, press lower back into floor. Bring knees to chest, arms overhead. Hold. The goal is zero space between lower back and floor — this directly counters APT and rib flare.', videoUrl:'https://www.youtube.com/watch?v=W3E2SBg1ViQ' },
+            { id:'c2', name:'Hollow Body Hold',   difficulty:2, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on back, lower back pressed flat. Extend arms overhead and legs low to floor. Hold. Ribs pull DOWN, not flared. This is the foundation for visible abs and fixing your extension pattern. Start with legs higher if needed.', videoUrl:'https://www.youtube.com/watch?v=0yPin8hSc8o' },
+            { id:'c3', name:'Hollow Body Rock',   difficulty:3, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Hold the hollow body position and rock forward and back like a rocking chair. Maintain tension throughout — no sagging at the bottom. Builds dynamic core stability.', videoUrl:'https://www.youtube.com/watch?v=ixfvk6ERKtI' },
+            { id:'c4', name:'Tuck L-Sit',         difficulty:4, sets:3, reps:10, hardSets:3, hardReps:15, isTime:true,  enabled:false, desc:'On the floor or parallettes, press down through hands and lift knees to chest. Hold. Combines compression strength with the hollow position. Use your skating hip awareness to keep pelvis neutral.', videoUrl:'https://www.youtube.com/watch?v=KCEMgCjW3iU' },
+            { id:'c5', name:'L-Sit',              difficulty:5, sets:3, reps:10, hardSets:3, hardReps:20, isTime:true,  enabled:false, desc:'Press down through hands, legs extended horizontal. Advanced compression and ab strength. This is the full expression of the hollow body skill.', videoUrl:'https://www.youtube.com/watch?v=KCEMgCjW3iU' },
         ],
         mandatory: [
-            { id:'m1', name:'Elephant Walks',  sets:2, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Stand, bend forward to touch toes. Alternate bending knees, lifting heels. Dynamic hamstring prep.', videoUrl:'https://www.youtube.com/shorts/jDFH__6aRGQ' },
-            { id:'m2', name:'Single Leg RDL',  sets:2, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Stand on one leg. Hinge at hip, reach down with opposite hand. Keep back straight. Other leg extends behind.', videoUrl:'https://www.youtube.com/shorts/jDFH__6aRGQ' },
-            { id:'m3', name:'Pike Pull Stretch',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Sit or stand in pike. Grab something stable. Pull head toward feet. Deep hamstring and back stretch.', videoUrl:'https://www.youtube.com/shorts/jDFH__6aRGQ' },
-            { id:'m4', name:'Wrist Circles',     sets:1, reps:20, hardSets:1, hardReps:30, isTime:false, enabled:true, desc:'Extend arms forward, fists loose. Rotate wrists in full circles — 10 each direction. Slow and controlled, feeling the full range. Clears stiffness and lubricates the joint before any loading. Do this every single session before touching a weight or doing a push.', videoUrl:null },
-            { id:'m5', name:'Wrist Flexor Stretch', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Arm out, palm up. Use other hand to pull fingers back (bending wrist toward you). Hold. You should feel the stretch on the underside of the forearm. This targets the flexors — overloaded from years of typing, mouse use, and programming. Counter to the pull of chronic keyboard posture.', videoUrl:null },
-            { id:'m6', name:'Wrist Extensor Stretch', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Arm out, palm down. Bend wrist down (fingers pointing toward floor), pull lightly with other hand. Hold. Stretches the extensors — specifically the muscles strained by Osu! (high-frequency wrist deviation and aim movements). These are likely your tightest and most irritated wrist muscles. Be gentle here.', videoUrl:null },
+            { id:'m1', name:'Elephant Walks',  sets:2, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Stand, bend forward to touch toes. Alternate bending knees, lifting heels. Dynamic hamstring prep.', videoUrl:'https://www.youtube.com/watch?v=fnih_6w_JjA' },
+            { id:'m2', name:'Single Leg RDL',  sets:2, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Stand on one leg. Hinge at hip, reach down with opposite hand. Keep back straight. Other leg extends behind.', videoUrl:'https://www.youtube.com/watch?v=J1ojvq3ftqM' },
+            { id:'m3', name:'Pike Pull Stretch',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Sit or stand in pike. Grab something stable. Pull head toward feet. Deep hamstring and back stretch.', videoUrl:'https://www.youtube.com/watch?v=R5M5u5vB0m4' },
+            { id:'m4', name:'Wrist Circles',     sets:1, reps:20, hardSets:1, hardReps:30, isTime:false, enabled:true, desc:'Extend arms forward, fists loose. Rotate wrists in full circles — 10 each direction. Slow and controlled, feeling the full range. Clears stiffness and lubricates the joint before any loading. Do this every single session before touching a weight or doing a push.', videoUrl:'https://www.youtube.com/watch?v=9jwj-_pKMrk' },
+            { id:'m5', name:'Wrist Flexor Stretch', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Arm out, palm up. Use other hand to pull fingers back (bending wrist toward you). Hold. You should feel the stretch on the underside of the forearm. This targets the flexors — overloaded from years of typing, mouse use, and programming. Counter to the pull of chronic keyboard posture.', videoUrl:'https://www.youtube.com/watch?v=rQlDHgTUbO0' },
+            { id:'m6', name:'Wrist Extensor Stretch', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Arm out, palm down. Bend wrist down (fingers pointing toward floor), pull lightly with other hand. Hold. Stretches the extensors — specifically the muscles strained by Osu! (high-frequency wrist deviation and aim movements). These are likely your tightest and most irritated wrist muscles. Be gentle here.', videoUrl:'https://www.youtube.com/watch?v=ziIHMzpT0Lg' },
         ],
         apt: [
-            { id:'a1',  name:'Glute Bridges',      sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, knees bent. Lift hips by squeezing glutes until straight line. Lower slow.', videoUrl:null },
-            { id:'a2',  name:'Dead Bugs',           sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back flat, arms up, knees 90°. Extend opposite limbs. Maintain posterior pelvic tilt.', videoUrl:null },
-            { id:'a3',  name:'Plank with PPT',      sets:3, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Plank position. Tuck tailbone, engage abs. Squeeze glutes. Lower back rounds slightly.', videoUrl:null },
-            { id:'a4',  name:'Couch Stretch',       sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Back knee against wall, shin vertical. Front foot forward. Upright torso, squeeze glutes.', videoUrl:null },
-            { id:'a5',  name:'RDLs',                sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hip-width stance. Hinge at hips, push back. Keep back straight. Stand by squeezing glutes.', videoUrl:null },
-            { id:'a6',  name:'Cat-Cow',             sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Hands and knees. Cat: round spine, tuck tail. Cow: arch back, lift tail. Focus on tucked position.', videoUrl:null },
-            { id:'a7',  name:'Clamshells',          sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:true, desc:'Side-lying, knees 90°. Keep feet touching, lift top knee. Works glutes and hip rotators.', videoUrl:null },
+            { id:'a1',  name:'Glute Bridges',      sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, knees bent. Lift hips by squeezing glutes until straight line. Lower slow.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
+            { id:'a2',  name:'Dead Bugs',           sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back flat, arms up, knees 90°. Extend opposite limbs. Maintain posterior pelvic tilt.', videoUrl:'https://www.youtube.com/watch?v=bxn9FBrt4-A' },
+            { id:'a3',  name:'Plank with PPT',      sets:3, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Plank position. Tuck tailbone, engage abs. Squeeze glutes. Lower back rounds slightly.', videoUrl:'https://www.youtube.com/watch?v=H6jIeNkGHuA' },
+            { id:'a4',  name:'Couch Stretch',       sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Back knee against wall, shin vertical. Front foot forward. Upright torso, squeeze glutes.', videoUrl:'https://www.youtube.com/watch?v=7bW0dBwB7Dc' },
+            { id:'a5',  name:'RDLs',                sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hip-width stance. Hinge at hips, push back. Keep back straight. Stand by squeezing glutes.', videoUrl:'https://www.youtube.com/watch?v=hQgFixeXdZo' },
+            { id:'a6',  name:'Cat-Cow',             sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Hands and knees. Cat: round spine, tuck tail. Cow: arch back, lift tail. Focus on tucked position.', videoUrl:'https://www.youtube.com/watch?v=xyNwxiuERXc' },
+            { id:'a7',  name:'Clamshells',          sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:true, desc:'Side-lying, knees 90°. Keep feet touching, lift top knee. Works glutes and hip rotators.', videoUrl:'https://www.youtube.com/watch?v=ymjOGuPjOSE' },
             { id:'a8',  name:'Reverse Plank',       sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Sit, legs extended, hands behind. Lift hips straight. Squeeze glutes hard.', videoUrl:null },
             { id:'a9',  name:'Wall Pelvic Tilts',   sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back against wall, feet forward. Press lower back flat to wall. Release. Teaches posterior tilt.', videoUrl:null },
-            { id:'a10', name:'90/90 Hip Lift',      sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly.', videoUrl:null },
+            { id:'a10', name:'90/90 Hip Lift',      sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly.', videoUrl:'https://www.youtube.com/watch?v=gWpMbJCpzz8' },
             { id:'a11', name:'Band Hip Extension',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
-            { id:'a12', name:'Bird Dogs',           sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level.', videoUrl:null },
+            { id:'a12', name:'Bird Dogs',           sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level.', videoUrl:'https://www.youtube.com/watch?v=5Zp9IYxDYB4' },
             { id:'a13', name:'Pelvic Clock',        sets:2, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:true, desc:'Lie on back, knees bent. Imagine clock on pelvis. Tilt through each hour. 12:00 is posterior tilt.', videoUrl:null },
-            { id:'a14', name:'Side Plank',          sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked.', videoUrl:null },
+            { id:'a14', name:'Side Plank',          sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked.', videoUrl:'https://www.youtube.com/watch?v=iNbH7_edNI8' },
             { id:'a15', name:'Frog Stretch',        sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:true, desc:'Hands and knees, spread knees wide. Push hips back, lower down. Opens hips and adductors.', videoUrl:null },
-            { id:'a16', name:"World's Greatest",    sets:2, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true, desc:'Lunge. Hands inside front foot. Drop elbow down. Rotate and reach up. Full-body mobility.', videoUrl:null },
+            { id:'a16', name:"World's Greatest",    sets:2, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true, desc:'Lunge. Hands inside front foot. Drop elbow down. Rotate and reach up. Full-body mobility.', videoUrl:'https://www.youtube.com/watch?v=-CiWQ2IvY34' },
             { id:'a17', name:'Band Hip Distraction',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
             { id:'a18', name:"Child's Pose PPT",    sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:true, desc:'Sit on heels, arms forward. Tuck tailbone posteriorly. Gently round lower back. Breathe deep.', videoUrl:null },
-            { id:'a19', name:'Serratus Punches',    sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, arm pointing straight up holding a light dumbbell (5–10 lbs) or fist. Without bending the elbow, push your fist/dumbbell toward the ceiling by protracting your shoulder blade — like a slow punch. Lower back down. This directly targets the serratus anterior, the muscle that holds your ribs flat against your thorax. This is the primary fix for rib flare.', videoUrl:null },
-            { id:'a20', name:'RKC Plank',           sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Get into a plank. Now maximally squeeze everything simultaneously: posteriorly tilt your pelvis (tuck tailbone hard), brace abs as if taking a punch, squeeze glutes as hard as possible, try to drag elbows toward your toes. You should be shaking within 10 seconds. Far more effective than a standard plank for your APT pattern.', videoUrl:null },
-            { id:'a21', name:'Single-Leg Glute Bridge', sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Glute bridge on one leg. Extend one leg straight, foot flexed. Drive hips up through the planted foot by squeezing the glute — not your back. Lower slowly. Your skating balance makes this accessible where most beginners struggle. Forces each glute to work independently, exposing and fixing asymmetries common in APT.', videoUrl:null },
-            { id:'a22', name:'Reverse Wrist Curls', sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Sit with forearm on thigh, palm facing down, holding a light dumbbell (5–10 lbs). Curl the wrist upward, then lower slowly. This directly strengthens the wrist extensors — the exact muscles strained by Osu! aim movements. Most people only train flexors (gripping), leaving extensors chronically weak and injury-prone. Start light and go slow; these muscles fatigue fast.', videoUrl:null },
-            { id:'a23', name:'Hammer Rotations',   sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hold a light dumbbell (5–8 lbs) vertically like a hammer. Keeping elbow bent at 90° and pinned to your side, rotate palm up (supination), then palm down (pronation). Slow and controlled. The Osu! mouse grip pattern locks you in a narrow pronation range — this restores full pronation/supination strength and reduces the cumulative stress on the radioulnar joint.', videoUrl:null },
+            { id:'a19', name:'Serratus Punches',    sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, arm pointing straight up holding a light dumbbell (5–10 lbs) or fist. Without bending the elbow, push your fist/dumbbell toward the ceiling by protracting your shoulder blade — like a slow punch. Lower back down. This directly targets the serratus anterior, the muscle that holds your ribs flat against your thorax. This is the primary fix for rib flare.', videoUrl:'https://www.youtube.com/watch?v=y1FPkIS85kY' },
+            { id:'a20', name:'RKC Plank',           sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Get into a plank. Now maximally squeeze everything simultaneously: posteriorly tilt your pelvis (tuck tailbone hard), brace abs as if taking a punch, squeeze glutes as hard as possible, try to drag elbows toward your toes. You should be shaking within 10 seconds. Far more effective than a standard plank for your APT pattern.', videoUrl:'https://www.youtube.com/watch?v=0xgxEoWC22g' },
+            { id:'a21', name:'Single-Leg Glute Bridge', sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Glute bridge on one leg. Extend one leg straight, foot flexed. Drive hips up through the planted foot by squeezing the glute — not your back. Lower slowly. Your skating balance makes this accessible where most beginners struggle. Forces each glute to work independently, exposing and fixing asymmetries common in APT.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
+            { id:'a22', name:'Reverse Wrist Curls', sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Sit with forearm on thigh, palm facing down, holding a light dumbbell (5–10 lbs). Curl the wrist upward, then lower slowly. This directly strengthens the wrist extensors — the exact muscles strained by Osu! aim movements. Most people only train flexors (gripping), leaving extensors chronically weak and injury-prone. Start light and go slow; these muscles fatigue fast.', videoUrl:'https://www.youtube.com/watch?v=SfENsl5klVA' },
+            { id:'a23', name:'Hammer Rotations',   sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hold a light dumbbell (5–8 lbs) vertically like a hammer. Keeping elbow bent at 90° and pinned to your side, rotate palm up (supination), then palm down (pronation). Slow and controlled. The Osu! mouse grip pattern locks you in a narrow pronation range — this restores full pronation/supination strength and reduces the cumulative stress on the radioulnar joint.', videoUrl:'https://www.youtube.com/watch?v=9XVf_yGLXNk' },
         ],
         stretches: {
             hipFlexor: [
@@ -406,7 +406,7 @@
                 { id:'sh15', name:'Cobra',         sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Face down. Push up through hands. Lift chest. Hips stay down. Extends spine.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Spine-V2.pdf', pdfPage:'Week 3 Day 2' },
             ],
             fullBody: [
-                { id:'sh16', name:"World's Greatest", sets:2, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true, desc:'Lunge. Hands inside front foot. Elbow down. Rotate and reach up. Full mobility.', videoUrl:null, pdfUrl:null, pdfPage:null },
+                { id:'sh16', name:"World's Greatest", sets:2, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true, desc:'Lunge. Hands inside front foot. Elbow down. Rotate and reach up. Full mobility.', videoUrl:'https://www.youtube.com/watch?v=-CiWQ2IvY34', pdfUrl:null, pdfPage:null },
                 { id:'sh17', name:'Downward Dog',     sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Inverted V. Hands and feet down. Hips high. Push heels down. Full body stretch.', videoUrl:null, pdfUrl:null, pdfPage:null },
             ],
         },
@@ -623,10 +623,10 @@
             if (schedule.focus.length === 0) return;
             const items = [];
 
-            if (isMobilityDay(dayOfWeek, restDay)) {
-                exData.mandatory.filter(e => e.enabled).forEach(e => items.push({ ...e, category: 'Mobility' }));
-            }
+            // All mandatory exercises every session — consistent warm-up and wrist prep
+            exData.mandatory.filter(e => e.enabled).forEach(e => items.push({ ...e, category: 'Warm-Up' }));
 
+            // Main lift
             schedule.focus.forEach(cat => {
                 const pool = cat === 'pull'
                     ? (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled)
@@ -634,30 +634,30 @@
                 if (pool.length > 0) items.push({ ...pool[0], category: schedule.name });
             });
 
+            // Core on Push and Legs days
             if (schedule.includeCore) {
                 const pool = exData.core.filter(e => e.enabled);
                 if (pool.length > 0) items.push({ ...pool[0], category: 'Core' });
             }
 
-            const aptEnabled = exData.apt.filter(e => e.enabled);
-            const numApt = Math.floor(Math.random() * 2) + 2;
-            const aptPool = [...aptEnabled];
-            for (let i = 0; i < Math.min(numApt, aptPool.length); i++) {
-                const idx = Math.floor(Math.random() * aptPool.length);
-                items.push({ ...aptPool[idx], category: 'APT' });
-                aptPool.splice(idx, 1);
+            // APT corrective work on mobility days only (exactly 2 exercises)
+            if (isMobilityDay(dayOfWeek, restDay)) {
+                const aptEnabled = exData.apt.filter(e => e.enabled);
+                const aptPool = [...aptEnabled];
+                for (let i = 0; i < Math.min(2, aptPool.length); i++) {
+                    const idx = Math.floor(Math.random() * aptPool.length);
+                    items.push({ ...aptPool[idx], category: 'APT' });
+                    aptPool.splice(idx, 1);
+                }
             }
 
-            // Deterministic stretch rotation: 2 categories per session
-            const cat1 = STRETCH_CATS[si % 6];
-            const cat2 = STRETCH_CATS[(si + 1) % 6];
-            const newSi = (si + 2) % 6;
-            [cat1, cat2].forEach(catName => {
-                const pool = (exData.stretches[catName] || []).filter(e => e.enabled);
-                if (pool.length > 0) {
-                    items.push({ ...pool[Math.floor(Math.random() * pool.length)], category: 'Stretch' });
-                }
-            });
+            // 1 stretch category per session, rotating through all 6 over the week
+            const stretchCat = STRETCH_CATS[si % 6];
+            const newSi = (si + 1) % 6;
+            const stretchPool = (exData.stretches[stretchCat] || []).filter(e => e.enabled);
+            if (stretchPool.length > 0) {
+                items.push({ ...stretchPool[Math.floor(Math.random() * stretchPool.length)], category: 'Stretch' });
+            }
 
             saveStretchIndex(newSi, uid);
             setStretchIndex(newSi);
