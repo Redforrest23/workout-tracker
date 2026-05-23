@@ -260,6 +260,15 @@
         return new Date(y, m - 1, d);
     }
 
+    // Caches the in-progress workout for the day so a page reload restores it
+    // instead of regenerating different random exercises. Cleared on workout complete.
+    const saveWorkoutState = (workout, completedWorkout, log, hardMode) => {
+        localStorage.setItem('currentWorkout', JSON.stringify({
+            date: toLocalDate(),
+            workout, completedWorkout, log, hardMode
+        }));
+    };
+
     // ── Schedule helpers ───────────────────────────────────────────────────
     const WORKOUT_ROTATION = [
         { name: 'Legs', focus: ['squats'], includeCore: false },
@@ -555,7 +564,22 @@
                     setDayName(schedule.name);
                     const alreadyDone = hist.some(h => h.date === todayStr);
                     if (!alreadyDone) {
-                        generateWorkoutWith(dayOfWeek, exData, si, restDay, uid);
+                        const saved = localStorage.getItem('currentWorkout');
+                        let restored = false;
+                        if (saved) {
+                            try {
+                                const parsed = JSON.parse(saved);
+                                if (parsed.date === todayStr && parsed.workout?.length > 0) {
+                                    setWorkout(parsed.workout);
+                                    setCompletedWorkout(parsed.completedWorkout || []);
+                                    setLog(parsed.log || {});
+                                    setHardMode(parsed.hardMode || {});
+                                    setWorkoutComplete(false);
+                                    restored = true;
+                                }
+                            } catch (e) { /* fall through to generate */ }
+                        }
+                        if (!restored) generateWorkoutWith(dayOfWeek, exData, si, restDay, uid);
                     } else {
                         setWorkoutComplete(true);
                     }
@@ -642,6 +666,7 @@
             setLog({});
             setHardMode({});
             setWorkoutComplete(false);
+            saveWorkoutState(items, [], {}, {});
         };
 
         const saveStretchIndex = async (idx, uid) => {
@@ -690,6 +715,7 @@
                 setHistory(updated);
                 calculateStreak(updated, customRestDay);
                 setWorkoutComplete(true);
+                localStorage.removeItem('currentWorkout');
             } catch (err) {
                 console.error('saveWorkoutToHistory error:', err);
             }
@@ -744,8 +770,16 @@
             }
         };
 
-        const logRep = (id, key, value) => setLog(prev => ({ ...prev, [`${id}-${key}`]: value }));
-        const toggleHardMode = (id) => setHardMode(prev => ({ ...prev, [id]: !prev[id] }));
+        const logRep = (id, key, value) => setLog(prev => {
+            const next = { ...prev, [`${id}-${key}`]: value };
+            saveWorkoutState(workout, completedWorkout, next, hardMode);
+            return next;
+        });
+        const toggleHardMode = (id) => setHardMode(prev => {
+            const next = { ...prev, [id]: !prev[id] };
+            saveWorkoutState(workout, completedWorkout, log, next);
+            return next;
+        });
         const toggleCollapsed = (key) => setCollapsed(prev => ({ ...prev, [key]: !prev[key] }));
 
         const isComplete = (ex) => {
@@ -759,8 +793,11 @@
         };
 
         const completeExercise = (ex) => {
-            setWorkout(prev => prev.filter(e => e.id !== ex.id));
-            setCompletedWorkout(prev => [...prev, ex]);
+            const nextWorkout = workout.filter(e => e.id !== ex.id);
+            const nextCompleted = [...completedWorkout, ex];
+            setWorkout(nextWorkout);
+            setCompletedWorkout(nextCompleted);
+            saveWorkoutState(nextWorkout, nextCompleted, log, hardMode);
         };
 
         const handleLogout = async () => { await supabase.auth.signOut(); setUser(null); };
