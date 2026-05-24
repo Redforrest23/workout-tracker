@@ -304,13 +304,13 @@
             { id:'p1', name:'Wall Push-ups',            difficulty:1, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Stand facing wall. Hands at shoulder height. Lean in and push back. Keep body straight.', videoUrl:'https://www.hybridcalisthenics.com/wall-pushups' },
             { id:'p2', name:'Incline Push-ups',          difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Hands on elevated surface. Lower chest, push up. Keep core tight and body in a straight line.', videoUrl:'https://www.hybridcalisthenics.com/incline-pushups' },
             { id:'p3', name:'Regular Push-ups',          difficulty:3, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Plank position. Lower chest to ground, elbows at 45°. Push back up. Maintain straight body line.', videoUrl:'https://www.hybridcalisthenics.com/full-pushups' },
-            { id:'p4', name:'Diamond Push-ups',          difficulty:4, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Thumbs and index fingers form diamond. Keep elbows close. Heavily targets triceps.', videoUrl:null },
-            { id:'p5', name:'Decline Push-ups',          difficulty:5, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Feet elevated. Hands on ground. Harder than regular, emphasizes upper chest.', videoUrl:null },
+            { id:'p4', name:'Diamond Push-ups',          difficulty:4, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Thumbs and index fingers form diamond. Keep elbows close. Heavily targets triceps.', videoUrl:'https://www.youtube.com/watch?v=kGhDnFwMY3E' },
+            { id:'p5', name:'Decline Push-ups',          difficulty:5, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Feet elevated. Hands on ground. Harder than regular, emphasizes upper chest.', videoUrl:'https://www.youtube.com/watch?v=s5dEc154cCc' },
             { id:'p6', name:'Archer Push-ups',           difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Wide hands. Lower to one side while the other arm extends. Alternate. Advanced.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
             { id:'p7', name:'One-Arm Push-up Prog.',     difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Progress toward one-arm. Start wide stance, gradually narrow feet.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
         ],
         pull: [
-            { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:null },
+            { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:'https://www.youtube.com/watch?v=rYXoCAxIJgs' },
             { id:'pu2', name:'Australian Pull-ups', difficulty:2, sets:3, reps:8,  hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Low bar. Hang underneath, body straight. Pull chest to bar. Lower with control.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu3', name:'Negative Pull-ups',   difficulty:3, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Jump to top position. Lower slowly (5–10 seconds). Builds strength for full pull-ups.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu4', name:'Assisted Pull-ups',   difficulty:4, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Use a band for assistance. Pull chin over bar. Focus on using your back muscles.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
@@ -711,11 +711,14 @@
             const id = uid || user?.id;
             if (!id) return;
             const { data: ex } = await supabase.from('exercise_settings').select('id').eq('user_id', id).single();
+            let error;
             if (ex) {
-                await supabase.from('exercise_settings').update({ exercise_data: data, updated_at: new Date().toISOString() }).eq('user_id', id);
+                ({ error } = await supabase.from('exercise_settings').update({ exercise_data: data, updated_at: new Date().toISOString() }).eq('user_id', id));
             } else {
-                await supabase.from('exercise_settings').insert({ user_id: id, exercise_data: data });
+                ({ error } = await supabase.from('exercise_settings').insert({ user_id: id, exercise_data: data }));
             }
+            if (error) console.error('saveExerciseSettings error:', error);
+            return error || null;
         };
 
         const saveWorkoutToHistory = async () => {
@@ -750,6 +753,7 @@
 
 
         const toggleEx = async (category, id) => {
+            const prev = exercises;
             const updated = JSON.parse(JSON.stringify(exercises));
             if (category === 'stretches') {
                 for (const sub of Object.keys(updated.stretches)) {
@@ -761,16 +765,19 @@
                 if (ex) ex.enabled = !ex.enabled;
             }
             setExercises(updated);
-            await saveExerciseSettings(updated);
+            const error = await saveExerciseSettings(updated);
+            if (error) setExercises(prev);
         };
 
         const toggleAllInCategory = async (category, sub = null) => {
+            const prev = exercises;
             const updated = JSON.parse(JSON.stringify(exercises));
             const list = sub ? updated.stretches[sub] : updated[category];
             const allOn = list.every(e => e.enabled);
             list.forEach(e => { e.enabled = !allOn; });
             setExercises(updated);
-            await saveExerciseSettings(updated);
+            const error = await saveExerciseSettings(updated);
+            if (error) setExercises(prev);
         };
 
         const changePullTrack = async (track) => {
