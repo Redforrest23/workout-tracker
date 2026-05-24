@@ -271,12 +271,12 @@
 
     // ── Schedule helpers ───────────────────────────────────────────────────
     const WORKOUT_ROTATION = [
-        { name: 'Legs', focus: ['squats'],              includeCore: true,  includeShoulder: false },
-        { name: 'Push', focus: ['push'],                includeCore: true,  includeShoulder: true  },
-        { name: 'Pull', focus: ['pull', 'rearDelt'],    includeCore: false, includeShoulder: false },
-        { name: 'Legs', focus: ['squats'],              includeCore: true,  includeShoulder: false },
-        { name: 'Push', focus: ['push'],                includeCore: true,  includeShoulder: true  },
-        { name: 'Pull', focus: ['pull', 'rearDelt'],    includeCore: false, includeShoulder: false },
+        { name: 'Legs', focus: ['squats', 'legAccessory'], includeCore: true,  includeShoulder: false },
+        { name: 'Push', focus: ['push'],                   includeCore: true,  includeShoulder: true  },
+        { name: 'Pull', focus: ['pull', 'rearDelt'],       includeCore: false, includeShoulder: false },
+        { name: 'Legs', focus: ['squats', 'legAccessory'], includeCore: true,  includeShoulder: false },
+        { name: 'Push', focus: ['push'],                   includeCore: true,  includeShoulder: true  },
+        { name: 'Pull', focus: ['pull', 'rearDelt'],       includeCore: false, includeShoulder: false },
     ];
 
     function getWorkoutSchedule(dayOfWeek, restDay) {
@@ -347,7 +347,9 @@
             { id:'sq6', name:'Assisted Pistol Squat',  difficulty:5, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'One-leg squat with support. Other leg extended forward. Progress toward full pistol.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
             { id:'sq7', name:'Pistol Squats',          difficulty:6, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Full one-leg squat, other leg extended. Very challenging movement.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
             { id:'sq8', name:'Dragon Squats',          difficulty:7, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Deep squat on one leg, other extended to side. Hold. Advanced mobility and strength.', videoUrl:null },
-            { id:'sq9', name:'Copenhagen Plank',       difficulty:4, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true,  desc:'Lie on your side. Place your top foot on an elevated surface (bench, chair). Lift your hips so your body is in a straight line, supported only by your top foot and your forearm. Hold. Targets the hip adductors in a way skating does NOT develop — skating builds external rotation but not closed-chain adductor force production. This fills a specific gap for you and protects your knees long-term.', videoUrl:'https://www.youtube.com/watch?v=48wlc5zn02A' },
+        ],
+        legAccessory: [
+            { id:'sq9', name:'Copenhagen Plank', sets:3, reps:20, hardSets:3, hardReps:30, isTime:true, enabled:true, desc:'Lie on your side. Place your top foot on an elevated surface (bench, chair). Lift your hips so your body is in a straight line, supported only by your top foot and your forearm. Hold. Targets the hip adductors in a way skating does NOT develop — skating builds external rotation but not closed-chain adductor force production. This fills a specific gap for you and protects your knees long-term.', videoUrl:'https://www.youtube.com/watch?v=48wlc5zn02A' },
         ],
         core: [
             { id:'c1', name:'Tuck Hollow Hold',  difficulty:1, sets:3, reps:20, hardSets:4, hardReps:30, isTime:true,  enabled:false, desc:'Lie on back, press lower back into floor. Bring knees to chest, arms overhead. Hold. The goal is zero space between lower back and floor — this directly counters APT and rib flare.', videoUrl:'https://www.youtube.com/watch?v=W3E2SBg1ViQ' },
@@ -644,20 +646,20 @@
                 } else {
                     pool = (exData[cat] || []).filter(e => e.enabled);
                 }
-                const catLabel = cat === 'rearDelt' ? 'Rear Delt' : schedule.name;
+                const catLabel = cat === 'rearDelt' ? 'Rear Delt' : cat === 'legAccessory' ? 'Legs' : schedule.name;
                 if (pool.length > 0) items.push({ ...pool[0], category: catLabel });
             });
 
-            // Core on Push and Legs days
-            if (schedule.includeCore) {
-                const pool = exData.core.filter(e => e.enabled);
-                if (pool.length > 0) items.push({ ...pool[0], category: 'Core' });
-            }
-
-            // Overhead press on Push days
+            // Overhead press on Push days (compound — before core)
             if (schedule.includeShoulder) {
                 const pool = (exData.overhead || []).filter(e => e.enabled);
                 if (pool.length > 0) items.push({ ...pool[0], category: 'Shoulders' });
+            }
+
+            // Core on Push and Legs days (isolation/endurance — after all strength work)
+            if (schedule.includeCore) {
+                const pool = exData.core.filter(e => e.enabled);
+                if (pool.length > 0) items.push({ ...pool[0], category: 'Core' });
             }
 
             // APT corrective work on mobility days only (exactly 2 exercises)
@@ -878,6 +880,7 @@
                                 {renderExerciseSection('Pull — Dumbbell Track', 'pullDb', null, 'Active when Pull Track is set to Dumbbells')}
                                 {renderExerciseSection('Rear Delt (Pull days)', 'rearDelt', null, 'Posture work — appears on every Pull day')}
                                 {renderExerciseSection('Legs', 'squats')}
+                                {renderExerciseSection('Legs Accessory (every Legs day)', 'legAccessory', null, 'Always appears on Legs days — adductor/accessory work')}
                                 {renderExerciseSection('Core', 'core')}
                                 <div className="settings-section-title">Corrective & Mobility</div>
                                 {renderExerciseSection('APT Correction', 'apt', null, 'Rotates 2 exercises on mobility days (Sun / Tue / Thu)')}
