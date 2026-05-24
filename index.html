@@ -507,8 +507,10 @@
         }, []);
 
         useEffect(() => {
-            if (user) finishWorkout();
-        }, [workout, completedWorkout]);
+            if (user && workout.length === 0 && completedWorkout.length > 0 && !workoutComplete) {
+                saveWorkoutToHistory();
+            }
+        }, [workout, completedWorkout, workoutComplete]);
 
         const checkUser = async () => {
             const { data: { session } } = await supabase.auth.getSession();
@@ -529,6 +531,9 @@
                         ...DEFAULT_EXERCISES,
                         ...saved,
                         pullDb: saved.pullDb || DEFAULT_EXERCISES.pullDb,
+                        overhead: saved.overhead || DEFAULT_EXERCISES.overhead,
+                        rearDelt: saved.rearDelt || DEFAULT_EXERCISES.rearDelt,
+                        legAccessory: saved.legAccessory || DEFAULT_EXERCISES.legAccessory,
                         stretches: saved.stretches
                             ? { ...DEFAULT_EXERCISES.stretches, ...saved.stretches }
                             : DEFAULT_EXERCISES.stretches,
@@ -743,11 +748,6 @@
             }
         };
 
-        const finishWorkout = () => {
-            if (workout.length === 0 && completedWorkout.length > 0 && !workoutComplete) {
-                saveWorkoutToHistory();
-            }
-        };
 
         const toggleEx = async (category, id) => {
             const updated = JSON.parse(JSON.stringify(exercises));
@@ -780,14 +780,20 @@
         };
 
         const changeRestDay = async (day) => {
+            const prev = customRestDay;
             setCustomRestDay(day);
-            await supabase.from('user_profiles').update({ custom_rest_day: day, updated_at: new Date().toISOString() }).eq('id', user.id);
+            const { error } = await supabase.from('user_profiles').update({ custom_rest_day: day, updated_at: new Date().toISOString() }).eq('id', user.id);
+            if (error) {
+                console.error('changeRestDay error:', error);
+                setCustomRestDay(prev);
+            }
         };
 
         const postponeRestDay = async () => {
             if (!user) return;
             if (window.confirm("Move rest day to tomorrow and work out today instead?")) {
-                await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
+                const { error } = await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
+                if (error) { console.error('postponeRestDay error:', error); return; }
                 window.location.reload();
             }
         };
@@ -830,7 +836,7 @@
         // ── Modals ─────────────────────────────────────────────────────────
         const renderExerciseSection = (label, category, sub = null, note = null) => {
             const key = sub || category;
-            const list = sub ? exercises.stretches[sub] : exercises[category];
+            const list = (sub ? exercises.stretches[sub] : exercises[category]) || [];
             return (
                 <div key={key}>
                     <div className="cat-header" onClick={() => toggleCollapsed(key)}>
@@ -871,8 +877,8 @@
                         </div>
                         <div className="modal-scroll">
                             <div className={`tab-content ${activeTab === 'exercises' ? 'active' : ''}`}>
-                                <div className="settings-section-title">Mandatory Mobility (3× / week)</div>
-                                {renderExerciseSection('Mobility', 'mandatory', null, 'Appears on 3 evenly-spaced workout days each week')}
+                                <div className="settings-section-title">Mandatory Warm-Up (every session)</div>
+                                {renderExerciseSection('Warm-Up', 'mandatory', null, 'Runs at the start of every workout session')}
                                 <div className="settings-section-title">Main Lifts</div>
                                 {renderExerciseSection('Push', 'push')}
                                 {renderExerciseSection('Shoulders (Push days)', 'overhead', null, 'Overhead press — appears on every Push day')}
