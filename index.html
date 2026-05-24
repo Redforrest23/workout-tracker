@@ -631,6 +631,7 @@
         };
 
         const generateWorkout = () => {
+            if (workout.length > 0 && !window.confirm('Regenerate workout? Your current progress will be lost.')) return;
             const d = new Date();
             generateWorkoutWith(d.getDay(), exercises, stretchIndex, customRestDay, user?.id);
         };
@@ -700,11 +701,13 @@
             const id = uid || user?.id;
             if (!id) return;
             const { data: ex } = await supabase.from('stretch_categories').select('id').eq('user_id', id).single();
+            let error;
             if (ex) {
-                await supabase.from('stretch_categories').update({ last_categories: idx, updated_at: new Date().toISOString() }).eq('user_id', id);
+                ({ error } = await supabase.from('stretch_categories').update({ last_categories: idx, updated_at: new Date().toISOString() }).eq('user_id', id));
             } else {
-                await supabase.from('stretch_categories').insert({ user_id: id, last_categories: idx });
+                ({ error } = await supabase.from('stretch_categories').insert({ user_id: id, last_categories: idx }));
             }
+            if (error) console.error('saveStretchIndex error:', error);
         };
 
         const saveExerciseSettings = async (data, uid) => {
