@@ -237,6 +237,19 @@
             .header-day { font-size: 20px; }
             .card { border-radius: 12px; }
         }
+
+        /* ── Toast ─────────────────────────────────────────── */
+        .toast {
+            position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+            background: #2A0E0E; border: 1px solid var(--danger); color: #E08080;
+            padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600;
+            z-index: 9999; pointer-events: none; white-space: nowrap;
+            animation: toast-in 0.2s ease;
+        }
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+            to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -496,6 +509,12 @@
         const [customRestDay, setCustomRestDay]       = useState(6);
         const [restDayPostponed, setRestDayPostponed] = useState(false);
         const [collapsed, setCollapsed]               = useState({});
+        const [toast, setToast]                       = useState(null);
+
+        const showToast = (msg) => {
+            setToast(msg);
+            setTimeout(() => setToast(null), 4000);
+        };
 
         useEffect(() => {
             checkUser();
@@ -707,7 +726,7 @@
             } else {
                 ({ error } = await supabase.from('stretch_categories').insert({ user_id: id, last_categories: idx }));
             }
-            if (error) console.error('saveStretchIndex error:', error);
+            if (error) { console.error('saveStretchIndex error:', error); showToast('Sync error — stretch rotation may repeat'); }
         };
 
         const saveExerciseSettings = async (data, uid) => {
@@ -751,6 +770,7 @@
                 localStorage.removeItem('currentWorkout');
             } catch (err) {
                 console.error('saveWorkoutToHistory error:', err);
+                showToast('Failed to save workout — check your connection and try again');
             }
         };
 
@@ -871,6 +891,7 @@
 
         const modals = (
             <>
+                {toast && <div className="toast">{toast}</div>}
                 {/* Settings */}
                 <div className={`modal ${showSettings ? 'show' : ''}`}>
                     <div className="modal-content" style={{ height: '86vh' }}>
