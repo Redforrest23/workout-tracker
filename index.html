@@ -539,15 +539,29 @@
                 const { data: settingsData } = await supabase
                     .from('exercise_settings').select('exercise_data').eq('user_id', uid).single();
 
+                // Merges saved array with defaults — preserves user's enabled/disabled state
+                // while appending any new exercises added since they last saved.
+                const mergeArr = (saved, defaults) => {
+                    if (!saved) return defaults;
+                    const savedIds = new Set(saved.map(e => e.id));
+                    return [...saved, ...defaults.filter(e => !savedIds.has(e.id))];
+                };
+
                 let exData = DEFAULT_EXERCISES;
                 if (settingsData) {
                     const saved = settingsData.exercise_data;
                     exData = {
                         ...DEFAULT_EXERCISES,
                         ...saved,
-                        pullDb: saved.pullDb || DEFAULT_EXERCISES.pullDb,
-                        overhead: saved.overhead || DEFAULT_EXERCISES.overhead,
-                        rearDelt: saved.rearDelt || DEFAULT_EXERCISES.rearDelt,
+                        mandatory:    mergeArr(saved.mandatory,    DEFAULT_EXERCISES.mandatory),
+                        push:         mergeArr(saved.push,         DEFAULT_EXERCISES.push),
+                        pull:         mergeArr(saved.pull,         DEFAULT_EXERCISES.pull),
+                        pullDb:       mergeArr(saved.pullDb,       DEFAULT_EXERCISES.pullDb),
+                        core:         mergeArr(saved.core,         DEFAULT_EXERCISES.core),
+                        squats:       mergeArr(saved.squats,       DEFAULT_EXERCISES.squats),
+                        apt:          mergeArr(saved.apt,          DEFAULT_EXERCISES.apt),
+                        overhead:     saved.overhead    || DEFAULT_EXERCISES.overhead,
+                        rearDelt:     saved.rearDelt    || DEFAULT_EXERCISES.rearDelt,
                         legAccessory: saved.legAccessory || DEFAULT_EXERCISES.legAccessory,
                         stretches: saved.stretches
                             ? { ...DEFAULT_EXERCISES.stretches, ...saved.stretches }
