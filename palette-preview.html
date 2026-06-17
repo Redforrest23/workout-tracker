@@ -5,273 +5,321 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Palette Preview</title>
 <style>
-  :root {
-    --bg:        #0F1419;
-    --surface:   #1A2332;
-    --raised:    #1F2B3E;
-    --border:    #2A3A52;
-    --accent:    #5B8DB8;
-    --accent-lt: #7BA7C9;
-    --success:   #5B9E7A;
-    --danger:    #A05555;
-    --hard:      #B87A4A;
-    --txt:       #D8E2EC;
-    --txt-sub:   #7A8FA0;
-    --txt-muted: #4A6070;
-  }
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #090909; color: #ddd; padding: 32px 16px; }
+  h1 { text-align: center; font-size: 20px; color: #aaa; margin-bottom: 8px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+  .subtitle { text-align: center; font-size: 13px; color: #555; margin-bottom: 40px; }
 
-  body {
-    background: var(--bg);
-    color: var(--txt);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    padding: 24px;
-    max-width: 480px;
-    margin: 0 auto;
-  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 28px; max-width: 1100px; margin: 0 auto; }
 
-  h2 {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--txt-muted);
-    margin-bottom: 12px;
-    margin-top: 28px;
-  }
-  h2:first-child { margin-top: 0; }
-
-  /* ── Swatches ─────────────────────────────── */
-  .swatches { display: flex; flex-wrap: wrap; gap: 8px; }
-  .swatch {
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    font-size: 11px; color: var(--txt-sub);
-  }
-  .swatch-box {
-    width: 52px; height: 36px; border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.06);
-  }
-
-  /* ── Header mock ──────────────────────────── */
-  .header {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 20px 14px;
-    margin-bottom: 4px;
-  }
-  .header-day { font-size: 22px; font-weight: 700; color: var(--txt); letter-spacing: -0.02em; }
-  .header-date { font-size: 13px; color: var(--txt-sub); margin-top: 2px; }
-  .header-email { font-size: 11px; color: var(--txt-muted); margin-top: 2px; }
-  .header-streak {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 10px;
-    background: var(--raised);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 5px 12px;
-    font-size: 13px; font-weight: 600; color: var(--accent-lt);
-  }
-  .streak-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
-
-  /* ── Button row ───────────────────────────── */
-  .btn-row { display: flex; gap: 8px; margin: 8px 0; }
-  .btn {
-    flex: 1; padding: 10px 8px; border-radius: 10px; border: none;
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    letter-spacing: 0.01em;
-  }
-  .btn-ghost {
-    background: var(--surface); color: var(--txt-sub);
-    border: 1px solid var(--border);
-  }
-  .btn-danger { background: var(--danger); color: #f0d0d0; }
-
-  /* ── Exercise card ────────────────────────── */
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 10px;
+    border-radius: 16px; overflow: hidden;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s;
   }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
-  .ex-name { font-size: 17px; font-weight: 700; color: var(--txt); }
-  .ex-tag {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
-    background: var(--raised); color: var(--accent); border: 1px solid var(--border);
-    padding: 3px 8px; border-radius: 6px;
+  .card:hover { transform: translateY(-2px); }
+  .card.current { border-color: #555; }
+
+  .card-label {
+    padding: 10px 16px 9px;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: center;
   }
-  .detail-btn {
-    background: none; border: none; color: var(--txt-muted);
-    font-size: 12px; cursor: pointer; margin-top: 3px; text-decoration: underline;
-    text-underline-offset: 2px;
-  }
-  .mode-row {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 12px;
-  }
-  .mode-label { font-size: 12px; color: var(--txt-muted); }
-  .mode-label.active { color: var(--txt); font-weight: 600; }
-  .toggle {
-    width: 38px; height: 20px; background: var(--accent); border-radius: 10px;
-    position: relative;
-  }
-  .toggle::after {
-    content: ''; position: absolute; width: 14px; height: 14px;
-    background: #fff; border-radius: 50%; top: 3px; left: 3px;
-  }
-  .set-section {
-    background: var(--raised); border-radius: 10px; padding: 12px 14px;
-    margin-bottom: 12px;
-  }
-  .section-label { font-size: 12px; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
-  .set-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
-  .set-row:last-child { margin-bottom: 0; }
-  .set-num { font-size: 13px; color: var(--txt-sub); width: 46px; flex-shrink: 0; }
-  .set-input {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 7px; padding: 7px 10px; color: var(--txt); font-size: 14px;
-    outline: none;
-  }
-  .set-input:focus { border-color: var(--accent); }
-  .complete-btn {
-    width: 100%; padding: 13px; border-radius: 10px; border: none;
-    background: var(--accent); color: #fff; font-size: 15px; font-weight: 700;
-    cursor: pointer; letter-spacing: 0.02em;
+  .badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8;
   }
 
-  /* Hard mode card variant */
-  .card.hard { border-color: #4A3828; }
-  .set-section.hard { background: #1E1812; }
-  .section-label.hard { color: var(--hard); }
-  .complete-btn.hard { background: var(--hard); }
+  .mock { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 
-  /* Completed card */
-  .card.done { opacity: 0.55; }
-  .ex-name.done { color: var(--success); }
-  .check-icon { color: var(--success); font-size: 18px; }
+  .mock-header {
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .mock-header-title { font-size: 15px; font-weight: 700; }
+  .mock-header-sub { font-size: 11px; margin-top: 2px; }
+  .mock-streak { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
 
-  /* Divider */
-  .divider {
-    text-align: center; font-size: 13px; font-weight: 600;
-    color: var(--success); margin: 16px 0 10px;
-    display: flex; align-items: center; gap: 10px;
+  .mock-ex {
+    border-radius: 10px; padding: 12px 14px;
+    display: flex; justify-content: space-between; align-items: center;
   }
-  .divider::before, .divider::after {
-    content: ''; flex: 1; height: 1px; background: var(--border);
+  .mock-ex-left { display: flex; flex-direction: column; gap: 3px; }
+  .mock-ex-name { font-size: 14px; font-weight: 600; }
+  .mock-ex-cat { font-size: 11px; }
+  .mock-ex-right { display: flex; gap: 6px; align-items: center; }
+  .mock-pill { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; }
+
+  .mock-btn-row { display: flex; gap: 8px; }
+  .mock-btn {
+    flex: 1; padding: 11px 0; border-radius: 10px; border: none;
+    font-size: 13px; font-weight: 700; cursor: pointer; text-align: center;
   }
 
-  /* Rest day card */
-  .rest-card {
-    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-    padding: 32px 20px; text-align: center;
-  }
-  .rest-title { font-size: 20px; font-weight: 700; color: var(--accent-lt); margin-bottom: 8px; }
-  .rest-text { font-size: 14px; color: var(--txt-sub); line-height: 22px; }
+  .swatches { display: flex; gap: 0; border-radius: 0 0 14px 14px; overflow: hidden; height: 28px; }
+  .swatch { flex: 1; }
 </style>
 </head>
 <body>
 
-<h2>Palette</h2>
-<div class="swatches">
-  <div class="swatch"><div class="swatch-box" style="background:#0F1419"></div>bg</div>
-  <div class="swatch"><div class="swatch-box" style="background:#1A2332"></div>surface</div>
-  <div class="swatch"><div class="swatch-box" style="background:#1F2B3E"></div>raised</div>
-  <div class="swatch"><div class="swatch-box" style="background:#2A3A52"></div>border</div>
-  <div class="swatch"><div class="swatch-box" style="background:#5B8DB8"></div>accent</div>
-  <div class="swatch"><div class="swatch-box" style="background:#7BA7C9"></div>accent lt</div>
-  <div class="swatch"><div class="swatch-box" style="background:#5B9E7A"></div>success</div>
-  <div class="swatch"><div class="swatch-box" style="background:#A05555"></div>danger</div>
-  <div class="swatch"><div class="swatch-box" style="background:#B87A4A"></div>hard</div>
-</div>
+<h1>Color Palette Options</h1>
+<p class="subtitle">Click any card to copy its CSS variables &nbsp;&middot;&nbsp; <span id="copy-msg" style="color:#5B8DB8"></span></p>
 
-<h2>Header</h2>
-<div class="header">
-  <div class="header-day">Push Day</div>
-  <div class="header-date">Friday, May 23</div>
-  <div class="header-email">you@email.com</div>
-  <div class="header-streak">
-    <span class="streak-dot"></span> 4 day streak
-  </div>
-</div>
+<div class="grid" id="grid"></div>
 
-<h2>Buttons</h2>
-<div class="btn-row">
-  <button class="btn btn-ghost">Settings</button>
-  <button class="btn btn-ghost">History</button>
-  <button class="btn btn-danger">Logout</button>
-</div>
+<script>
+const palettes = [
+  {
+    id: 'steel-navy',
+    name: 'Steel Navy',
+    note: 'Current',
+    vars: {
+      bg:          '#0F1419',
+      surface:     '#1A2332',
+      raised:      '#1F2B3E',
+      border:      '#2A3A52',
+      accent:      '#5B8DB8',
+      accentLt:    '#7BA7C9',
+      success:     '#5B9E7A',
+      successBg:   '#0E2018',
+      danger:      '#A05555',
+      hardAccent:  '#B87A4A',
+      hardBg:      '#1E1810',
+      hardBorder:  '#3A2810',
+      txt:         '#D8E2EC',
+      txtSub:      '#7A8FA0',
+      txtMuted:    '#4A6070',
+    }
+  },
+  {
+    id: 'ember-dark',
+    name: 'Ember Dark',
+    note: 'Warm & Bold',
+    vars: {
+      bg:          '#0F0D08',
+      surface:     '#1C1910',
+      raised:      '#242018',
+      border:      '#352E1E',
+      accent:      '#D4802A',
+      accentLt:    '#E89A50',
+      success:     '#6B9E5A',
+      successBg:   '#0C1A09',
+      danger:      '#B05050',
+      hardAccent:  '#E05040',
+      hardBg:      '#1E0F0F',
+      hardBorder:  '#3A1818',
+      txt:         '#EDE0CC',
+      txtSub:      '#8A7A60',
+      txtMuted:    '#524838',
+    }
+  },
+  {
+    id: 'forest-deep',
+    name: 'Forest Deep',
+    note: 'Natural',
+    vars: {
+      bg:          '#090D0A',
+      surface:     '#101A12',
+      raised:      '#162018',
+      border:      '#1E2E22',
+      accent:      '#4BAD7A',
+      accentLt:    '#6AC998',
+      success:     '#4BAD7A',
+      successBg:   '#091609',
+      danger:      '#A05555',
+      hardAccent:  '#C08030',
+      hardBg:      '#1A1208',
+      hardBorder:  '#2E1E08',
+      txt:         '#C8E0D0',
+      txtSub:      '#608070',
+      txtMuted:    '#3A5040',
+    }
+  },
+  {
+    id: 'violet-night',
+    name: 'Violet Night',
+    note: 'Premium',
+    vars: {
+      bg:          '#0C0A14',
+      surface:     '#140F20',
+      raised:      '#1B1628',
+      border:      '#261D3A',
+      accent:      '#8B5CF6',
+      accentLt:    '#A78BFA',
+      success:     '#5B9E7A',
+      successBg:   '#0A1612',
+      danger:      '#C05555',
+      hardAccent:  '#F59E0B',
+      hardBg:      '#1A1408',
+      hardBorder:  '#302008',
+      txt:         '#E2D9F3',
+      txtSub:      '#806898',
+      txtMuted:    '#4A3860',
+    }
+  },
+  {
+    id: 'obsidian-red',
+    name: 'Obsidian Red',
+    note: 'Intense',
+    vars: {
+      bg:          '#0C0A0A',
+      surface:     '#181010',
+      raised:      '#201616',
+      border:      '#2E1E1E',
+      accent:      '#C23B2B',
+      accentLt:    '#E05040',
+      success:     '#5B9E7A',
+      successBg:   '#0A1612',
+      danger:      '#C23B2B',
+      hardAccent:  '#E08030',
+      hardBg:      '#1A1008',
+      hardBorder:  '#2E1A08',
+      txt:         '#EDE0DC',
+      txtSub:      '#8A7070',
+      txtMuted:    '#503E3E',
+    }
+  },
+  {
+    id: 'slate-teal',
+    name: 'Slate + Teal',
+    note: 'Clean & Sharp',
+    vars: {
+      bg:          '#090C0E',
+      surface:     '#11181C',
+      raised:      '#172028',
+      border:      '#1E2C38',
+      accent:      '#2AC4B3',
+      accentLt:    '#4DD8C8',
+      success:     '#4EAF6A',
+      successBg:   '#081510',
+      danger:      '#A05555',
+      hardAccent:  '#F0883E',
+      hardBg:      '#1A1008',
+      hardBorder:  '#2E1A08',
+      txt:         '#CCE4E8',
+      txtSub:      '#508090',
+      txtMuted:    '#304858',
+    }
+  },
+  {
+    id: 'iron-gold',
+    name: 'Iron + Gold',
+    note: 'Strength',
+    vars: {
+      bg:          '#0C0B09',
+      surface:     '#181610',
+      raised:      '#201D14',
+      border:      '#302C1C',
+      accent:      '#C8A840',
+      accentLt:    '#DFC060',
+      success:     '#6B9E5A',
+      successBg:   '#0C1A09',
+      danger:      '#A05555',
+      hardAccent:  '#D07040',
+      hardBg:      '#1A0E08',
+      hardBorder:  '#301808',
+      txt:         '#E8DCC8',
+      txtSub:      '#907A50',
+      txtMuted:    '#584C34',
+    }
+  },
+  {
+    id: 'arctic-blue',
+    name: 'Arctic Blue',
+    note: 'Ice Cold',
+    vars: {
+      bg:          '#090C10',
+      surface:     '#0E141C',
+      raised:      '#131C28',
+      border:      '#1C2838',
+      accent:      '#38BDF8',
+      accentLt:    '#60CEFA',
+      success:     '#4EAF7A',
+      successBg:   '#081510',
+      danger:      '#A05555',
+      hardAccent:  '#FB923C',
+      hardBg:      '#1A1008',
+      hardBorder:  '#2E1A08',
+      txt:         '#CAE0F0',
+      txtSub:      '#4878A0',
+      txtMuted:    '#2A4860',
+    }
+  },
+];
 
-<h2>Exercise Card — Regular mode</h2>
-<div class="card">
-  <div class="card-top">
-    <div>
-      <div class="ex-name">Regular Push-ups</div>
-      <button class="detail-btn">View details</button>
+function buildCssVars(v) {
+  return `        :root {\n            --bg:          ${v.bg};\n            --surface:     ${v.surface};\n            --raised:      ${v.raised};\n            --border:      ${v.border};\n            --accent:      ${v.accent};\n            --accent-lt:   ${v.accentLt};\n            --success:     ${v.success};\n            --success-bg:  ${v.successBg};\n            --danger:      ${v.danger};\n            --hard-accent: ${v.hardAccent};\n            --hard-bg:     ${v.hardBg};\n            --hard-border: ${v.hardBorder};\n            --txt:         ${v.txt};\n            --txt-sub:     ${v.txtSub};\n            --txt-muted:   ${v.txtMuted};\n        }`;
+}
+
+function buildCard(p) {
+  const v = p.vars;
+  const card = document.createElement('div');
+  card.className = 'card' + (p.id === 'steel-navy' ? ' current' : '');
+  card.style.background = v.bg;
+
+  const swatchColors = [v.bg, v.surface, v.raised, v.border, v.accent, v.accentLt, v.success, v.hardAccent, v.danger, v.txt];
+
+  card.innerHTML = `
+    <div class="card-label" style="background:${v.surface}; color:${v.accentLt}; border-bottom: 1px solid ${v.border}">
+      <span>${p.name}</span>
+      <span class="badge" style="background:${v.raised}; color:${v.txtSub}">${p.note}</span>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-      <span class="ex-tag">Push</span>
-      <div class="mode-row" style="margin:0">
-        <span class="mode-label active">Reg</span>
-        <div class="toggle"></div>
-        <span class="mode-label">Hard</span>
+    <div class="mock">
+      <div class="mock-header" style="background:${v.surface}; border: 1px solid ${v.border}">
+        <div>
+          <div class="mock-header-title" style="color:${v.txt}">Wednesday &mdash; Push Day</div>
+          <div class="mock-header-sub" style="color:${v.txtSub}">4 exercises &middot; ~35 min</div>
+        </div>
+        <div class="mock-streak" style="background:${v.raised}; color:${v.accentLt}; border: 1px solid ${v.border}">&nbsp;5 streak</div>
+      </div>
+
+      <div class="mock-ex" style="background:${v.surface}; border: 1px solid ${v.border}">
+        <div class="mock-ex-left">
+          <div class="mock-ex-name" style="color:${v.txt}">Regular Push-ups</div>
+          <div class="mock-ex-cat" style="color:${v.txtSub}">Push &middot; 3 sets &times; 10 reps</div>
+        </div>
+        <div class="mock-pill" style="background:${v.successBg}; color:${v.success}">Done</div>
+      </div>
+
+      <div class="mock-ex" style="background:${v.raised}; border: 1px solid ${v.border}">
+        <div class="mock-ex-left">
+          <div class="mock-ex-name" style="color:${v.txt}">Pike Push-ups</div>
+          <div class="mock-ex-cat" style="color:${v.txtSub}">Shoulders &middot; 3 sets &times; 8 reps</div>
+        </div>
+        <div class="mock-pill" style="background:${v.raised}; color:${v.accentLt}; border: 1px solid ${v.border}">Active</div>
+      </div>
+
+      <div class="mock-ex" style="background:${v.hardBg}; border: 1px solid ${v.hardBorder}">
+        <div class="mock-ex-left">
+          <div class="mock-ex-name" style="color:${v.hardAccent}">Plank &mdash; Hard Mode</div>
+          <div class="mock-ex-cat" style="color:${v.txtSub}">Core &middot; 3 sets &times; 45 sec</div>
+        </div>
+        <div class="mock-pill" style="background:${v.hardBg}; color:${v.hardAccent}; border: 1px solid ${v.hardBorder}">Hard</div>
+      </div>
+
+      <div class="mock-btn-row">
+        <button class="mock-btn" style="background:${v.accent}; color:#fff">Complete</button>
+        <button class="mock-btn" style="background:${v.raised}; color:${v.txtSub}; border: 1px solid ${v.border}">Skip</button>
       </div>
     </div>
-  </div>
-  <div class="set-section">
-    <div class="section-label">3 sets × 10 reps</div>
-    <div class="set-row"><span class="set-num">Set 1</span><input class="set-input" type="number" placeholder="Reps"></div>
-    <div class="set-row"><span class="set-num">Set 2</span><input class="set-input" type="number" placeholder="Reps"></div>
-    <div class="set-row"><span class="set-num">Set 3</span><input class="set-input" type="number" placeholder="Reps"></div>
-  </div>
-  <button class="complete-btn">Fill All Sets to Complete</button>
-</div>
 
-<h2>Exercise Card — Hard mode</h2>
-<div class="card hard">
-  <div class="card-top">
-    <div>
-      <div class="ex-name">Regular Push-ups</div>
-      <button class="detail-btn">View details</button>
+    <div class="swatches">
+      ${swatchColors.map(c => `<div class="swatch" style="background:${c}" title="${c}"></div>`).join('')}
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
-      <span class="ex-tag" style="color:var(--hard)">Push</span>
-      <div class="mode-row" style="margin:0">
-        <span class="mode-label">Reg</span>
-        <div class="toggle" style="background:var(--hard)"></div>
-        <span class="mode-label active">Hard</span>
-      </div>
-    </div>
-  </div>
-  <div class="set-section hard">
-    <div class="section-label hard">4 sets × 15 reps — Hard Mode</div>
-    <div class="set-row"><span class="set-num">Set 1</span><input class="set-input" type="number" placeholder="Reps"></div>
-    <div class="set-row"><span class="set-num">Set 2</span><input class="set-input" type="number" placeholder="Reps"></div>
-    <div class="set-row"><span class="set-num">Set 3</span><input class="set-input" type="number" placeholder="Reps"></div>
-    <div class="set-row"><span class="set-num">Set 4</span><input class="set-input" type="number" placeholder="Reps"></div>
-  </div>
-  <button class="complete-btn hard">Fill All Sets to Complete</button>
-</div>
+  `;
 
-<h2>Completed Exercise</h2>
-<div class="divider">✓ Completed</div>
-<div class="card done">
-  <div class="card-top" style="margin:0">
-    <div>
-      <div class="ex-name done">Wall Push-ups</div>
-      <div style="font-size:12px;color:var(--txt-muted);margin-top:2px">Push · Regular · 3×10</div>
-    </div>
-    <span class="check-icon">✓</span>
-  </div>
-</div>
+  card.addEventListener('click', () => {
+    navigator.clipboard.writeText(buildCssVars(v));
+    document.getElementById('copy-msg').textContent = '"' + p.name + '" CSS variables copied to clipboard';
+    setTimeout(() => { document.getElementById('copy-msg').textContent = ''; }, 3000);
+  });
 
-<h2>Rest Day</h2>
-<div class="rest-card">
-  <div class="rest-title">Rest Day</div>
-  <div class="rest-text">Recovery is when you get stronger.<br>See you tomorrow.</div>
-</div>
+  return card;
+}
 
+const grid = document.getElementById('grid');
+palettes.forEach(p => grid.appendChild(buildCard(p)));
+</script>
 </body>
 </html>
