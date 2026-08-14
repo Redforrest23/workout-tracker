@@ -6,10 +6,16 @@ on:
     - cron: '0 12 */3 * *'
   workflow_dispatch: # Allow manual trigger
 
+permissions:
+  contents: write
+
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Ping Supabase
         run: |
           response=$(curl -s -o /tmp/resp.txt -w "%{http_code}" \
@@ -23,3 +29,15 @@ jobs:
             exit 1
           fi
           echo "Supabase project is active"
+
+      - name: Record ping (keeps repo active so GitHub doesn't disable this schedule after 60 days)
+        run: |
+          mkdir -p keepalive
+          echo "Last successful Supabase ping: $(date -u +'%Y-%m-%dT%H:%M:%SZ')" > keepalive/last-ping.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add keepalive/last-ping.txt
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: record keep-alive ping"
+            git push
+          fi
