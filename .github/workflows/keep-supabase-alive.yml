@@ -12,13 +12,14 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://gnxwcdwqmderpghmtddy.supabase.co/rest/v1/" \
+          response=$(curl -s -o /tmp/resp.txt -w "%{http_code}" \
+            "https://gnxwcdwqmderpghmtddy.supabase.co/rest/v1/user_profiles?select=id&limit=1" \
             -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA" \
             -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdueHdjZHdxbWRlcnBnaG10ZGR5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0NTQwODcsImV4cCI6MjA3NzAzMDA4N30.NCxKQvkvAuRlaAWR9FdYR9Or15qYyG2V69H-EeJU7pA")
           echo "Supabase responded with HTTP $response"
-          if [ "$response" -lt 200 ] || [ "$response" -ge 500 ]; then
-            echo "Unexpected response — project may be paused or unreachable"
+          cat /tmp/resp.txt
+          if [ "$response" -lt 200 ] || [ "$response" -ge 300 ]; then
+            echo "Unexpected response — project may be paused, unreachable, or the key is invalid"
             exit 1
           fi
           echo "Supabase project is active"
