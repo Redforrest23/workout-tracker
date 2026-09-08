@@ -299,7 +299,7 @@
     const SPLITS = {
         legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: true,  includeShoulder: false },
         push:     { name: 'Push',     focus: ['push'],                            includeCore: true,  includeShoulder: true  },
-        pull:     { name: 'Pull',     focus: ['pull', 'rearDelt', 'abs', 'calf'], includeCore: false, includeShoulder: false },
+        pull:     { name: 'Pull',     focus: ['pull', 'row', 'rearDelt', 'abs', 'calf'], includeCore: false, includeShoulder: false },
         recovery: { name: 'Recovery', focus: [],                                  includeCore: false, includeShoulder: false },
     };
 
@@ -324,6 +324,13 @@
         { type: 'push',     apt: 0 }, // Fri — tight morning
         { type: 'pull',     apt: 0 }, // Sat — free day, bar trip has room
     ];
+
+    // Shown against each exercise in the day's list. Anything not named here falls
+    // back to the split name, so 'squats' reads as "Legs" and 'push' as "Push".
+    const CATEGORY_LABELS = {
+        rearDelt: 'Rear Delt', legAccessory: 'Legs', hinge: 'Hinge',
+        calf: 'Calves', abs: 'Abs', row: 'Row',
+    };
 
     // There is no full rest day. The recovery day drops strength work and runs
     // corrective work instead; a genuine day off comes from spending a rest credit.
@@ -821,6 +828,13 @@
                 let pool;
                 if (cat === 'pull') {
                     pool = (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled);
+                } else if (cat === 'row') {
+                    // Horizontal pull, the one movement pattern the week was missing
+                    // entirely. Reuses the dumbbell pull list rather than duplicating
+                    // it, and is skipped when the pull track is already dumbbells —
+                    // the main pull is a row in that case and this would repeat it.
+                    if (exData.pullTrack === 'dumbbells') return;
+                    pool = (exData.pullDb || []).filter(e => e.enabled);
                 } else if (cat === 'rearDelt') {
                     // Rear delt follows the pull track too — the dumbbell flys are
                     // not a sensible pairing with a bodyweight pull-up progression.
@@ -828,7 +842,7 @@
                 } else {
                     pool = (exData[cat] || []).filter(e => e.enabled);
                 }
-                const catLabel = cat === 'rearDelt' ? 'Rear Delt' : cat === 'legAccessory' ? 'Legs' : schedule.name;
+                const catLabel = CATEGORY_LABELS[cat] || schedule.name;
                 if (pool.length > 0) items.push({ ...pool[0], category: catLabel });
             });
 
@@ -1064,7 +1078,7 @@
                                 {renderExerciseSection('Push', 'push')}
                                 {renderExerciseSection('Shoulders (Push days)', 'overhead', null, 'Overhead press — appears on every Push day')}
                                 {renderExerciseSection('Pull — Bar Track', 'pull', null, 'Active when Pull Track is set to Bar')}
-                                {renderExerciseSection('Pull — Dumbbell Track', 'pullDb', null, 'Active when Pull Track is set to Dumbbells')}
+                                {renderExerciseSection('Rows (every Pull day)', 'pullDb', null, 'Horizontal pull — dumbbell and bench in the dorm gym. Doubles as the main pull if Pull Track is set to Dumbbells, in which case the row slot is skipped')}
                                 {renderExerciseSection('Rear Delt — Bar / Bodyweight Track', 'rearDeltBw', null, 'Posture work on every Pull day — active when Pull Track is set to Bar')}
                                 {renderExerciseSection('Rear Delt — Dumbbell Track', 'rearDelt', null, 'Posture work on every Pull day — active when Pull Track is set to Dumbbells')}
                                 {renderExerciseSection('Legs', 'squats')}
