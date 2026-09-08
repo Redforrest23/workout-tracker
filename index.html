@@ -196,6 +196,11 @@
         /* ── Settings ──────────────────────────────────────── */
         .settings-section-title { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--txt-muted); margin-bottom: 8px; margin-top: 20px; }
         .settings-section-title:first-child { margin-top: 0; }
+        .cat-count { font-size: 11px; color: var(--txt-muted); margin-left: 8px; font-variant-numeric: tabular-nums; }
+        .requires-tag { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+                        color: var(--danger); border: 1px solid var(--hard-border); border-radius: 4px;
+                        padding: 1px 5px; margin-left: 8px; white-space: nowrap; }
+        .settings-row.archived { opacity: 0.55; }
         .settings-note { font-size: 12px; color: var(--txt-muted); font-style: italic; margin-bottom: 8px; }
         .cat-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 8px 0; user-select: none; }
         .cat-header-left { display: flex; align-items: center; gap: 8px; }
@@ -410,7 +415,7 @@
         ],
         pull: [
             { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:'https://www.youtube.com/watch?v=rYXoCAxIJgs' },
-            { id:'pu2', name:'Australian Pull-ups', difficulty:2, sets:3, reps:8,  hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR (waist height) or rings — not doable on the high dorm bar. Hang underneath, body straight, heels on the floor. Pull chest to bar. Lower with control. A sturdy desk or table edge is the usual substitute: lie underneath and row up to it.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu2', name:'Australian Pull-ups', requires:'Low bar', difficulty:2, sets:3, reps:8,  hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR (waist height) or rings — not doable on the high dorm bar. Hang underneath, body straight, heels on the floor. Pull chest to bar. Lower with control. A sturdy desk or table edge is the usual substitute: lie underneath and row up to it.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu3', name:'Negative Pull-ups',   difficulty:3, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Works on a high bar, so this is the rung to start on. Jump or step up to the top position with your chin over the bar, then lower as slowly as you can — aim for 5–10 seconds. The lowering half is where the strength is built, and you can do it long before you can pull yourself up. Grip is neutral here, which suits the wrists. Start with 3–5 reps; stop the set when the lowering stops being slow.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu4', name:'Assisted Pull-ups',   difficulty:4, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'No band needed — put a chair or box under the bar and take just enough weight through one foot to complete the rep, driving with the back rather than the leg. Reduce the help as you get stronger. Pull chin over bar, lower under control.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu5', name:'Regular Pull-ups',    difficulty:5, sets:3, reps:5,  hardSets:4, hardReps:8,  isTime:false, enabled:false, desc:'Hang from bar, palms away. Pull chin over bar. Lower controlled. Engage core.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
@@ -431,8 +436,8 @@
         // selects between this and the dumbbell `rearDelt` list below.
         rearDeltBw: [
             { id:'rdb1', name:'Prone Y-T-W Raises',     difficulty:1, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true,  desc:'Lie face down, forehead resting on the floor, arms straight and thumbs pointing up. Lift the arms off the floor in three shapes — overhead in a Y, straight out to the sides in a T, elbows bent in a W — squeezing the shoulder blades down and back each time. 10 of each shape, no weight. Low load and high control; this trains rear delt plus mid and lower trap, the muscles that pull your shoulders back out of the forward position that comes with rib flare.', videoUrl:null, pdfUrl:null, pdfPage:null },
-            { id:'rdb2', name:'Wide-Grip Inverted Row', difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR (waist height), rings, or a sturdy desk edge — not the high dorm bar. Hang underneath it with your hands wider than shoulder-width, body straight, heels on the floor. Pull your chest to the bar with your elbows flared out to roughly 90° — wide elbows are what shift the work off the lats and onto the rear delts and mid-traps. Lower under control. Harder: walk your feet further forward, or elevate them on a chair.', videoUrl:null, pdfUrl:null, pdfPage:null },
-            { id:'rdb3', name:'Inverted Face Pull',     difficulty:3, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR, same as the wide-grip inverted row. Same setup, but pull toward your forehead instead of your chest, keeping the elbows high and wide and finishing with your hands beside your ears. The most rear-delt-specific pull you can do without weight, and it trains external rotation directly. The range is short — go slow and hold the top for a beat rather than chasing reps.', videoUrl:null, pdfUrl:null, pdfPage:null },
+            { id:'rdb2', name:'Wide-Grip Inverted Row', requires:'Low bar', difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR (waist height), rings, or a sturdy desk edge — not the high dorm bar. Hang underneath it with your hands wider than shoulder-width, body straight, heels on the floor. Pull your chest to the bar with your elbows flared out to roughly 90° — wide elbows are what shift the work off the lats and onto the rear delts and mid-traps. Lower under control. Harder: walk your feet further forward, or elevate them on a chair.', videoUrl:null, pdfUrl:null, pdfPage:null },
+            { id:'rdb3', name:'Inverted Face Pull', requires:'Low bar',     difficulty:3, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR, same as the wide-grip inverted row. Same setup, but pull toward your forehead instead of your chest, keeping the elbows high and wide and finishing with your hands beside your ears. The most rear-delt-specific pull you can do without weight, and it trains external rotation directly. The range is short — go slow and hold the top for a beat rather than chasing reps.', videoUrl:null, pdfUrl:null, pdfPage:null },
         ],
         rearDelt: [
             { id:'rd1', name:'Prone Rear Delt Fly',    difficulty:1, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Lie face-down on the floor or a flat surface. Hold light dumbbells (5–10 lbs), arms hanging. Raise arms out to sides keeping a slight elbow bend, squeezing shoulder blades together at the top. Lower slowly. No bench needed. Trains the exact muscle that counters your forward shoulder pattern from rib flare.', videoUrl:'https://www.youtube.com/watch?v=buuYPLVXsJg' },
@@ -517,15 +522,14 @@
             { id:'a8',  name:'Reverse Plank',       sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Sit, legs extended, hands behind. Lift hips straight. Squeeze glutes hard.', videoUrl:null },
             { id:'a9',  name:'Wall Pelvic Tilts',   sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Back against wall, feet forward. Press lower back flat to wall. Release. Teaches posterior tilt.', videoUrl:null },
             { id:'a10', name:'90/90 Hip Lift',      sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly.', videoUrl:'https://www.youtube.com/watch?v=gWpMbJCpzz8' },
-            { id:'a11', name:'Band Hip Extension',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Requires a resistance band. Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
+            { id:'a11', name:'Band Hip Extension', requires:'Band',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Requires a resistance band. Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
             { id:'a12', name:'Bird Dogs',           aptGroup:2, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level. Anti-rotation work — the goal is that a glass of water on your lower back would not spill.', videoUrl:'https://www.youtube.com/watch?v=5Zp9IYxDYB4' },
             { id:'a13', name:'Pelvic Clock',        sets:2, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Lie on back, knees bent. Imagine clock on pelvis. Tilt through each hour. 12:00 is posterior tilt.', videoUrl:null },
             { id:'a14', name:'Side Plank',          aptGroup:2, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true,  desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked. Your only lateral core work — nothing else in the week trains the side of the trunk.', videoUrl:'https://www.youtube.com/watch?v=iNbH7_edNI8' },
-            { id:'a17', name:'Band Hip Distraction',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:false, desc:'Requires a resistance band. Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
+            { id:'a17', name:'Band Hip Distraction', requires:'Band',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:false, desc:'Requires a resistance band. Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
             { id:'a18', name:"Child's Pose PPT",    sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:false, desc:'Sit on heels, arms forward. Tuck tailbone posteriorly. Gently round lower back. Breathe deep.', videoUrl:null },
             { id:'a19', name:'Serratus Punches',    sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, arm pointing straight up holding a light dumbbell (5–10 lbs) or fist. Without bending the elbow, push your fist/dumbbell toward the ceiling by protracting your shoulder blade — like a slow punch. Lower back down. This directly targets the serratus anterior, the muscle that holds your ribs flat against your thorax. This is the primary fix for rib flare.', videoUrl:'https://www.youtube.com/watch?v=y1FPkIS85kY' },
             { id:'a20', name:'RKC Plank',           sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Get into a plank. Now maximally squeeze everything simultaneously: posteriorly tilt your pelvis (tuck tailbone hard), brace abs as if taking a punch, squeeze glutes as hard as possible, try to drag elbows toward your toes. You should be shaking within 10 seconds. Far more effective than a standard plank for your APT pattern.', videoUrl:'https://www.youtube.com/watch?v=0xgxEoWC22g' },
-            { id:'a21', name:'Single-Leg Glute Bridge', sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Glute bridge on one leg. Extend one leg straight, foot flexed. Drive hips up through the planted foot by squeezing the glute — not your back. Lower slowly. Your skating balance makes this accessible where most beginners struggle. Forces each glute to work independently, exposing and fixing asymmetries common in APT.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
             { id:'a22', name:'Reverse Wrist Curls', sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Sit with forearm on thigh, palm facing down, holding a light dumbbell (5–10 lbs). Curl the wrist upward, then lower slowly. This directly strengthens the wrist extensors — the exact muscles strained by Osu! aim movements. Most people only train flexors (gripping), leaving extensors chronically weak and injury-prone. Start light and go slow; these muscles fatigue fast.', videoUrl:'https://www.youtube.com/watch?v=SfENsl5klVA' },
             { id:'a23', name:'Hammer Rotations',   sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Hold a light dumbbell (5–8 lbs) vertically like a hammer. Keeping elbow bent at 90° and pinned to your side, rotate palm up (supination), then palm down (pronation). Slow and controlled. The Osu! mouse grip pattern locks you in a narrow pronation range — this restores full pronation/supination strength and reduces the cumulative stress on the radioulnar joint.', videoUrl:'https://www.youtube.com/watch?v=9XVf_yGLXNk' },
         ],
@@ -1068,24 +1072,39 @@
         if (!user)   return <AuthScreen />;
 
         // ── Modals ─────────────────────────────────────────────────────────
-        const renderExerciseSection = (label, category, sub = null, note = null) => {
+        // `opts.archive` renders a section read-only: no checkboxes, no Toggle All,
+        // collapsed by default. Nothing in an archived category can reach a
+        // generated workout, so live controls there only invited ticking a box that
+        // would never do anything. `requires` surfaces missing equipment in the row
+        // itself rather than burying it in the description.
+        const renderExerciseSection = (label, category, sub = null, note = null, opts = {}) => {
             const key = sub || category;
             const list = (sub ? exercises.stretches[sub] : exercises[category]) || [];
+            const isCollapsed = key in collapsed ? collapsed[key] : !!opts.archive;
+            const onCount = list.filter(e => e.enabled).length;
             return (
                 <div key={key}>
                     <div className="cat-header" onClick={() => toggleCollapsed(key)}>
                         <div className="cat-header-left">
-                            <span className={`cat-arrow ${collapsed[key] ? 'collapsed' : ''}`}>▼</span>
+                            <span className={`cat-arrow ${isCollapsed ? 'collapsed' : ''}`}>▼</span>
                             <span className="cat-name">{label}</span>
+                            {!opts.archive && <span className="cat-count">{onCount}/{list.length}</span>}
                         </div>
-                        <button className="toggle-all-btn" onClick={e => { e.stopPropagation(); toggleAllInCategory(category, sub); }}>Toggle All</button>
+                        {!opts.archive && (
+                            <button className="toggle-all-btn" onClick={e => { e.stopPropagation(); toggleAllInCategory(category, sub); }}>Toggle All</button>
+                        )}
                     </div>
                     {note && <div className="settings-note">{note}</div>}
-                    <div className={`cat-exercises ${collapsed[key] ? 'collapsed' : ''}`}>
+                    <div className={`cat-exercises ${isCollapsed ? 'collapsed' : ''}`}>
                         {list.map(ex => (
-                            <div key={ex.id} className="settings-row">
-                                <span className="settings-ex-name">{ex.name}</span>
-                                <input type="checkbox" className="checkbox" checked={ex.enabled} onChange={() => toggleEx(category, ex.id)} />
+                            <div key={ex.id} className={opts.archive ? 'settings-row archived' : 'settings-row'}>
+                                <span className="settings-ex-name">
+                                    {ex.name}
+                                    {ex.requires && <span className="requires-tag">no {ex.requires}</span>}
+                                </span>
+                                {!opts.archive && (
+                                    <input type="checkbox" className="checkbox" checked={ex.enabled} onChange={() => toggleEx(category, ex.id)} />
+                                )}
                             </div>
                         ))}
                     </div>
@@ -1112,32 +1131,44 @@
                         </div>
                         <div className="modal-scroll">
                             <div className={`tab-content ${activeTab === 'exercises' ? 'active' : ''}`}>
-                                <div className="settings-section-title">Mandatory Warm-Up (every session)</div>
-                                {renderExerciseSection('Warm-Up', 'mandatory', null, 'Runs at the start of every workout session')}
-                                <div className="settings-section-title">Main Lifts</div>
+                                <div className="settings-section-title">Every Day — Stretches</div>
+                                {renderExerciseSection('Daily Stretch Routine', 'stretches', 'daily', 'Runs on the five non-APT days, 2 sets each — 10 sets a week per stretch')}
+
+                                <div className="settings-section-title">Legs Days — Sun / Thu</div>
+                                {renderExerciseSection('Squat', 'squats')}
+                                {renderExerciseSection('Adductors', 'legAccessory', null, 'Copenhagen plank — adductor work nothing else covers')}
+                                {renderExerciseSection('Hip Hinge', 'hinge', null, 'Hamstrings and glutes, balancing the quad-dominant squat')}
+
+                                <div className="settings-section-title">Push Days — Mon / Fri</div>
                                 {renderExerciseSection('Push', 'push')}
-                                {renderExerciseSection('Shoulders (Push days)', 'overhead', null, 'Overhead press — appears on every Push day')}
-                                {renderExerciseSection('Pull — Bar Track', 'pull', null, 'Active when Pull Track is set to Bar')}
-                                {renderExerciseSection('Rows (every Pull day)', 'pullDb', null, 'Horizontal pull — dumbbell and bench in the dorm gym. Doubles as the main pull if Pull Track is set to Dumbbells, in which case the row slot is skipped')}
-                                {renderExerciseSection('Rear Delt — Bar / Bodyweight Track', 'rearDeltBw', null, 'Posture work on every Pull day — active when Pull Track is set to Bar')}
-                                {renderExerciseSection('Rear Delt — Dumbbell Track', 'rearDelt', null, 'Posture work on every Pull day — active when Pull Track is set to Dumbbells')}
-                                {renderExerciseSection('Legs', 'squats')}
-                                {renderExerciseSection('Legs Accessory (every Legs day)', 'legAccessory', null, 'Always appears on Legs days — adductor/accessory work')}
-                                {renderExerciseSection('Hip Hinge (every Legs day)', 'hinge', null, 'Hamstrings and glutes — balances the squat, which is quad-dominant')}
-                                {renderExerciseSection('Calves / Ankles (every Pull day)', 'calf', null, 'Ankle strength — nothing else in the week trains it')}
-                                {renderExerciseSection('Abs (every Pull day)', 'abs', null, 'Loaded, progressive ab work at the captain\'s chair — the muscle-building counterpart to the isometric Core holds')}
-                                {renderExerciseSection('Core', 'core')}
-                                <div className="settings-section-title">Daily Stretches (Mon–Fri)</div>
-                                {renderExerciseSection('Daily Routine', 'stretches', 'daily', 'Every enabled stretch runs Monday through Friday, 2 × 30s each')}
-                                <div className="settings-section-title">Corrective & Mobility</div>
-                                {renderExerciseSection('APT Correction', 'apt', null, 'Rotates 2 exercises on mobility days (Sun / Tue / Thu)')}
-                                <div className="settings-section-title">Stretch Backlog (not in rotation)</div>
-                                {renderExerciseSection('Hip Flexor', 'stretches', 'hipFlexor', 'Kept for reference — these no longer appear in generated workouts')}
-                                {renderExerciseSection('Hamstring', 'stretches', 'hamstring')}
-                                {renderExerciseSection('Hip / Glute', 'stretches', 'hipGlute')}
-                                {renderExerciseSection('Shoulder', 'stretches', 'shoulder')}
-                                {renderExerciseSection('Back / Spine', 'stretches', 'backSpine')}
-                                {renderExerciseSection('Full Body', 'stretches', 'fullBody')}
+                                {renderExerciseSection('Core', 'core', null, 'Isometric anti-extension holds for posture — the loaded ab work is under Pull days')}
+
+                                <div className="settings-section-title">Pull Days — Tue / Sat (dorm gym)</div>
+                                {renderExerciseSection('Pull-ups', 'pull', null, 'Vertical pull on the high bar')}
+                                {renderExerciseSection('Rows', 'pullDb', null, 'Horizontal pull — dumbbell and bench. Becomes the main pull instead if Pull Track is switched to Dumbbells')}
+                                {renderExerciseSection('Abs', 'abs', null, 'Loaded and progressive, at the captain\'s chair')}
+
+                                <div className="settings-section-title">Wed / Fri — No Equipment</div>
+                                {renderExerciseSection('Rear Delt', 'rearDeltBw', null, 'Moved off the gym days since it needs nothing but floor space')}
+                                {renderExerciseSection('Calves / Ankles', 'calf', null, 'Ankle strength — nothing else in the week trains it')}
+
+                                <div className="settings-section-title">Corrective — Mon / Wed</div>
+                                {renderExerciseSection('APT Correction', 'apt', null, 'Two fixed groups of three: group 1 on Monday, group 2 on Wednesday. Enabling a fourth in either group makes that day longer')}
+
+                                <div className="settings-section-title">Paused</div>
+                                <div className="settings-note">Reachable by the generator, but nothing is enabled — so these slots stay empty until you turn something on.</div>
+                                {renderExerciseSection('Overhead Press', 'overhead', null, 'Empty pending physical therapy. Pike push-ups load the wrists; the dumbbell press is the one your thoracic outlet history argues against')}
+                                {renderExerciseSection('Rear Delt — Dumbbell', 'rearDelt', null, 'Only used if Pull Track is switched to Dumbbells')}
+
+                                <div className="settings-section-title">Archive — Not In Use</div>
+                                <div className="settings-note">Read-only. The generator cannot reach any of these, so there is nothing to toggle — they are kept for reference and could be revived by pointing the program back at them.</div>
+                                {renderExerciseSection('Retired Warm-Up', 'mandatory', null, 'Six exercises that ran every session. Retired to get sessions under 30 minutes; the daily stretches serve the same purpose now', { archive: true })}
+                                {renderExerciseSection('Stretch Backlog — Hip Flexor', 'stretches', 'hipFlexor', null, { archive: true })}
+                                {renderExerciseSection('Stretch Backlog — Hamstring', 'stretches', 'hamstring', null, { archive: true })}
+                                {renderExerciseSection('Stretch Backlog — Hip / Glute', 'stretches', 'hipGlute', null, { archive: true })}
+                                {renderExerciseSection('Stretch Backlog — Shoulder', 'stretches', 'shoulder', null, { archive: true })}
+                                {renderExerciseSection('Stretch Backlog — Back / Spine', 'stretches', 'backSpine', null, { archive: true })}
+                                {renderExerciseSection('Stretch Backlog — Full Body', 'stretches', 'fullBody', null, { archive: true })}
                             </div>
 
                             <div className={`tab-content ${activeTab === 'schedule' ? 'active' : ''}`}>
