@@ -357,6 +357,13 @@
             { id:'pd6', name:'Renegade Row',               difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Plank on dumbbells. Row one side while stabilizing with the other. Anti-rotation core challenge. 20–25 lbs each.', videoUrl:null },
             { id:'pd7', name:'Archer Row',                 difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:6,  isTime:false, enabled:false, desc:'Wide stance, row to one side while the other arm extends straight. Mimics archer pull-up. 25–30 lbs.', videoUrl:null },
         ],
+        // Rear delt, bar/bodyweight track. Mirrors pull/pullDb: the pull track
+        // selects between this and the dumbbell `rearDelt` list below.
+        rearDeltBw: [
+            { id:'rdb1', name:'Prone Y-T-W Raises',     difficulty:1, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true,  desc:'Lie face down, forehead resting on the floor, arms straight and thumbs pointing up. Lift the arms off the floor in three shapes — overhead in a Y, straight out to the sides in a T, elbows bent in a W — squeezing the shoulder blades down and back each time. 10 of each shape, no weight. Low load and high control; this trains rear delt plus mid and lower trap, the muscles that pull your shoulders back out of the forward position that comes with rib flare.', videoUrl:null, pdfUrl:null, pdfPage:null },
+            { id:'rdb2', name:'Wide-Grip Inverted Row', difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Set the bar around waist height. Hang underneath it with your hands wider than shoulder-width, body straight, heels on the floor. Pull your chest to the bar with your elbows flared out to roughly 90° — wide elbows are what shift the work off the lats and onto the rear delts and mid-traps. Lower under control. Harder: walk your feet further forward, or elevate them on a chair.', videoUrl:null, pdfUrl:null, pdfPage:null },
+            { id:'rdb3', name:'Inverted Face Pull',     difficulty:3, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Same setup as the wide-grip inverted row, but pull toward your forehead instead of your chest, keeping the elbows high and wide and finishing with your hands beside your ears. The most rear-delt-specific pull you can do without weight, and it trains external rotation directly. The range is short — go slow and hold the top for a beat rather than chasing reps.', videoUrl:null, pdfUrl:null, pdfPage:null },
+        ],
         rearDelt: [
             { id:'rd1', name:'Prone Rear Delt Fly',    difficulty:1, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Lie face-down on the floor or a flat surface. Hold light dumbbells (5–10 lbs), arms hanging. Raise arms out to sides keeping a slight elbow bend, squeezing shoulder blades together at the top. Lower slowly. No bench needed. Trains the exact muscle that counters your forward shoulder pattern from rib flare.', videoUrl:'https://www.youtube.com/watch?v=buuYPLVXsJg' },
             { id:'rd2', name:'Rear Delt Fly',          difficulty:2, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true,  desc:'Stand hip-width, hinge forward ~45°. Hold light dumbbells (8–15 lbs). Raise arms out to sides leading with elbows — not your hands. Squeeze shoulder blades together at the top. Lower controlled. Directly counters the internal rotation that accompanies your rib flare and APT. Go lighter than you think — most people cheat this with their traps.', videoUrl:'https://www.youtube.com/watch?v=d1QEddtoOq0' },
@@ -406,11 +413,11 @@
             { id:'a8',  name:'Reverse Plank',       sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Sit, legs extended, hands behind. Lift hips straight. Squeeze glutes hard.', videoUrl:null },
             { id:'a9',  name:'Wall Pelvic Tilts',   sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back against wall, feet forward. Press lower back flat to wall. Release. Teaches posterior tilt.', videoUrl:null },
             { id:'a10', name:'90/90 Hip Lift',      sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly.', videoUrl:'https://www.youtube.com/watch?v=gWpMbJCpzz8' },
-            { id:'a11', name:'Band Hip Extension',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
+            { id:'a11', name:'Band Hip Extension',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Requires a resistance band. Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
             { id:'a12', name:'Bird Dogs',           sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level.', videoUrl:'https://www.youtube.com/watch?v=5Zp9IYxDYB4' },
             { id:'a13', name:'Pelvic Clock',        sets:2, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:true, desc:'Lie on back, knees bent. Imagine clock on pelvis. Tilt through each hour. 12:00 is posterior tilt.', videoUrl:null },
             { id:'a14', name:'Side Plank',          sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked.', videoUrl:'https://www.youtube.com/watch?v=iNbH7_edNI8' },
-            { id:'a17', name:'Band Hip Distraction',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:true, desc:'Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
+            { id:'a17', name:'Band Hip Distraction',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:false, desc:'Requires a resistance band. Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
             { id:'a18', name:"Child's Pose PPT",    sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:true, desc:'Sit on heels, arms forward. Tuck tailbone posteriorly. Gently round lower back. Breathe deep.', videoUrl:null },
             { id:'a19', name:'Serratus Punches',    sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, arm pointing straight up holding a light dumbbell (5–10 lbs) or fist. Without bending the elbow, push your fist/dumbbell toward the ceiling by protracting your shoulder blade — like a slow punch. Lower back down. This directly targets the serratus anterior, the muscle that holds your ribs flat against your thorax. This is the primary fix for rib flare.', videoUrl:'https://www.youtube.com/watch?v=y1FPkIS85kY' },
             { id:'a20', name:'RKC Plank',           sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Get into a plank. Now maximally squeeze everything simultaneously: posteriorly tilt your pelvis (tuck tailbone hard), brace abs as if taking a punch, squeeze glutes as hard as possible, try to drag elbows toward your toes. You should be shaking within 10 seconds. Far more effective than a standard plank for your APT pattern.', videoUrl:'https://www.youtube.com/watch?v=0xgxEoWC22g' },
@@ -594,6 +601,7 @@
                         apt:          mergeArr(saved.apt,          DEFAULT_EXERCISES.apt),
                         overhead:     saved.overhead    || DEFAULT_EXERCISES.overhead,
                         rearDelt:     saved.rearDelt    || DEFAULT_EXERCISES.rearDelt,
+                        rearDeltBw:   mergeArr(saved.rearDeltBw, DEFAULT_EXERCISES.rearDeltBw),
                         legAccessory: saved.legAccessory || DEFAULT_EXERCISES.legAccessory,
                         // Merge each stretch sub-category by id, so stretches added to
                         // the defaults later still show up for an existing account
@@ -741,6 +749,10 @@
                 let pool;
                 if (cat === 'pull') {
                     pool = (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled);
+                } else if (cat === 'rearDelt') {
+                    // Rear delt follows the pull track too — the dumbbell flys are
+                    // not a sensible pairing with a bodyweight pull-up progression.
+                    pool = ((exData.pullTrack === 'dumbbells' ? exData.rearDelt : exData.rearDeltBw) || []).filter(e => e.enabled);
                 } else {
                     pool = (exData[cat] || []).filter(e => e.enabled);
                 }
@@ -1000,14 +1012,15 @@
                                 {renderExerciseSection('Shoulders (Push days)', 'overhead', null, 'Overhead press — appears on every Push day')}
                                 {renderExerciseSection('Pull — Bar Track', 'pull', null, 'Active when Pull Track is set to Bar')}
                                 {renderExerciseSection('Pull — Dumbbell Track', 'pullDb', null, 'Active when Pull Track is set to Dumbbells')}
-                                {renderExerciseSection('Rear Delt (Pull days)', 'rearDelt', null, 'Posture work — appears on every Pull day')}
+                                {renderExerciseSection('Rear Delt — Bar / Bodyweight Track', 'rearDeltBw', null, 'Posture work on every Pull day — active when Pull Track is set to Bar')}
+                                {renderExerciseSection('Rear Delt — Dumbbell Track', 'rearDelt', null, 'Posture work on every Pull day — active when Pull Track is set to Dumbbells')}
                                 {renderExerciseSection('Legs', 'squats')}
                                 {renderExerciseSection('Legs Accessory (every Legs day)', 'legAccessory', null, 'Always appears on Legs days — adductor/accessory work')}
                                 {renderExerciseSection('Core', 'core')}
-                                <div className="settings-section-title">Corrective & Mobility</div>
-                                {renderExerciseSection('APT Correction', 'apt', null, 'Rotates 2 exercises on mobility days (Sun / Tue / Thu)')}
                                 <div className="settings-section-title">Daily Stretches (Mon–Fri)</div>
                                 {renderExerciseSection('Daily Routine', 'stretches', 'daily', 'Every enabled stretch runs Monday through Friday, 2 × 30s each')}
+                                <div className="settings-section-title">Corrective & Mobility</div>
+                                {renderExerciseSection('APT Correction', 'apt', null, 'Rotates 2 exercises on mobility days (Sun / Tue / Thu)')}
                                 <div className="settings-section-title">Stretch Backlog (not in rotation)</div>
                                 {renderExerciseSection('Hip Flexor', 'stretches', 'hipFlexor', 'Kept for reference — these no longer appear in generated workouts')}
                                 {renderExerciseSection('Hamstring', 'stretches', 'hamstring')}
