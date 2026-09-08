@@ -285,9 +285,29 @@
 
     // Caches the in-progress workout for the day so a page reload restores it
     // instead of regenerating different random exercises. Cleared on workout complete.
+    //
+    // The cache is stamped with a hash of everything that decides what a session
+    // contains. Keyed on the date alone, a workout generated before a deploy would
+    // survive the rest of the day, so a change to the plan or the exercises did not
+    // show up until tomorrow unless you knew to hit regenerate. A changed stamp
+    // means the cached session was built by different rules, so it is discarded.
+    // Computed on first use, not at load: WEEK_PLAN, SPLITS and DEFAULT_EXERCISES
+    // are all declared below this point.
+    let _buildStamp = null;
+    const buildStamp = () => {
+        if (_buildStamp === null) {
+            const src = JSON.stringify([WEEK_PLAN, SPLITS, DEFAULT_EXERCISES]);
+            let h = 5381;
+            for (let i = 0; i < src.length; i++) h = (((h << 5) + h) ^ src.charCodeAt(i)) | 0;
+            _buildStamp = (h >>> 0).toString(36);
+        }
+        return _buildStamp;
+    };
+
     const saveWorkoutState = (workout, completedWorkout, log, hardMode) => {
         localStorage.setItem('currentWorkout', JSON.stringify({
             date: toLocalDate(),
+            stamp: buildStamp(),
             workout, completedWorkout, log, hardMode
         }));
     };
@@ -299,7 +319,7 @@
     const SPLITS = {
         legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: true,  includeShoulder: false },
         push:     { name: 'Push',     focus: ['push'],                            includeCore: true,  includeShoulder: true  },
-        pull:     { name: 'Pull',     focus: ['pull', 'row', 'rearDelt', 'abs', 'calf'], includeCore: false, includeShoulder: false },
+        pull:     { name: 'Pull',     focus: ['pull', 'row', 'abs'],             includeCore: false, includeShoulder: false },
         recovery: { name: 'Recovery', focus: [],                                  includeCore: false, includeShoulder: false },
     };
 
@@ -315,14 +335,19 @@
     // `apt` is the APT group that runs that day; 0 means stretches instead. Exactly
     // two days carry APT, which holds stretches at 5 days — the 10 sets a week the
     // stretch routine is built around.
+    // `extra` appends slots to that day on top of its split. Rear delt and calves
+    // need no equipment, so they moved off the Pull days and onto the two lightest
+    // room days. That keeps the gym sessions to only what actually needs the gym —
+    // the trip has its own overhead, including waiting for the bar — and uses up
+    // the slack on Wed and Fri, which were the shortest days in the week.
     const WEEK_PLAN = [
-        { type: 'legs',     apt: 0 }, // Sun — free day, longest session
-        { type: 'push',     apt: 1 }, // Mon — tight morning
-        { type: 'pull',     apt: 0 }, // Tue — late start, bar trip has room
-        { type: 'recovery', apt: 2 }, // Wed — tight morning, shortest day
-        { type: 'legs',     apt: 0 }, // Thu — late start
-        { type: 'push',     apt: 0 }, // Fri — tight morning
-        { type: 'pull',     apt: 0 }, // Sat — free day, bar trip has room
+        { type: 'legs',     apt: 0, extra: [] },                     // Sun — free day
+        { type: 'push',     apt: 1, extra: [] },                     // Mon — tight morning
+        { type: 'pull',     apt: 0, extra: [] },                     // Tue — gym, late start
+        { type: 'recovery', apt: 2, extra: ['rearDelt', 'calf'] },   // Wed — tight morning, room
+        { type: 'legs',     apt: 0, extra: [] },                     // Thu — late start
+        { type: 'push',     apt: 0, extra: ['rearDelt', 'calf'] },   // Fri — tight morning, room
+        { type: 'pull',     apt: 0, extra: [] },                     // Sat — gym, free day
     ];
 
     // Shown against each exercise in the day's list. Anything not named here falls
@@ -765,7 +790,9 @@
                         if (saved) {
                             try {
                                 const parsed = JSON.parse(saved);
-                                if (parsed.date === todayStr && parsed.workout?.length > 0) {
+                                // A missing or stale stamp means the session was built
+                                // before a deploy changed the rules — regenerate.
+                                if (parsed.date === todayStr && parsed.stamp === buildStamp() && parsed.workout?.length > 0) {
                                     setWorkout(parsed.workout);
                                     setCompletedWorkout(parsed.completedWorkout || []);
                                     setLog(parsed.log || {});
@@ -823,8 +850,8 @@
             // All mandatory exercises every session — consistent warm-up and wrist prep
             exData.mandatory.filter(e => e.enabled).forEach(e => items.push({ ...e, category: 'Warm-Up' }));
 
-            // Main lift(s)
-            schedule.focus.forEach(cat => {
+            // Main lift(s), plus any equipment-free slots this day picks up
+            [...schedule.focus, ...(WEEK_PLAN[dayOfWeek].extra || [])].forEach(cat => {
                 let pool;
                 if (cat === 'pull') {
                     pool = (exData.pullTrack === 'dumbbells' ? exData.pullDb : exData.pull).filter(e => e.enabled);
