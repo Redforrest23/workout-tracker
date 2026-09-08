@@ -104,6 +104,15 @@
         /* ── Workout list ──────────────────────────────────── */
         .workout-list { flex: 1; overflow-y: auto; padding: 12px; }
         .progress-wrap { margin-bottom: 14px; }
+        /* Shown only before the first exercise is logged, so it stops taking space
+           once the session is under way. */
+        .rampup-note {
+            background: var(--raised); border: 1px solid var(--border);
+            border-left: 3px solid var(--accent); border-radius: 8px;
+            padding: 10px 12px; margin-bottom: 14px;
+            font-size: 12.5px; line-height: 1.5; color: var(--txt-sub);
+        }
+        .rampup-note strong { color: var(--accent-lt); }
         .progress-bar-bg { background: var(--raised); border-radius: 4px; height: 4px; overflow: hidden; margin-bottom: 5px; }
         .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
         .progress-label { font-size: 11px; color: var(--txt-muted); text-align: right; }
@@ -317,7 +326,11 @@
     // length — they are quick, independent of everything else, and Legs days were
     // carrying five strength slots against Pull's two.
     const SPLITS = {
-        legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: true,  includeShoulder: false },
+        // Core sits on Push days only. It used to run on Legs days too, which meant
+        // the same hollow body hold four times a week — an artefact of both splits
+        // carrying includeCore, not a decision. The loaded ab work on Pull days
+        // covers that job better now.
+        legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: false, includeShoulder: false },
         push:     { name: 'Push',     focus: ['push'],                            includeCore: true,  includeShoulder: true  },
         pull:     { name: 'Pull',     focus: ['pull', 'row', 'abs'],             includeCore: false, includeShoulder: false },
         recovery: { name: 'Recovery', focus: [],                                  includeCore: false, includeShoulder: false },
@@ -1342,6 +1355,12 @@
                         </div>
                         <div className="progress-label">{done} / {total} complete</div>
                     </div>
+
+                    {done === 0 && (
+                        <div className="rampup-note">
+                            <strong>Ramp up first.</strong> One easy set of the first movement before your working sets — about half the reps, comfortable effort, full range. Roughly 60 seconds. You train straight out of bed, which is the stiffest you are all day, and cold joints do not want load.
+                        </div>
+                    )}
 
                     {workout.map(ex => {
                         const isHard = hardMode[ex.id];
