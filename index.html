@@ -299,7 +299,7 @@
     const SPLITS = {
         legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: true,  includeShoulder: false },
         push:     { name: 'Push',     focus: ['push'],                            includeCore: true,  includeShoulder: true  },
-        pull:     { name: 'Pull',     focus: ['pull', 'rearDelt', 'calf'],        includeCore: false, includeShoulder: false },
+        pull:     { name: 'Pull',     focus: ['pull', 'rearDelt', 'abs', 'calf'], includeCore: false, includeShoulder: false },
         recovery: { name: 'Recovery', focus: [],                                  includeCore: false, includeShoulder: false },
     };
 
@@ -419,6 +419,21 @@
             { id:'h3', name:'Backpack RDL',            difficulty:3, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Load a backpack with books and hold it against your chest, or by the top handle hanging in front. Hip-width stance, soft knees. Push the hips straight back and let the torso hinge forward with a flat back — this is a hinge, not a squat, so the knees barely move. Stand up by squeezing the glutes. A backpack is the easiest way to load this without a gym; add books as it gets easy.', videoUrl:'https://www.youtube.com/watch?v=hQgFixeXdZo' },
             { id:'h4', name:'Single-Leg RDL',          difficulty:4, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Stand on one leg, soft knee. Hinge forward at the hip, reaching toward the floor with the opposite hand while the free leg extends straight behind you as a counterweight. Keep hips square to the ground — the tendency is to let the trailing hip roll open. Hold a loaded backpack to progress.', videoUrl:'https://www.youtube.com/watch?v=J1ojvq3ftqM' },
             { id:'h5', name:'Nordic Curl Negatives',   difficulty:5, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Kneel on something padded with your heels anchored under a couch, bed frame or loaded barbell. Keeping hips extended and body in one line from knees to head, lower yourself forward as slowly as you can, catching with your hands at the bottom. Push back up with the hands. Brutal on the hamstrings and one of the most effective hamstring exercises there is. Expect to be sore; start with very few reps.', videoUrl:null },
+        ],
+        // Loaded, progressive ab work on Pull days — the captain's chair and bar are
+        // in the same place, so it costs no extra trip. This is deliberately not the
+        // same job as `core`: the hollow-body and plank work there is anti-extension
+        // isometrics for posture, which holds a position but cannot be progressively
+        // overloaded. Visible abdominal muscle comes from work like this.
+        // Wrist note: the captain's chair takes weight on the forearm pads and none
+        // through the wrist. The hanging versions add grip load, so they are a step
+        // up in more than one way.
+        abs: [
+            { id:'ab1', name:"Captain's Chair Knee Raise", difficulty:1, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Jump up into the station, forearms on the pads, back against the rest. Let the legs hang, then raise the knees toward the chest by curling the pelvis up — the lower back should round slightly at the top. Lower slowly and do not let the legs swing. If you feel it mostly in the hip flexors, you are lifting with the legs instead of curling the pelvis.', videoUrl:null },
+            { id:'ab2', name:"Captain's Chair Leg Raise",  difficulty:2, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true,  desc:'Same station, legs straight instead of bent. Raise until the legs are at least parallel to the floor, curling the pelvis at the top rather than stopping at a hip hinge. Lower under control over 2–3 seconds and stop the set the moment the legs start swinging. Straight legs are a much longer lever than bent, which is the whole progression.', videoUrl:null },
+            { id:'ab3', name:'Hanging Knee Raise',         difficulty:3, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'From a dead hang on the high bar, raise the knees to the chest, curling the pelvis at the top. Harder than the captain\'s chair because nothing supports your back and the grip has to hold you up. Keep the shoulders active — pull them down away from the ears rather than hanging slack. Watch the wrists here: this adds grip load the padded station does not.', videoUrl:null },
+            { id:'ab4', name:'Hanging Leg Raise',          difficulty:4, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Hanging, legs straight, raised to at least parallel. The strongest bodyweight ab exercise most people ever need. Go slowly enough that there is no swing at the bottom; a controlled 8 beats a swinging 15.', videoUrl:null },
+            { id:'ab5', name:'Toes-to-Bar',                difficulty:5, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Hanging leg raise taken all the way until the toes touch the bar. Requires full compression strength and hamstring length together. Strict and slow — kipping this trains nothing you want.', videoUrl:null },
         ],
         // Ankle and calf work, on every Legs day. Nothing else in the week trains
         // the ankle, and it is a strengthening rather than a mobility job here —
@@ -648,6 +663,7 @@
                         squats:       mergeArr(saved.squats,       DEFAULT_EXERCISES.squats),
                         apt:          mergeArr(saved.apt,          DEFAULT_EXERCISES.apt),
                         hinge:        mergeArr(saved.hinge,        DEFAULT_EXERCISES.hinge),
+                        abs:          mergeArr(saved.abs,          DEFAULT_EXERCISES.abs),
                         calf:         mergeArr(saved.calf,         DEFAULT_EXERCISES.calf),
                         overhead:     mergeArr(saved.overhead,     DEFAULT_EXERCISES.overhead),
                         rearDelt:     mergeArr(saved.rearDelt,     DEFAULT_EXERCISES.rearDelt),
@@ -1054,7 +1070,8 @@
                                 {renderExerciseSection('Legs', 'squats')}
                                 {renderExerciseSection('Legs Accessory (every Legs day)', 'legAccessory', null, 'Always appears on Legs days — adductor/accessory work')}
                                 {renderExerciseSection('Hip Hinge (every Legs day)', 'hinge', null, 'Hamstrings and glutes — balances the squat, which is quad-dominant')}
-                                {renderExerciseSection('Calves / Ankles (every Legs day)', 'calf', null, 'Ankle strength — nothing else in the week trains it')}
+                                {renderExerciseSection('Calves / Ankles (every Pull day)', 'calf', null, 'Ankle strength — nothing else in the week trains it')}
+                                {renderExerciseSection('Abs (every Pull day)', 'abs', null, 'Loaded, progressive ab work at the captain\'s chair — the muscle-building counterpart to the isometric Core holds')}
                                 {renderExerciseSection('Core', 'core')}
                                 <div className="settings-section-title">Daily Stretches (Mon–Fri)</div>
                                 {renderExerciseSection('Daily Routine', 'stretches', 'daily', 'Every enabled stretch runs Monday through Friday, 2 × 30s each')}
