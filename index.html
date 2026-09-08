@@ -332,8 +332,11 @@
     // Without this, mergeArr keeps the saved copy of any id it already knows
     // and a retired exercise stays enabled forever.
     //   v2 — warm-up retired; APT pool cut from 19 to 6.
-    const SETTINGS_VERSION = 2;
-    const RESET_ON_UPGRADE = ['mandatory', 'apt'];
+    //   v3 — pike push-ups disabled pending physical therapy (wrist loading).
+    // Note this resets every listed category, not just the one that prompted the
+    // bump, so a deliberate re-enable in one of them is lost on the next upgrade.
+    const SETTINGS_VERSION = 3;
+    const RESET_ON_UPGRADE = ['mandatory', 'apt', 'overhead'];
 
     // ── Default exercises ──────────────────────────────────────────────────
     const DEFAULT_EXERCISES = {
@@ -342,7 +345,7 @@
         push: [
             { id:'p1', name:'Wall Push-ups',            difficulty:1, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Stand facing wall. Hands at shoulder height. Lean in and push back. Keep body straight.', videoUrl:'https://www.hybridcalisthenics.com/wall-pushups' },
             { id:'p2', name:'Incline Push-ups',          difficulty:2, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Hands on elevated surface. Lower chest, push up. Keep core tight and body in a straight line.', videoUrl:'https://www.hybridcalisthenics.com/incline-pushups' },
-            { id:'p3', name:'Regular Push-ups',          difficulty:3, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Plank position. Lower chest to ground, elbows at 45°. Push back up. Maintain straight body line.', videoUrl:'https://www.hybridcalisthenics.com/full-pushups' },
+            { id:'p3', name:'Regular Push-ups',          difficulty:3, sets:3, reps:10, hardSets:4, hardReps:15, isTime:false, enabled:true,  desc:'Plank position. Lower chest to ground, elbows at 45°. Push back up. Maintain straight body line. WRISTS: press on your fists rather than flat palms — a folded towel or mat under the knuckles helps. Flat palms put the wrist in near-full extension under your bodyweight, which is the position to avoid with arthritis and carpal tunnel. Keep the forearm, wrist and knuckles in one straight line. Push-up handles or dumbbells stood on the floor do the same job if you get hold of some.', videoUrl:'https://www.hybridcalisthenics.com/full-pushups' },
             { id:'p4', name:'Diamond Push-ups',          difficulty:4, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Thumbs and index fingers form diamond. Keep elbows close. Heavily targets triceps.', videoUrl:'https://www.youtube.com/watch?v=kGhDnFwMY3E' },
             { id:'p5', name:'Decline Push-ups',          difficulty:5, sets:3, reps:10, hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'Feet elevated. Hands on ground. Harder than regular, emphasizes upper chest.', videoUrl:'https://www.youtube.com/watch?v=s5dEc154cCc' },
             { id:'p6', name:'Archer Push-ups',           difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Wide hands. Lower to one side while the other arm extends. Alternate. Advanced.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
@@ -380,7 +383,7 @@
             { id:'rd3', name:'Incline Rear Delt Fly',  difficulty:3, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Set bench to ~30° incline. Lie chest-down. Arms hang. Raise out to sides, leading with elbows. The incline eliminates hip drive and trunk momentum, isolating rear delt and mid-traps more than the bent-over version. 8–15 lbs.', videoUrl:'https://www.youtube.com/watch?v=buuYPLVXsJg' },
         ],
         overhead: [
-            { id:'oh1', name:'Pike Push-ups',           difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Start in downward-dog position (hips high, inverted V). Bend elbows to bring the top of your head toward the floor, press back up. This is bodyweight overhead pressing — it trains the front and side deltoids and builds the pattern for handstand push-ups. No equipment, zero load on the subclavian region. Best starting point for overhead strength.', videoUrl:'https://www.youtube.com/watch?v=s_aK83TWYkA' },
+            { id:'oh1', name:'Pike Push-ups',           difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Start in downward-dog position (hips high, inverted V). Bend elbows to bring the top of your head toward the floor, press back up. This is bodyweight overhead pressing — it trains the front and side deltoids and builds the pattern for handstand push-ups. No equipment, zero load on the subclavian region. DISABLED pending physical therapy: more of your bodyweight sits over the hands than in a push-up, and the wrist is in near-full extension throughout — the worst position in this program for wrist arthritis and carpal tunnel. Fists do not work well here because of the balance demand. Re-enable once a therapist clears it, or use the dumbbell press below when weights are on hand.', videoUrl:'https://www.youtube.com/watch?v=s_aK83TWYkA' },
             { id:'oh2', name:'DB Overhead Press',       difficulty:2, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Seated or standing. Start with dumbbells at shoulder height, palms forward, elbows at ~90°. Press overhead until arms are fully extended. Lower with control. CAUTION: if you have a history of subclavian vein impingement or thoracic outlet discomfort, start very light (10–12 lbs) and stop if you feel any pressure, numbness, or swelling near your collarbone or neck. Seated with bench is safer than standing. Inform your doctor if symptoms return.', videoUrl:'https://www.youtube.com/watch?v=bj53-0DYKFo' },
             { id:'oh3', name:'Arnold Press',            difficulty:3, sets:3, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Start with dumbbells in front of you, palms facing you (as if finishing a curl). As you press up, rotate palms forward. Reverse on the way down. Hits all three deltoid heads through a larger range of motion than standard press. 12–20 lbs. Named after Arnold Schwarzenegger.', videoUrl:'https://www.youtube.com/watch?v=Did01dFR3Lk' },
         ],
@@ -588,12 +591,18 @@
                 const { data: settingsData } = await supabase
                     .from('exercise_settings').select('exercise_data').eq('user_id', uid).single();
 
-                // Merges saved array with defaults — preserves user's enabled/disabled state
-                // while appending any new exercises added since they last saved.
+                // Content — names, cues, sets, reps, videos — always comes from the
+                // defaults. `enabled` is the only per-exercise field the UI can
+                // change, so it is the only thing carried over from a saved copy.
+                // Returning the saved objects instead (the previous behaviour) froze
+                // every description at whatever it said when the account first saved,
+                // and silently kept exercises that had since been removed.
                 const mergeArr = (saved, defaults) => {
                     if (!saved) return defaults;
-                    const savedIds = new Set(saved.map(e => e.id));
-                    return [...saved, ...defaults.filter(e => !savedIds.has(e.id))];
+                    const savedEnabled = new Map(saved.map(e => [e.id, e.enabled]));
+                    return defaults.map(e =>
+                        savedEnabled.has(e.id) ? { ...e, enabled: savedEnabled.get(e.id) } : e
+                    );
                 };
 
                 let exData = DEFAULT_EXERCISES;
@@ -609,10 +618,10 @@
                         core:         mergeArr(saved.core,         DEFAULT_EXERCISES.core),
                         squats:       mergeArr(saved.squats,       DEFAULT_EXERCISES.squats),
                         apt:          mergeArr(saved.apt,          DEFAULT_EXERCISES.apt),
-                        overhead:     saved.overhead    || DEFAULT_EXERCISES.overhead,
-                        rearDelt:     saved.rearDelt    || DEFAULT_EXERCISES.rearDelt,
-                        rearDeltBw:   mergeArr(saved.rearDeltBw, DEFAULT_EXERCISES.rearDeltBw),
-                        legAccessory: saved.legAccessory || DEFAULT_EXERCISES.legAccessory,
+                        overhead:     mergeArr(saved.overhead,     DEFAULT_EXERCISES.overhead),
+                        rearDelt:     mergeArr(saved.rearDelt,     DEFAULT_EXERCISES.rearDelt),
+                        rearDeltBw:   mergeArr(saved.rearDeltBw,   DEFAULT_EXERCISES.rearDeltBw),
+                        legAccessory: mergeArr(saved.legAccessory, DEFAULT_EXERCISES.legAccessory),
                         // Merge each stretch sub-category by id, so stretches added to
                         // the defaults later still show up for an existing account
                         // instead of being masked by the saved copy.
