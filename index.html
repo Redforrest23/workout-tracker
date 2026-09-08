@@ -272,6 +272,16 @@
         const [y, m, d] = str.split('-').map(Number);
         return new Date(y, m - 1, d);
     }
+    // Sunday-anchored bounds of the week containing `d`, as local date strings.
+    // Rest credits are scoped to this window and expire when it rolls over.
+    function weekBounds(d = new Date()) {
+        const start = new Date(d);
+        start.setHours(0, 0, 0, 0);
+        start.setDate(start.getDate() - start.getDay());
+        const end = new Date(start);
+        end.setDate(end.getDate() + 6);
+        return [toLocalDate(start), toLocalDate(end)];
+    }
 
     // Caches the in-progress workout for the day so a page reload restores it
     // instead of regenerating different random exercises. Cleared on workout complete.
@@ -292,10 +302,16 @@
         { name: 'Pull', focus: ['pull', 'rearDelt'],       includeCore: false, includeShoulder: false },
     ];
 
-    function getWorkoutSchedule(dayOfWeek, restDay) {
-        if (dayOfWeek === restDay) return { name: 'Rest', focus: [], includeCore: false };
+    function getWorkoutSchedule(dayOfWeek, restDay, trainingOnRestDay = false) {
         let pos = 0;
         for (let d = 0; d < dayOfWeek; d++) { if (d !== restDay) pos++; }
+        if (dayOfWeek === restDay) {
+            if (!trainingOnRestDay) return { name: 'Rest', focus: [], includeCore: false };
+            // Training on the scheduled rest day makes this the week's 7th
+            // session. Continue past the last slot instead of reusing it —
+            // pos % 6 would otherwise repeat the split the next day also lands on.
+            return WORKOUT_ROTATION[(pos + 1) % 6];
+        }
         return WORKOUT_ROTATION[pos % 6];
     }
 
@@ -518,6 +534,8 @@
         const [workoutComplete, setWorkoutComplete]   = useState(false);
         const [customRestDay, setCustomRestDay]       = useState(6);
         const [restDayPostponed, setRestDayPostponed] = useState(false);
+        const [restCredits, setRestCredits]           = useState(0);
+        const [restSpentDates, setRestSpentDates]     = useState([]);
         const [collapsed, setCollapsed]               = useState({});
         const [toast, setToast]                       = useState(null);
 
@@ -599,17 +617,36 @@
                 setCustomRestDay(restDay);
 
                 const todayStr = toLocalDate();
-                const { data: postponeData } = await supabase
+                const d = new Date();
+                const dayOfWeek = d.getDay();
+
+                // rest_day_postponements holds this week's rest-day decisions. Each
+                // row is classified by the weekday its date falls on:
+                //   date lands on the scheduled rest day -> trained instead, credit banked
+                //   date lands on any other day          -> credit spent, rested that day
+                // Encoding it this way keeps both events in the existing table with
+                // no schema change. Credits are week-scoped and simply expire.
+                const [weekStart, weekEnd] = weekBounds(d);
+                const { data: restRows } = await supabase
                     .from('rest_day_postponements')
-                    .select('*').eq('user_id', uid).eq('postponed_date', todayStr).single();
-                const isPostponed = !!postponeData;
-                setRestDayPostponed(isPostponed);
+                    .select('postponed_date').eq('user_id', uid)
+                    .gte('postponed_date', weekStart).lte('postponed_date', weekEnd);
+                const rows = restRows || [];
+                const banked = rows.filter(r => parseLocalDate(r.postponed_date).getDay() === restDay);
+                const spent  = rows.filter(r => parseLocalDate(r.postponed_date).getDay() !== restDay);
+                const spentDates = spent.map(r => r.postponed_date);
+                setRestSpentDates(spentDates);
+                setRestCredits(Math.max(0, banked.length - spent.length));
+
+                const bankedToday = banked.some(r => r.postponed_date === todayStr);
+                const restedToday = spentDates.includes(todayStr);
+                setRestDayPostponed(bankedToday);
 
                 const { data: historyData } = await supabase
                     .from('workout_history').select('*').eq('user_id', uid).order('date', { ascending: false });
                 const hist = historyData || [];
                 setHistory(hist);
-                calculateStreak(hist, restDay);
+                calculateStreak(hist, restDay, spentDates);
 
                 const { data: stretchData } = await supabase
                     .from('stretch_categories').select('last_categories').eq('user_id', uid).single();
@@ -619,17 +656,18 @@
                 }
                 setStretchIndex(si);
 
-                const d = new Date();
-                const dayOfWeek = d.getDay();
                 setDate(d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
 
-                const isRestDay = isPostponed ? false : dayOfWeek === restDay;
+                // Rest today if a banked credit was spent on today, or if this is the
+                // scheduled rest day and it hasn't been traded away for a credit.
+                const isRestDay = restedToday || (dayOfWeek === restDay && !bankedToday);
                 setIsRest(isRestDay);
 
                 if (isRestDay) {
                     setDayName('Rest');
                 } else {
-                    const schedule = getWorkoutSchedule(dayOfWeek, restDay);
+                    const trainingOnRestDay = dayOfWeek === restDay;
+                    const schedule = getWorkoutSchedule(dayOfWeek, restDay, trainingOnRestDay);
                     setDayName(schedule.name);
                     const alreadyDone = hist.some(h => h.date === todayStr);
                     if (!alreadyDone) {
@@ -648,7 +686,7 @@
                                 }
                             } catch (e) { /* fall through to generate */ }
                         }
-                        if (!restored) generateWorkoutWith(dayOfWeek, exData, si, restDay, uid);
+                        if (!restored) generateWorkoutWith(dayOfWeek, exData, si, restDay, uid, trainingOnRestDay);
                     } else {
                         setWorkoutComplete(true);
                     }
@@ -658,7 +696,7 @@
             }
         };
 
-        const calculateStreak = (hist, restDay) => {
+        const calculateStreak = (hist, restDay, spentDates = restSpentDates) => {
             if (!hist || hist.length === 0) { setStreak(0); return; }
             const todayStr = toLocalDate();
             const hasTodayWorkout = hist.some(h => h.date === todayStr);
@@ -670,8 +708,10 @@
 
             while (count <= 365) {
                 const dow = check.getDay();
-                if (dow === restDay) { check.setDate(check.getDate() - 1); continue; }
                 const ds = toLocalDate(check);
+                // Neither the scheduled rest day nor a day a banked credit was
+                // spent on counts against the streak.
+                if (dow === restDay || spentDates.includes(ds)) { check.setDate(check.getDate() - 1); continue; }
                 if (hist.some(h => h.date === ds)) {
                     count++;
                     check.setDate(check.getDate() - 1);
@@ -685,11 +725,11 @@
         const generateWorkout = () => {
             if (workout.length > 0 && !window.confirm('Regenerate workout? Your current progress will be lost.')) return;
             const d = new Date();
-            generateWorkoutWith(d.getDay(), exercises, stretchIndex, customRestDay, user?.id);
+            generateWorkoutWith(d.getDay(), exercises, stretchIndex, customRestDay, user?.id, restDayPostponed);
         };
 
-        const generateWorkoutWith = (dayOfWeek, exData, si, restDay, uid) => {
-            const schedule = getWorkoutSchedule(dayOfWeek, restDay);
+        const generateWorkoutWith = (dayOfWeek, exData, si, restDay, uid, trainingOnRestDay = false) => {
+            const schedule = getWorkoutSchedule(dayOfWeek, restDay, trainingOnRestDay);
             if (schedule.focus.length === 0) return;
             const items = [];
 
@@ -851,11 +891,24 @@
             }
         };
 
-        const postponeRestDay = async () => {
+        // Train on the scheduled rest day. Banks the rest as a credit that can be
+        // spent on any later day this week, rather than pushing it to tomorrow.
+        const bankRestDay = async () => {
             if (!user) return;
-            if (window.confirm("Move rest day to tomorrow and work out today instead?")) {
+            if (window.confirm("Train today and bank your rest day? You can take it any day this week instead.")) {
                 const { error } = await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
-                if (error) { console.error('postponeRestDay error:', error); return; }
+                if (error) { console.error('bankRestDay error:', error); showToast('Could not bank rest day — try again'); return; }
+                window.location.reload();
+            }
+        };
+
+        // Spend a banked credit to rest on a day that would otherwise be a workout.
+        const spendRestDay = async () => {
+            if (!user || restCredits < 1) return;
+            if (window.confirm("Use your banked rest day today? Your streak stays intact.")) {
+                const { error } = await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
+                if (error) { console.error('spendRestDay error:', error); showToast('Could not take rest day — try again'); return; }
+                localStorage.removeItem('currentWorkout');
                 window.location.reload();
             }
         };
@@ -975,6 +1028,9 @@
                                 </div>
 
                                 <div className="settings-section-title">Rest Day</div>
+                                <div className="info-box" style={{ marginBottom: 12 }}>
+                                    <div className="info-box-text">Train on your rest day and it gets banked as a credit you can spend any later day that week. One credit per week — unspent credits expire Sunday.</div>
+                                </div>
                                 <div className="rest-day-options">
                                     {DAYS_OF_WEEK.map((day, i) => (
                                         <button key={i} className={`rest-day-btn ${customRestDay === i ? 'selected' : ''}`} onClick={() => changeRestDay(i)}>{day}</button>
@@ -1130,14 +1186,23 @@
         );
 
         // ── Rest day view ──────────────────────────────────────────────────
+        // Two ways to land here: it's the scheduled rest day, or a banked credit
+        // was spent on today. Only the former can still be traded for a credit.
+        const isScheduledRest = new Date().getDay() === customRestDay;
         if (isRest) {
             return (
                 <div className="container">
                     {header('Rest Day')}
-                    {buttons(<button className="btn btn-accent" onClick={postponeRestDay}>Train Today</button>)}
+                    {buttons(isScheduledRest
+                        ? <button className="btn btn-accent" onClick={bankRestDay}>Train Today</button>
+                        : null)}
                     <div className="center-screen">
                         <div className="center-title">{DAYS_OF_WEEK[new Date().getDay()]} — Rest Day</div>
-                        <div className="center-text">Recovery is where you get stronger.<br />See you tomorrow.</div>
+                        {isScheduledRest ? (
+                            <div className="center-text">Recovery is where you get stronger.<br />Train today instead and you keep the rest day banked for later this week.</div>
+                        ) : (
+                            <div className="center-text">Banked rest day used.<br />Your streak is intact — back to it tomorrow.</div>
+                        )}
                     </div>
                     {modals}
                 </div>
@@ -1167,7 +1232,9 @@
         return (
             <div className="container">
                 {header(`${dayName} Day`, true)}
-                {buttons()}
+                {buttons(restCredits > 0
+                    ? <button className="btn btn-accent" onClick={spendRestDay}>Rest Today ({restCredits})</button>
+                    : null)}
                 <div className="workout-list">
                     <div className="progress-wrap">
                         <div className="progress-bar-bg">
