@@ -403,6 +403,20 @@
             { id:'a23', name:'Hammer Rotations',   sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hold a light dumbbell (5–8 lbs) vertically like a hammer. Keeping elbow bent at 90° and pinned to your side, rotate palm up (supination), then palm down (pronation). Slow and controlled. The Osu! mouse grip pattern locks you in a narrow pronation range — this restores full pronation/supination strength and reduces the cumulative stress on the radioulnar joint.', videoUrl:'https://www.youtube.com/watch?v=9XVf_yGLXNk' },
         ],
         stretches: {
+            // Active routine — all of these run every weekday (Mon–Fri), 2 × 30s each.
+            // Source: MovementbyDavid, "Literally 5 Stretches is all you Need"
+            // https://www.youtube.com/watch?v=QaKuVOhikaY  (each videoUrl deep-links to its timestamp)
+            // Still to add: Wall Angels (spine) — &t=424s
+            daily: [
+                { id:'ds1', name:'Pancake Stretch',   sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Sit with legs wide in a straddle. Keep your back flat and hinge forward from the hips — not by rounding the spine. Toes and knees point up. Go only as far as you can while keeping the chest open. Adductors and hamstrings.', videoUrl:'https://www.youtube.com/watch?v=QaKuVOhikaY&t=82s', pdfUrl:null, pdfPage:null },
+                { id:'ds2', name:'Figure 4 Stretch',  sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Lie on your back. Cross one ankle over the opposite knee to make a "4". Reach through and pull the bottom thigh toward your chest. Keep your head and shoulders relaxed on the floor. Glutes and piriformis.', videoUrl:'https://www.youtube.com/watch?v=QaKuVOhikaY&t=180s', pdfUrl:null, pdfPage:null },
+                { id:'ds3', name:'Lunge Stretch',     sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Low lunge — back knee on the floor, front foot forward. Stay tall through the torso and drive the hips forward. Squeeze the glute on the back leg to keep the stretch in the hip flexor instead of the lower back.', videoUrl:'https://www.youtube.com/watch?v=QaKuVOhikaY&t=239s', pdfUrl:null, pdfPage:null },
+                { id:'ds4', name:'Chest Stretch (Belt/Pole)', sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Hold a belt, strap, or pole behind you with both hands, arms straight. Lift the hands away from your back and open the chest. Keep ribs down and shoulders pulled back — do not arch the lower back to fake range.', videoUrl:'https://www.youtube.com/watch?v=QaKuVOhikaY&t=336s', pdfUrl:null, pdfPage:null },
+                { id:'ds5', name:'Lat Stretch',       sets:2, reps:30, hardSets:2, hardReps:45, isTime:true, enabled:true, desc:'Hold a bar, doorframe, or high anchor with one or both hands. Sink the hips back and down, letting the ribs pull away from the arm. Add a slight side-bend or rotation to bias different parts of the lat. See the video for the variants.', videoUrl:'https://www.youtube.com/watch?v=QaKuVOhikaY&t=380s', pdfUrl:null, pdfPage:null },
+            ],
+            // ── Backlog ────────────────────────────────────────────────────
+            // Kept for reference and easy revival. These no longer appear in
+            // generated workouts; the routine draws only from `daily` above.
             hipFlexor: [
                 { id:'sh1', name:'Kneeling Hip Flexor', sets:2, reps:30, hardSets:3, hardReps:45, isTime:true, enabled:true, desc:'Kneel on one knee. Keep upright. Push hips forward. Squeeze glute of kneeling leg.', videoUrl:null, pdfUrl:'https://movementbydavid.com/wp-content/uploads/2025/02/FS-Hips-V2.pdf', pdfPage:'Week 2 Day 2' },
                 { id:'sh3', name:'Frog Stretch',        sets:2, reps:45, hardSets:3, hardReps:60, isTime:true, enabled:true, desc:'Knees wide. Push hips back. Lower toward ground. Opens hips and adductors.', videoUrl:null, pdfUrl:null, pdfPage:null },
@@ -563,9 +577,18 @@
                         overhead:     saved.overhead    || DEFAULT_EXERCISES.overhead,
                         rearDelt:     saved.rearDelt    || DEFAULT_EXERCISES.rearDelt,
                         legAccessory: saved.legAccessory || DEFAULT_EXERCISES.legAccessory,
-                        stretches: saved.stretches
-                            ? { ...DEFAULT_EXERCISES.stretches, ...saved.stretches }
-                            : DEFAULT_EXERCISES.stretches,
+                        // Merge each stretch sub-category by id, so stretches added to
+                        // the defaults later still show up for an existing account
+                        // instead of being masked by the saved copy.
+                        stretches: (() => {
+                            const s = saved.stretches;
+                            if (!s) return DEFAULT_EXERCISES.stretches;
+                            const out = { ...DEFAULT_EXERCISES.stretches, ...s };
+                            for (const sub of Object.keys(DEFAULT_EXERCISES.stretches)) {
+                                out[sub] = mergeArr(s[sub], DEFAULT_EXERCISES.stretches[sub]);
+                            }
+                            return out;
+                        })(),
                     };
                 }
                 setExercises(exData);
@@ -708,16 +731,15 @@
                 }
             }
 
-            // 1 stretch category per session, rotating through all 6 over the week
-            const stretchCat = STRETCH_CATS[si % 6];
-            const newSi = (si + 1) % 6;
-            const stretchPool = (exData.stretches[stretchCat] || []).filter(e => e.enabled);
-            if (stretchPool.length > 0) {
-                items.push({ ...stretchPool[Math.floor(Math.random() * stretchPool.length)], category: 'Stretch' });
+            // Daily stretch routine — every enabled stretch, Monday through Friday.
+            // Replaces the old 1-category-per-session rotation (those live in the
+            // stretch backlog now and are no longer drawn from).
+            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                (exData.stretches.daily || [])
+                    .filter(e => e.enabled)
+                    .forEach(e => items.push({ ...e, category: 'Stretch' }));
             }
 
-            saveStretchIndex(newSi, uid);
-            setStretchIndex(newSi);
             setWorkout(items);
             setCompletedWorkout([]);
             setLog({});
@@ -931,8 +953,10 @@
                                 {renderExerciseSection('Core', 'core')}
                                 <div className="settings-section-title">Corrective & Mobility</div>
                                 {renderExerciseSection('APT Correction', 'apt', null, 'Rotates 2 exercises on mobility days (Sun / Tue / Thu)')}
-                                <div className="settings-section-title">Stretching (rotates through all categories)</div>
-                                {renderExerciseSection('Hip Flexor', 'stretches', 'hipFlexor')}
+                                <div className="settings-section-title">Daily Stretches (Mon–Fri)</div>
+                                {renderExerciseSection('Daily Routine', 'stretches', 'daily', 'Every enabled stretch runs Monday through Friday, 2 × 30s each')}
+                                <div className="settings-section-title">Stretch Backlog (not in rotation)</div>
+                                {renderExerciseSection('Hip Flexor', 'stretches', 'hipFlexor', 'Kept for reference — these no longer appear in generated workouts')}
                                 {renderExerciseSection('Hamstring', 'stretches', 'hamstring')}
                                 {renderExerciseSection('Hip / Glute', 'stretches', 'hipGlute')}
                                 {renderExerciseSection('Shoulder', 'stretches', 'shoulder')}
@@ -978,7 +1002,7 @@
                                 <div className="info-box">
                                     <div className="info-box-title">How It Works</div>
                                     <div className="info-box-text">
-                                        Each day generates one main lift (at your current difficulty), mandatory mobility 3× per week, 2–3 APT correction exercises, and stretches that rotate through all 6 body areas over 3 sessions. Complete all sets to log the workout.
+                                        Each day generates one main lift (at your current difficulty), mandatory mobility 3× per week, 2–3 APT correction exercises, and the daily stretch routine (5 stretches, 2 × 30s each) Monday through Friday. Complete all sets to log the workout.
                                     </div>
                                 </div>
                                 <div className="info-box">
