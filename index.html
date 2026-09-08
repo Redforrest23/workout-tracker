@@ -293,35 +293,43 @@
     };
 
     // ── Schedule helpers ───────────────────────────────────────────────────
-    const WORKOUT_ROTATION = [
-        { name: 'Legs', focus: ['squats', 'legAccessory'], includeCore: true,  includeShoulder: false },
-        { name: 'Push', focus: ['push'],                   includeCore: true,  includeShoulder: true  },
-        { name: 'Pull', focus: ['pull', 'rearDelt'],       includeCore: false, includeShoulder: false },
-        { name: 'Legs', focus: ['squats', 'legAccessory'], includeCore: true,  includeShoulder: false },
-        { name: 'Push', focus: ['push'],                   includeCore: true,  includeShoulder: true  },
-        { name: 'Pull', focus: ['pull', 'rearDelt'],       includeCore: false, includeShoulder: false },
+    // Calves sit on Pull days rather than Legs days purely to even out session
+    // length — they are quick, independent of everything else, and Legs days were
+    // carrying five strength slots against Pull's two.
+    const SPLITS = {
+        legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: true,  includeShoulder: false },
+        push:     { name: 'Push',     focus: ['push'],                            includeCore: true,  includeShoulder: true  },
+        pull:     { name: 'Pull',     focus: ['pull', 'rearDelt', 'calf'],        includeCore: false, includeShoulder: false },
+        recovery: { name: 'Recovery', focus: [],                                  includeCore: false, includeShoulder: false },
+    };
+
+    // Days are assigned outright rather than derived from a rest day, because the
+    // constraints are external to the training itself:
+    //   - Tue/Thu classes start 45 min later, so the two longest sessions (Legs)
+    //     go there. Sunday, also free, takes the third-longest.
+    //   - Mon/Wed/Fri are the tight mornings, so they get the two shortest splits
+    //     (Push) and the recovery day.
+    //   - Pull needs a trip to the shared dorm pull-up bar and possibly a wait, so
+    //     it sits on days with slack around them — Tue and Saturday.
+    // Each split still lands twice a week with 3–4 days between repeats.
+    // `apt` is the APT group that runs that day; 0 means stretches instead. Exactly
+    // two days carry APT, which holds stretches at 5 days — the 10 sets a week the
+    // stretch routine is built around.
+    const WEEK_PLAN = [
+        { type: 'legs',     apt: 0 }, // Sun — free day, longest session
+        { type: 'push',     apt: 1 }, // Mon — tight morning
+        { type: 'pull',     apt: 0 }, // Tue — late start, bar trip has room
+        { type: 'recovery', apt: 2 }, // Wed — tight morning, shortest day
+        { type: 'legs',     apt: 0 }, // Thu — late start
+        { type: 'push',     apt: 0 }, // Fri — tight morning
+        { type: 'pull',     apt: 0 }, // Sat — free day, bar trip has room
     ];
 
-    function getWorkoutSchedule(dayOfWeek, restDay, trainingOnRestDay = false) {
-        let pos = 0;
-        for (let d = 0; d < dayOfWeek; d++) { if (d !== restDay) pos++; }
-        if (dayOfWeek === restDay) {
-            if (!trainingOnRestDay) return { name: 'Rest', focus: [], includeCore: false };
-            // Training on the scheduled rest day makes this the week's 7th
-            // session. Continue past the last slot instead of reusing it —
-            // pos % 6 would otherwise repeat the split the next day also lands on.
-            return WORKOUT_ROTATION[(pos + 1) % 6];
-        }
-        return WORKOUT_ROTATION[pos % 6];
-    }
-
-    // 1st, 3rd, and 5th non-rest day of the week get mandatory mobility
-    function isMobilityDay(dayOfWeek, restDay) {
-        if (dayOfWeek === restDay) return false;
-        let count = 0;
-        for (let d = 0; d <= dayOfWeek; d++) { if (d !== restDay) count++; }
-        return count === 1 || count === 3 || count === 5;
-    }
+    // There is no full rest day. The recovery day drops strength work and runs
+    // corrective work instead; a genuine day off comes from spending a rest credit.
+    const getWorkoutSchedule = (dayOfWeek) => SPLITS[WEEK_PLAN[dayOfWeek].type];
+    const aptGroupFor        = (dayOfWeek) => WEEK_PLAN[dayOfWeek].apt;
+    const isStretchDay       = (dayOfWeek) => WEEK_PLAN[dayOfWeek].apt === 0;
 
     const STRETCH_CATS = ['hipFlexor', 'hamstring', 'hipGlute', 'shoulder', 'backSpine', 'fullBody'];
     const DAYS_OF_WEEK = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -333,9 +341,13 @@
     // and a retired exercise stays enabled forever.
     //   v2 — warm-up retired; APT pool cut from 19 to 6.
     //   v3 — pike push-ups disabled pending physical therapy (wrist loading).
+    //   v4 — hinge work promoted out of APT; Bird Dogs and Side Plank back in.
     // Note this resets every listed category, not just the one that prompted the
     // bump, so a deliberate re-enable in one of them is lost on the next upgrade.
-    const SETTINGS_VERSION = 3;
+    // One genuine day off per week, taken whenever you want it.
+    const REST_CREDITS_PER_WEEK = 1;
+
+    const SETTINGS_VERSION = 4;
     const RESET_ON_UPGRADE = ['mandatory', 'apt', 'overhead'];
 
     // ── Default exercises ──────────────────────────────────────────────────
@@ -397,6 +409,25 @@
             { id:'sq7', name:'Pistol Squats',          difficulty:6, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Full one-leg squat, other leg extended. Very challenging movement.', videoUrl:'https://www.hybridcalisthenics.com/squats' },
             { id:'sq8', name:'Dragon Squats',          difficulty:7, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Deep squat on one leg, other extended to side. Hold. Advanced mobility and strength.', videoUrl:null },
         ],
+        // Hip hinge, on every Legs day. Promoted out of the APT pool, where RDLs
+        // and the single-leg glute bridge were random draws landing about once a
+        // week — against squats twice a week, that left the posterior chain badly
+        // undertrained relative to the quads.
+        hinge: [
+            { id:'h1', name:'Glute Bridge',            difficulty:1, sets:3, reps:15, hardSets:3, hardReps:20, isTime:false, enabled:false, desc:'Lie on your back, knees bent, feet flat and close to your hips. Drive through the heels and lift the hips until shoulders, hips and knees line up. Squeeze the glutes hard at the top rather than arching the lower back to get higher. Lower under control.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
+            { id:'h2', name:'Single-Leg Glute Bridge', difficulty:2, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Glute bridge on one leg, the other extended straight with the foot flexed. Drive the hips up through the planted heel by squeezing the glute, not by arching the back. Lower slowly. Forces each glute to work on its own, which exposes the side-to-side asymmetry that usually comes with anterior pelvic tilt.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
+            { id:'h3', name:'Backpack RDL',            difficulty:3, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Load a backpack with books and hold it against your chest, or by the top handle hanging in front. Hip-width stance, soft knees. Push the hips straight back and let the torso hinge forward with a flat back — this is a hinge, not a squat, so the knees barely move. Stand up by squeezing the glutes. A backpack is the easiest way to load this without a gym; add books as it gets easy.', videoUrl:'https://www.youtube.com/watch?v=hQgFixeXdZo' },
+            { id:'h4', name:'Single-Leg RDL',          difficulty:4, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Stand on one leg, soft knee. Hinge forward at the hip, reaching toward the floor with the opposite hand while the free leg extends straight behind you as a counterweight. Keep hips square to the ground — the tendency is to let the trailing hip roll open. Hold a loaded backpack to progress.', videoUrl:'https://www.youtube.com/watch?v=J1ojvq3ftqM' },
+            { id:'h5', name:'Nordic Curl Negatives',   difficulty:5, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Kneel on something padded with your heels anchored under a couch, bed frame or loaded barbell. Keeping hips extended and body in one line from knees to head, lower yourself forward as slowly as you can, catching with your hands at the bottom. Push back up with the hands. Brutal on the hamstrings and one of the most effective hamstring exercises there is. Expect to be sore; start with very few reps.', videoUrl:null },
+        ],
+        // Ankle and calf work, on every Legs day. Nothing else in the week trains
+        // the ankle, and it is a strengthening rather than a mobility job here —
+        // squat depth is already fine.
+        calf: [
+            { id:'cf1', name:'Calf Raises',             difficulty:1, sets:3, reps:20, hardSets:3, hardReps:25, isTime:false, enabled:true,  desc:'Stand tall, feet hip-width. Push up onto the balls of the feet as high as you can, pause at the top for a beat, then lower slowly. Do them on a stair edge with the heels dropping below the step for a much larger range once bodyweight gets easy. Slow lowering is where most of the benefit is.', videoUrl:null },
+            { id:'cf2', name:'Single-Leg Calf Raise',   difficulty:2, sets:3, reps:15, hardSets:3, hardReps:20, isTime:false, enabled:false, desc:'Same movement on one leg, fingertips on a wall for balance only — not for support. Roughly doubles the load without needing any weight. Keep the ankle tracking straight rather than rolling out.', videoUrl:null },
+            { id:'cf3', name:'Deficit Single-Leg Calf Raise', difficulty:3, sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Single-leg calf raise standing on a stair edge, letting the heel sink well below the step at the bottom and driving all the way up to the toes. The stretched bottom position is what builds ankle resilience. Control the descent over 2–3 seconds.', videoUrl:null },
+        ],
         legAccessory: [
             { id:'sq9', name:'Copenhagen Plank', sets:3, reps:20, hardSets:3, hardReps:30, isTime:true, enabled:true, desc:'Lie on your side. Place your top foot on an elevated surface (bench, chair). Lift your hips so your body is in a straight line, supported only by your top foot and your forearm. Hold. Targets the hip adductors in a way skating does NOT develop — skating builds external rotation but not closed-chain adductor force production. This fills a specific gap for you and protects your knees long-term.', videoUrl:'https://www.youtube.com/watch?v=48wlc5zn02A' },
         ],
@@ -417,24 +448,24 @@
         ],
         apt: [
             { id:'a1',  name:'Glute Bridges',      sets:3, reps:12, hardSets:4, hardReps:15, isTime:false, enabled:false, desc:'Lie on back, knees bent. Lift hips by squeezing glutes until straight line. Lower slow.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
-            { id:'a2',  name:'Dead Bugs',           sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back flat, arms up, knees 90°. Extend opposite limbs. Maintain posterior pelvic tilt.', videoUrl:'https://www.youtube.com/watch?v=bxn9FBrt4-A' },
+            { id:'a2',  name:'Dead Bugs',           aptGroup:2, sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Back flat, arms up, knees 90°. Extend opposite limbs. Maintain posterior pelvic tilt.', videoUrl:'https://www.youtube.com/watch?v=bxn9FBrt4-A' },
             { id:'a3',  name:'Plank with PPT',      sets:3, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:false, desc:'Plank position. Tuck tailbone, engage abs. Squeeze glutes. Lower back rounds slightly.', videoUrl:'https://www.youtube.com/watch?v=H6jIeNkGHuA' },
             { id:'a4',  name:'Couch Stretch',       sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:false, desc:'Back knee against wall, shin vertical. Front foot forward. Upright torso, squeeze glutes.', videoUrl:'https://www.youtube.com/watch?v=7bW0dBwB7Dc' },
-            { id:'a5',  name:'RDLs',                sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Hip-width stance. Hinge at hips, push back. Keep back straight. Stand by squeezing glutes.', videoUrl:'https://www.youtube.com/watch?v=hQgFixeXdZo' },
+            { id:'a5',  name:'RDLs',                sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Hip-width stance. Hinge at hips, push back. Keep back straight. Stand by squeezing glutes.', videoUrl:'https://www.youtube.com/watch?v=hQgFixeXdZo' },
             { id:'a6',  name:'Cat-Cow',             sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Hands and knees. Cat: round spine, tuck tail. Cow: arch back, lift tail. Focus on tucked position.', videoUrl:'https://www.youtube.com/watch?v=xyNwxiuERXc' },
             { id:'a7',  name:'Clamshells',          sets:3, reps:15, hardSets:4, hardReps:20, isTime:false, enabled:false, desc:'Side-lying, knees 90°. Keep feet touching, lift top knee. Works glutes and hip rotators.', videoUrl:'https://www.youtube.com/watch?v=ymjOGuPjOSE' },
             { id:'a8',  name:'Reverse Plank',       sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Sit, legs extended, hands behind. Lift hips straight. Squeeze glutes hard.', videoUrl:null },
             { id:'a9',  name:'Wall Pelvic Tilts',   sets:3, reps:10, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Back against wall, feet forward. Press lower back flat to wall. Release. Teaches posterior tilt.', videoUrl:null },
             { id:'a10', name:'90/90 Hip Lift',      sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Back on ground, feet on wall at 90°. Press back down, exhale fully, lift hips slightly.', videoUrl:'https://www.youtube.com/watch?v=gWpMbJCpzz8' },
             { id:'a11', name:'Band Hip Extension',  sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Requires a resistance band. Band on ankle. Extend hip back by squeezing glute. Keep knee straight. Do not arch back.', videoUrl:null },
-            { id:'a12', name:'Bird Dogs',           sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level.', videoUrl:'https://www.youtube.com/watch?v=5Zp9IYxDYB4' },
+            { id:'a12', name:'Bird Dogs',           aptGroup:2, sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Hands and knees. Extend opposite arm and leg. Hold briefly. Keep hips level. Anti-rotation work — the goal is that a glass of water on your lower back would not spill.', videoUrl:'https://www.youtube.com/watch?v=5Zp9IYxDYB4' },
             { id:'a13', name:'Pelvic Clock',        sets:2, reps:8,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Lie on back, knees bent. Imagine clock on pelvis. Tilt through each hour. 12:00 is posterior tilt.', videoUrl:null },
-            { id:'a14', name:'Side Plank',          sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:false, desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked.', videoUrl:'https://www.youtube.com/watch?v=iNbH7_edNI8' },
+            { id:'a14', name:'Side Plank',          aptGroup:2, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true,  desc:'Side-lying on elbow. Lift hips straight. Hold. Keep hips stacked. Your only lateral core work — nothing else in the week trains the side of the trunk.', videoUrl:'https://www.youtube.com/watch?v=iNbH7_edNI8' },
             { id:'a17', name:'Band Hip Distraction',sets:2, reps:30, hardSets:3, hardReps:45, isTime:true,  enabled:false, desc:'Requires a resistance band. Band at hip crease. Half-kneeling. Band pulls hip back. Rock forward gently.', videoUrl:null },
             { id:'a18', name:"Child's Pose PPT",    sets:2, reps:45, hardSets:3, hardReps:60, isTime:true,  enabled:false, desc:'Sit on heels, arms forward. Tuck tailbone posteriorly. Gently round lower back. Breathe deep.', videoUrl:null },
             { id:'a19', name:'Serratus Punches',    sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:true, desc:'Lie on back, arm pointing straight up holding a light dumbbell (5–10 lbs) or fist. Without bending the elbow, push your fist/dumbbell toward the ceiling by protracting your shoulder blade — like a slow punch. Lower back down. This directly targets the serratus anterior, the muscle that holds your ribs flat against your thorax. This is the primary fix for rib flare.', videoUrl:'https://www.youtube.com/watch?v=y1FPkIS85kY' },
             { id:'a20', name:'RKC Plank',           sets:3, reps:20, hardSets:3, hardReps:30, isTime:true,  enabled:true, desc:'Get into a plank. Now maximally squeeze everything simultaneously: posteriorly tilt your pelvis (tuck tailbone hard), brace abs as if taking a punch, squeeze glutes as hard as possible, try to drag elbows toward your toes. You should be shaking within 10 seconds. Far more effective than a standard plank for your APT pattern.', videoUrl:'https://www.youtube.com/watch?v=0xgxEoWC22g' },
-            { id:'a21', name:'Single-Leg Glute Bridge', sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:true, desc:'Glute bridge on one leg. Extend one leg straight, foot flexed. Drive hips up through the planted foot by squeezing the glute — not your back. Lower slowly. Your skating balance makes this accessible where most beginners struggle. Forces each glute to work independently, exposing and fixing asymmetries common in APT.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
+            { id:'a21', name:'Single-Leg Glute Bridge', sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Glute bridge on one leg. Extend one leg straight, foot flexed. Drive hips up through the planted foot by squeezing the glute — not your back. Lower slowly. Your skating balance makes this accessible where most beginners struggle. Forces each glute to work independently, exposing and fixing asymmetries common in APT.', videoUrl:'https://www.youtube.com/shorts/xpc8Jz6zvak' },
             { id:'a22', name:'Reverse Wrist Curls', sets:3, reps:12, hardSets:3, hardReps:15, isTime:false, enabled:false, desc:'Sit with forearm on thigh, palm facing down, holding a light dumbbell (5–10 lbs). Curl the wrist upward, then lower slowly. This directly strengthens the wrist extensors — the exact muscles strained by Osu! aim movements. Most people only train flexors (gripping), leaving extensors chronically weak and injury-prone. Start light and go slow; these muscles fatigue fast.', videoUrl:'https://www.youtube.com/watch?v=SfENsl5klVA' },
             { id:'a23', name:'Hammer Rotations',   sets:3, reps:10, hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'Hold a light dumbbell (5–8 lbs) vertically like a hammer. Keeping elbow bent at 90° and pinned to your side, rotate palm up (supination), then palm down (pronation). Slow and controlled. The Osu! mouse grip pattern locks you in a narrow pronation range — this restores full pronation/supination strength and reduces the cumulative stress on the radioulnar joint.', videoUrl:'https://www.youtube.com/watch?v=9XVf_yGLXNk' },
         ],
@@ -552,8 +583,6 @@
         const [viewingHistory, setViewingHistory]     = useState(null);
         const [showHistoryDetail, setShowHistoryDetail] = useState(false);
         const [workoutComplete, setWorkoutComplete]   = useState(false);
-        const [customRestDay, setCustomRestDay]       = useState(6);
-        const [restDayPostponed, setRestDayPostponed] = useState(false);
         const [restCredits, setRestCredits]           = useState(0);
         const [restSpentDates, setRestSpentDates]     = useState([]);
         const [collapsed, setCollapsed]               = useState({});
@@ -618,6 +647,8 @@
                         core:         mergeArr(saved.core,         DEFAULT_EXERCISES.core),
                         squats:       mergeArr(saved.squats,       DEFAULT_EXERCISES.squats),
                         apt:          mergeArr(saved.apt,          DEFAULT_EXERCISES.apt),
+                        hinge:        mergeArr(saved.hinge,        DEFAULT_EXERCISES.hinge),
+                        calf:         mergeArr(saved.calf,         DEFAULT_EXERCISES.calf),
                         overhead:     mergeArr(saved.overhead,     DEFAULT_EXERCISES.overhead),
                         rearDelt:     mergeArr(saved.rearDelt,     DEFAULT_EXERCISES.rearDelt),
                         rearDeltBw:   mergeArr(saved.rearDeltBw,   DEFAULT_EXERCISES.rearDeltBw),
@@ -653,42 +684,36 @@
                 }
                 setExercises(exData);
 
-                const { data: profileData } = await supabase
-                    .from('user_profiles').select('custom_rest_day').eq('id', uid).single();
-                const restDay = profileData ? profileData.custom_rest_day : 6;
-                setCustomRestDay(restDay);
+                // user_profiles.custom_rest_day is no longer read: the week is laid
+                // out explicitly in WEEK_PLAN rather than derived from a rest day.
 
                 const todayStr = toLocalDate();
                 const d = new Date();
                 const dayOfWeek = d.getDay();
 
-                // rest_day_postponements holds this week's rest-day decisions. Each
-                // row is classified by the weekday its date falls on:
-                //   date lands on the scheduled rest day -> trained instead, credit banked
-                //   date lands on any other day          -> credit spent, rested that day
-                // Encoding it this way keeps both events in the existing table with
-                // no schema change. Credits are week-scoped and simply expire.
+                // Every day trains something now, so the week grants one rest credit
+                // outright instead of banking one when a scheduled rest day is
+                // traded away. Each row in rest_day_postponements is a day taken as
+                // a full rest; unspent credits expire when the week rolls over.
+                // Fetched unbounded, not just this week: the streak has to know about
+                // every past rest day, or one taken weeks ago starts breaking it.
+                // Only this week's rows count against the credit.
                 const [weekStart, weekEnd] = weekBounds(d);
                 const { data: restRows } = await supabase
                     .from('rest_day_postponements')
-                    .select('postponed_date').eq('user_id', uid)
-                    .gte('postponed_date', weekStart).lte('postponed_date', weekEnd);
-                const rows = restRows || [];
-                const banked = rows.filter(r => parseLocalDate(r.postponed_date).getDay() === restDay);
-                const spent  = rows.filter(r => parseLocalDate(r.postponed_date).getDay() !== restDay);
-                const spentDates = spent.map(r => r.postponed_date);
+                    .select('postponed_date').eq('user_id', uid);
+                const spentDates = (restRows || []).map(r => r.postponed_date);
+                const spentThisWeek = spentDates.filter(ds => ds >= weekStart && ds <= weekEnd);
                 setRestSpentDates(spentDates);
-                setRestCredits(Math.max(0, banked.length - spent.length));
+                setRestCredits(Math.max(0, REST_CREDITS_PER_WEEK - spentThisWeek.length));
 
-                const bankedToday = banked.some(r => r.postponed_date === todayStr);
                 const restedToday = spentDates.includes(todayStr);
-                setRestDayPostponed(bankedToday);
 
                 const { data: historyData } = await supabase
                     .from('workout_history').select('*').eq('user_id', uid).order('date', { ascending: false });
                 const hist = historyData || [];
                 setHistory(hist);
-                calculateStreak(hist, restDay, spentDates);
+                calculateStreak(hist, spentDates);
 
                 const { data: stretchData } = await supabase
                     .from('stretch_categories').select('last_categories').eq('user_id', uid).single();
@@ -700,16 +725,15 @@
 
                 setDate(d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }));
 
-                // Rest today if a banked credit was spent on today, or if this is the
-                // scheduled rest day and it hasn't been traded away for a credit.
-                const isRestDay = restedToday || (dayOfWeek === restDay && !bankedToday);
+                // The only way to get a full day off now is to spend a rest credit.
+                // Every other day trains something, the recovery day included.
+                const isRestDay = restedToday;
                 setIsRest(isRestDay);
 
                 if (isRestDay) {
                     setDayName('Rest');
                 } else {
-                    const trainingOnRestDay = dayOfWeek === restDay;
-                    const schedule = getWorkoutSchedule(dayOfWeek, restDay, trainingOnRestDay);
+                    const schedule = getWorkoutSchedule(dayOfWeek);
                     setDayName(schedule.name);
                     const alreadyDone = hist.some(h => h.date === todayStr);
                     if (!alreadyDone) {
@@ -728,7 +752,7 @@
                                 }
                             } catch (e) { /* fall through to generate */ }
                         }
-                        if (!restored) generateWorkoutWith(dayOfWeek, exData, si, restDay, uid, trainingOnRestDay);
+                        if (!restored) generateWorkoutWith(dayOfWeek, exData, si, uid);
                     } else {
                         setWorkoutComplete(true);
                     }
@@ -738,7 +762,7 @@
             }
         };
 
-        const calculateStreak = (hist, restDay, spentDates = restSpentDates) => {
+        const calculateStreak = (hist, spentDates = restSpentDates) => {
             if (!hist || hist.length === 0) { setStreak(0); return; }
             const todayStr = toLocalDate();
             const hasTodayWorkout = hist.some(h => h.date === todayStr);
@@ -749,11 +773,10 @@
             if (!hasTodayWorkout) check.setDate(check.getDate() - 1);
 
             while (count <= 365) {
-                const dow = check.getDay();
                 const ds = toLocalDate(check);
-                // Neither the scheduled rest day nor a day a banked credit was
-                // spent on counts against the streak.
-                if (dow === restDay || spentDates.includes(ds)) { check.setDate(check.getDate() - 1); continue; }
+                // Only a day taken off with a rest credit is skipped. The recovery
+                // day is a training day now, so it counts like any other.
+                if (spentDates.includes(ds)) { check.setDate(check.getDate() - 1); continue; }
                 if (hist.some(h => h.date === ds)) {
                     count++;
                     check.setDate(check.getDate() - 1);
@@ -767,12 +790,11 @@
         const generateWorkout = () => {
             if (workout.length > 0 && !window.confirm('Regenerate workout? Your current progress will be lost.')) return;
             const d = new Date();
-            generateWorkoutWith(d.getDay(), exercises, stretchIndex, customRestDay, user?.id, restDayPostponed);
+            generateWorkoutWith(d.getDay(), exercises, stretchIndex, user?.id);
         };
 
-        const generateWorkoutWith = (dayOfWeek, exData, si, restDay, uid, trainingOnRestDay = false) => {
-            const schedule = getWorkoutSchedule(dayOfWeek, restDay, trainingOnRestDay);
-            if (schedule.focus.length === 0) return;
+        const generateWorkoutWith = (dayOfWeek, exData, si, uid) => {
+            const schedule = getWorkoutSchedule(dayOfWeek);
             const items = [];
 
             // All mandatory exercises every session — consistent warm-up and wrist prep
@@ -806,21 +828,22 @@
                 if (pool.length > 0) items.push({ ...pool[0], category: 'Core' });
             }
 
-            // APT corrective work on mobility days only (exactly 2 exercises)
-            if (isMobilityDay(dayOfWeek, restDay)) {
-                const aptEnabled = exData.apt.filter(e => e.enabled);
-                const aptPool = [...aptEnabled];
-                for (let i = 0; i < Math.min(2, aptPool.length); i++) {
-                    const idx = Math.floor(Math.random() * aptPool.length);
-                    items.push({ ...aptPool[idx], category: 'APT' });
-                    aptPool.splice(idx, 1);
-                }
+            // APT on the two APT days, split into two fixed groups rather than drawn
+            // at random. The pool is sized to the weekly slots, so randomising only
+            // made the day unpredictable without changing what you do over a week.
+            // Group 2 runs on the recovery day, group 1 on the other; anything
+            // without a group falls into group 1.
+            const aptGroup = aptGroupFor(dayOfWeek);
+            if (aptGroup > 0) {
+                exData.apt
+                    .filter(e => e.enabled && (e.aptGroup || 1) === aptGroup)
+                    .forEach(e => items.push({ ...e, category: 'APT' }));
             }
 
-            // Daily stretch routine — every enabled stretch, Monday through Friday.
-            // Replaces the old 1-category-per-session rotation (those live in the
-            // stretch backlog now and are no longer drawn from).
-            if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            // Stretches on the five non-APT days. 5 days x 2 sets is the 10 sets a
+            // week the routine is built around, so this deliberately does not run
+            // every day — the APT days are the two that go without.
+            if (isStretchDay(dayOfWeek)) {
                 (exData.stretches.daily || [])
                     .filter(e => e.enabled)
                     .forEach(e => items.push({ ...e, category: 'Stretch' }));
@@ -883,7 +906,7 @@
                 if (error) throw error;
                 const updated = [data, ...history];
                 setHistory(updated);
-                calculateStreak(updated, customRestDay);
+                calculateStreak(updated);
                 setWorkoutComplete(true);
                 localStorage.removeItem('currentWorkout');
             } catch (err) {
@@ -927,31 +950,11 @@
             await saveExerciseSettings(updated);
         };
 
-        const changeRestDay = async (day) => {
-            const prev = customRestDay;
-            setCustomRestDay(day);
-            const { error } = await supabase.from('user_profiles').update({ custom_rest_day: day, updated_at: new Date().toISOString() }).eq('id', user.id);
-            if (error) {
-                console.error('changeRestDay error:', error);
-                setCustomRestDay(prev);
-            }
-        };
 
-        // Train on the scheduled rest day. Banks the rest as a credit that can be
-        // spent on any later day this week, rather than pushing it to tomorrow.
-        const bankRestDay = async () => {
-            if (!user) return;
-            if (window.confirm("Train today and bank your rest day? You can take it any day this week instead.")) {
-                const { error } = await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
-                if (error) { console.error('bankRestDay error:', error); showToast('Could not bank rest day — try again'); return; }
-                window.location.reload();
-            }
-        };
-
-        // Spend a banked credit to rest on a day that would otherwise be a workout.
+        // Spend this week's rest credit to take a full day off.
         const spendRestDay = async () => {
             if (!user || restCredits < 1) return;
-            if (window.confirm("Use your banked rest day today? Your streak stays intact.")) {
+            if (window.confirm("Take a full rest day today? Your streak stays intact.")) {
                 const { error } = await supabase.from('rest_day_postponements').insert({ user_id: user.id, postponed_date: toLocalDate() });
                 if (error) { console.error('spendRestDay error:', error); showToast('Could not take rest day — try again'); return; }
                 localStorage.removeItem('currentWorkout');
@@ -1050,6 +1053,8 @@
                                 {renderExerciseSection('Rear Delt — Dumbbell Track', 'rearDelt', null, 'Posture work on every Pull day — active when Pull Track is set to Dumbbells')}
                                 {renderExerciseSection('Legs', 'squats')}
                                 {renderExerciseSection('Legs Accessory (every Legs day)', 'legAccessory', null, 'Always appears on Legs days — adductor/accessory work')}
+                                {renderExerciseSection('Hip Hinge (every Legs day)', 'hinge', null, 'Hamstrings and glutes — balances the squat, which is quad-dominant')}
+                                {renderExerciseSection('Calves / Ankles (every Legs day)', 'calf', null, 'Ankle strength — nothing else in the week trains it')}
                                 {renderExerciseSection('Core', 'core')}
                                 <div className="settings-section-title">Daily Stretches (Mon–Fri)</div>
                                 {renderExerciseSection('Daily Routine', 'stretches', 'daily', 'Every enabled stretch runs Monday through Friday, 2 × 30s each')}
@@ -1074,27 +1079,24 @@
                                     <button className={`track-option ${exercises.pullTrack === 'dumbbells' ? 'active' : ''}`} onClick={() => changePullTrack('dumbbells')}>Dumbbells</button>
                                 </div>
 
-                                <div className="settings-section-title">Rest Day</div>
+                                <div className="settings-section-title">Rest Credit</div>
                                 <div className="info-box" style={{ marginBottom: 12 }}>
-                                    <div className="info-box-text">Train on your rest day and it gets banked as a credit you can spend any later day that week. One credit per week — unspent credits expire Sunday.</div>
-                                </div>
-                                <div className="rest-day-options">
-                                    {DAYS_OF_WEEK.map((day, i) => (
-                                        <button key={i} className={`rest-day-btn ${customRestDay === i ? 'selected' : ''}`} onClick={() => changeRestDay(i)}>{day}</button>
-                                    ))}
+                                    <div className="info-box-text">No full rest day — Wednesday is a light recovery day instead. You get one rest credit a week, usable on any day for a genuine day off without breaking your streak. Unspent credits expire Sunday. {restCredits > 0 ? 'Available this week.' : 'Used for this week.'}</div>
                                 </div>
 
-                                <div className="settings-section-title" style={{ marginTop: 20 }}>Current Schedule</div>
+                                <div className="settings-section-title" style={{ marginTop: 20 }}>Weekly Schedule</div>
                                 <div className="info-box">
                                     <div className="info-box-text">
                                         {DAYS_OF_WEEK.map((day, i) => (
                                             <div key={i}>
                                                 <strong>{day}:</strong>{' '}
-                                                {i === customRestDay ? 'Rest Day' : getWorkoutSchedule(i, customRestDay).name + ' Day'}
+                                                {getWorkoutSchedule(i).name}
+                                                {isStretchDay(i) ? ' + stretches' : ' + APT'}
                                             </div>
                                         ))}
                                     </div>
                                 </div>
+                                <div className="settings-note">Days are fixed to fit your timetable — Legs on the late-start mornings, Pull on days with room for the trip to the bar, the shortest sessions on tight mornings. Ask to have them moved if your schedule changes.</div>
                             </div>
 
                             <div className={`tab-content ${activeTab === 'about' ? 'active' : ''}`}>
@@ -1233,23 +1235,16 @@
         );
 
         // ── Rest day view ──────────────────────────────────────────────────
-        // Two ways to land here: it's the scheduled rest day, or a banked credit
-        // was spent on today. Only the former can still be traded for a credit.
-        const isScheduledRest = new Date().getDay() === customRestDay;
+        // Only reachable by spending this week's rest credit. There is no longer a
+        // scheduled day off — the recovery day runs corrective work instead.
         if (isRest) {
             return (
                 <div className="container">
                     {header('Rest Day')}
-                    {buttons(isScheduledRest
-                        ? <button className="btn btn-accent" onClick={bankRestDay}>Train Today</button>
-                        : null)}
+                    {buttons()}
                     <div className="center-screen">
                         <div className="center-title">{DAYS_OF_WEEK[new Date().getDay()]} — Rest Day</div>
-                        {isScheduledRest ? (
-                            <div className="center-text">Recovery is where you get stronger.<br />Train today instead and you keep the rest day banked for later this week.</div>
-                        ) : (
-                            <div className="center-text">Banked rest day used.<br />Your streak is intact — back to it tomorrow.</div>
-                        )}
+                        <div className="center-text">Rest credit used for the week.<br />Your streak is intact — back to it tomorrow.</div>
                     </div>
                     {modals}
                 </div>
