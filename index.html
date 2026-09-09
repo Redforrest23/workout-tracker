@@ -331,7 +331,7 @@
         // covers that job better now.
         legs:     { name: 'Legs',     focus: ['squats', 'legAccessory', 'hinge'], includeCore: false, includeShoulder: false },
         push:     { name: 'Push',     focus: ['push'],                            includeCore: true,  includeShoulder: true  },
-        pull:     { name: 'Pull',     focus: ['pull', 'row', 'abs'],             includeCore: false, includeShoulder: false },
+        pull:     { name: 'Pull',     focus: ['grip', 'pull', 'row', 'abs'],             includeCore: false, includeShoulder: false },
         recovery: { name: 'Recovery', focus: [],                                  includeCore: false, includeShoulder: false },
     };
 
@@ -367,13 +367,13 @@
     // the later slots do not need their own. The recovery day has none of these, so
     // it gets no warm-up set at all, which is right for a day of light corrective
     // work.
-    const RAMP_UP_CATEGORIES = new Set(['squats', 'push', 'pull', 'pullDb', 'hinge']);
+    const RAMP_UP_CATEGORIES = new Set(['squats', 'push', 'pull', 'pullDb', 'hinge', 'grip']);
     const rampUpReps = (ex, isHard) => Math.max(1, Math.ceil((isHard ? ex.hardReps : ex.reps) / 2));
 
     // Shown against each exercise in the day's list. Anything not named here falls
     // back to the split name, so 'squats' reads as "Legs" and 'push' as "Push".
     const CATEGORY_LABELS = {
-        rearDelt: 'Rear Delt', legAccessory: 'Legs', hinge: 'Hinge',
+        rearDelt: 'Rear Delt', legAccessory: 'Legs', hinge: 'Hinge', grip: 'Grip',
         calf: 'Calves', abs: 'Abs', row: 'Row',
     };
 
@@ -395,12 +395,13 @@
     //   v3 — pike push-ups disabled pending physical therapy (wrist loading).
     //   v4 — hinge work promoted out of APT; Bird Dogs and Side Plank back in.
     //   v5 — pull progression restarts at the dead hang; wall pull-ups retired.
+    //   v6 — hangs move to their own grip slot; pull ladder restarts at negatives.
     // Note this resets every listed category, not just the one that prompted the
     // bump, so a deliberate re-enable in one of them is lost on the next upgrade.
     // One genuine day off per week, taken whenever you want it.
     const REST_CREDITS_PER_WEEK = 1;
 
-    const SETTINGS_VERSION = 5;
+    const SETTINGS_VERSION = 6;
     const RESET_ON_UPGRADE = ['mandatory', 'apt', 'overhead', 'pull'];
 
     // ── Default exercises ──────────────────────────────────────────────────
@@ -416,12 +417,21 @@
             { id:'p6', name:'Archer Push-ups',           difficulty:6, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'Wide hands. Lower to one side while the other arm extends. Alternate. Advanced.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
             { id:'p7', name:'One-Arm Push-up Prog.',     difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Progress toward one-arm. Start wide stance, gradually narrow feet.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
         ],
+        // Grip and hang work, its own slot rather than a rung on the pull-up ladder.
+        // As part of that ladder the hang displaced the pull-up progression entirely,
+        // so Pull days had no vertical pulling at all. They are separate jobs: this
+        // builds the grip and shoulder tolerance to hang, the ladder below trains
+        // pulling. Grip endurance is also what limits climbers first.
+        grip: [
+            { id:'g1', name:'Dead Hang',                 difficulty:1, sets:3, reps:20, hardSets:3, hardReps:40, isTime:true, enabled:true,  desc:'Hang from the high bar, hands shoulder-width, arms straight, feet off the floor. Shoulders stay active rather than fully slack — pull them down away from your ears without bending the elbows. Hold for time. The wrist is neutral and under traction here rather than compression, about the kindest loaded position available to you, but stop if you get numbness or tingling. Build toward a comfortable 60 seconds before moving on.', videoUrl:null },
+            { id:'g2', name:'Towel Dead Hang',           difficulty:2, sets:3, reps:20, hardSets:3, hardReps:30, isTime:true, enabled:false, desc:'Drape a towel over the bar and hang from the ends, one hand on each. The unstable, thicker grip is much harder on the forearms than the bar itself and carries over well to climbing holds. Keep the shoulders active. Drop back to a bar hang the moment the grip starts slipping rather than fighting it.', videoUrl:null },
+            { id:'g3', name:'Single-Arm Assisted Hang',  difficulty:3, sets:3, reps:15, hardSets:3, hardReps:25, isTime:true, enabled:false, desc:'Hang mostly from one arm, using the other hand lightly on the bar or your own wrist to take the difference. Alternate sides each set. Loads one side at a time without the injury risk of a true one-arm hang. Take less help as the grip improves.', videoUrl:null },
+        ],
         pull: [
-            { id:'pu9',  name:'Dead Hang',      difficulty:1, sets:3, reps:20, hardSets:3, hardReps:40, isTime:true,  enabled:true,  desc:'Hang from the high bar, hands shoulder-width, arms straight. Shoulders stay active rather than fully slack — think of pulling them down away from your ears without bending the elbows. Hold for time, feet off the floor or lightly touching if you need to scale it. This builds the grip and shoulder tolerance that every pull-up progression is gated behind, and grip endurance is the thing that limits climbers more than pulling strength. The wrist is neutral and under traction here rather than compression, which is about the kindest loaded position available to you — but stop if you get numbness or tingling. Move to scapular pulls once you can hold a comfortable 30 seconds.', videoUrl:null },
             { id:'pu10', name:'Scapular Pulls', difficulty:2, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'From a dead hang with straight arms, pull your shoulder blades down and back to lift your body a few inches — no elbow bend at all. Pause at the top, lower under control. Tiny range, and it teaches the scapular engagement that starts every real pull-up. Skipping this is why people stall on negatives with their shoulders shrugged up around their ears.', videoUrl:null },
             { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'SUPERSEDED — this existed only because there was no bar to hang from. A dead hang on the real bar is a better starting point and transfers to actual pull-ups; a wall lean does not load the pattern much at all. Kept for reference. Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:'https://www.youtube.com/watch?v=rYXoCAxIJgs' },
             { id:'pu2', name:'Australian Pull-ups', requires:'Low bar', difficulty:2, sets:3, reps:8,  hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR (waist height) or rings — not doable on the high dorm bar. Hang underneath, body straight, heels on the floor. Pull chest to bar. Lower with control. A sturdy desk or table edge is the usual substitute: lie underneath and row up to it.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
-            { id:'pu3', name:'Negative Pull-ups',   difficulty:3, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Works on a high bar, so this is the rung to start on. Jump or step up to the top position with your chin over the bar, then lower as slowly as you can — aim for 5–10 seconds. The lowering half is where the strength is built, and you can do it long before you can pull yourself up. Grip is neutral here, which suits the wrists. Start with 3–5 reps; stop the set when the lowering stops being slow.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
+            { id:'pu3', name:'Negative Pull-ups',   difficulty:3, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:true,  desc:'Works on a high bar, so this is the rung to start on. Jump or step up to the top position with your chin over the bar, then lower as slowly as you can — aim for 5–10 seconds. The lowering half is where the strength is built, and you can do it long before you can pull yourself up. Grip is neutral here, which suits the wrists. Start with 3–5 reps; stop the set when the lowering stops being slow.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu4', name:'Assisted Pull-ups',   difficulty:4, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'No band needed — put a chair or box under the bar and take just enough weight through one foot to complete the rep, driving with the back rather than the leg. Reduce the help as you get stronger. Pull chin over bar, lower under control.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu5', name:'Regular Pull-ups',    difficulty:5, sets:3, reps:5,  hardSets:4, hardReps:8,  isTime:false, enabled:false, desc:'Hang from bar, palms away. Pull chin over bar. Lower controlled. Engage core.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu6', name:'Chin-ups',            difficulty:5, sets:3, reps:6,  hardSets:4, hardReps:10, isTime:false, enabled:false, desc:'Palms facing you. More bicep involvement. Pull chin over bar.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
@@ -716,6 +726,7 @@
                         core:         mergeArr(saved.core,         DEFAULT_EXERCISES.core),
                         squats:       mergeArr(saved.squats,       DEFAULT_EXERCISES.squats),
                         apt:          mergeArr(saved.apt,          DEFAULT_EXERCISES.apt),
+                        grip:         mergeArr(saved.grip,         DEFAULT_EXERCISES.grip),
                         hinge:        mergeArr(saved.hinge,        DEFAULT_EXERCISES.hinge),
                         abs:          mergeArr(saved.abs,          DEFAULT_EXERCISES.abs),
                         calf:         mergeArr(saved.calf,         DEFAULT_EXERCISES.calf),
@@ -1154,7 +1165,8 @@
                                 {renderExerciseSection('Core', 'core', null, 'Isometric anti-extension holds for posture — the loaded ab work is under Pull days')}
 
                                 <div className="settings-section-title">Pull Days — Tue / Sat (dorm gym)</div>
-                                {renderExerciseSection('Pull-ups', 'pull', null, 'Vertical pull on the high bar')}
+                                {renderExerciseSection('Grip / Hangs', 'grip', null, 'Its own slot so hanging does not displace the pull-up progression — and grip is what limits climbers first')}
+                                {renderExerciseSection('Pull-ups', 'pull', null, 'Vertical pull on the high bar. Drop back to Scapular Pulls if you cannot control the lowering on a negative yet')}
                                 {renderExerciseSection('Rows', 'pullDb', null, 'Horizontal pull — dumbbell and bench. Becomes the main pull instead if Pull Track is switched to Dumbbells')}
                                 {renderExerciseSection('Abs', 'abs', null, 'Loaded and progressive, at the captain\'s chair')}
 
