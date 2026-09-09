@@ -104,15 +104,9 @@
         /* ── Workout list ──────────────────────────────────── */
         .workout-list { flex: 1; overflow-y: auto; padding: 12px; }
         .progress-wrap { margin-bottom: 14px; }
-        /* Shown only before the first exercise is logged, so it stops taking space
-           once the session is under way. */
-        .rampup-note {
-            background: var(--raised); border: 1px solid var(--border);
-            border-left: 3px solid var(--accent); border-radius: 8px;
-            padding: 10px 12px; margin-bottom: 14px;
-            font-size: 12.5px; line-height: 1.5; color: var(--txt-sub);
-        }
-        .rampup-note strong { color: var(--accent-lt); }
+        /* The warm-up set sits above set 1 and reads as a lead-in, not a working set. */
+        .rampup-row { opacity: 0.75; }
+        .rampup-row .set-num { font-style: italic; }
         .progress-bar-bg { background: var(--raised); border-radius: 4px; height: 4px; overflow: hidden; margin-bottom: 5px; }
         .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
         .progress-label { font-size: 11px; color: var(--txt-muted); text-align: right; }
@@ -367,6 +361,14 @@
         { type: 'push',     apt: 0, extra: ['rearDelt', 'calf'] },   // Fri — tight morning, room
         { type: 'pull',     apt: 0, extra: [] },                     // Sat — gym, free day
     ];
+
+    // Loaded or compound patterns, where going in cold actually carries a cost.
+    // Only the FIRST of these in a session gets a warm-up set — once you are warm
+    // the later slots do not need their own. The recovery day has none of these, so
+    // it gets no warm-up set at all, which is right for a day of light corrective
+    // work.
+    const RAMP_UP_CATEGORIES = new Set(['squats', 'push', 'pull', 'pullDb', 'hinge']);
+    const rampUpReps = (ex, isHard) => Math.max(1, Math.ceil((isHard ? ex.hardReps : ex.reps) / 2));
 
     // Shown against each exercise in the day's list. Anything not named here falls
     // back to the split name, so 'squats' reads as "Legs" and 'push' as "Push".
@@ -887,7 +889,7 @@
                     pool = (exData[cat] || []).filter(e => e.enabled);
                 }
                 const catLabel = CATEGORY_LABELS[cat] || schedule.name;
-                if (pool.length > 0) items.push({ ...pool[0], category: catLabel });
+                if (pool.length > 0) items.push({ ...pool[0], category: catLabel, slot: cat });
             });
 
             // Overhead press on Push days (compound — before core)
@@ -922,6 +924,10 @@
                     .filter(e => e.enabled)
                     .forEach(e => items.push({ ...e, category: 'Stretch' }));
             }
+
+            // First loaded movement of the session carries the warm-up set.
+            const rampIdx = items.findIndex(e => RAMP_UP_CATEGORIES.has(e.slot));
+            if (rampIdx >= 0) items[rampIdx] = { ...items[rampIdx], rampUp: true };
 
             setWorkout(items);
             setCompletedWorkout([]);
@@ -1052,6 +1058,7 @@
             const isHard = hardMode[ex.id];
             const numSets = isHard ? ex.hardSets : ex.sets;
             const prefix = isHard ? 'hard' : 'reg';
+            if (ex.rampUp && !log[`${ex.id}-${prefix}-w`]?.trim()) return false;
             for (let i = 0; i < numSets; i++) {
                 if (!log[`${ex.id}-${prefix}-${i}`]?.trim()) return false;
             }
@@ -1387,12 +1394,6 @@
                         <div className="progress-label">{done} / {total} complete</div>
                     </div>
 
-                    {done === 0 && (
-                        <div className="rampup-note">
-                            <strong>Ramp up first.</strong> One easy set of the first movement before your working sets — about half the reps, comfortable effort, full range. Roughly 60 seconds. You train straight out of bed, which is the stiffest you are all day, and cold joints do not want load.
-                        </div>
-                    )}
-
                     {workout.map(ex => {
                         const isHard = hardMode[ex.id];
                         const prefix = isHard ? 'hard' : 'reg';
@@ -1416,7 +1417,19 @@
                                     </div>
                                 </div>
                                 <div className={`set-section ${isHard ? 'hard-section' : ''}`}>
-                                    <div className={`section-label ${isHard ? 'hard' : ''}`}>{numSets} sets × {reps} {unit}{isHard ? ' — Hard Mode' : ''}</div>
+                                    <div className={`section-label ${isHard ? 'hard' : ''}`}>{numSets} sets × {reps} {unit}{ex.rampUp ? ' + warm-up' : ''}{isHard ? ' — Hard Mode' : ''}</div>
+                                    {ex.rampUp && (
+                                        <div className="set-row rampup-row">
+                                            <span className="set-num">Warm-up</span>
+                                            <input
+                                                type="number"
+                                                className="set-input"
+                                                placeholder={`~${rampUpReps(ex, isHard)} easy`}
+                                                value={log[`${ex.id}-${prefix}-w`] || ''}
+                                                onChange={e => logRep(ex.id, `${prefix}-w`, e.target.value)}
+                                            />
+                                        </div>
+                                    )}
                                     {Array.from({ length: numSets }).map((_, i) => (
                                         <div key={i} className="set-row">
                                             <span className="set-num">Set {i + 1}</span>
@@ -1461,6 +1474,12 @@
                                         </div>
                                         <div className={`set-section ${isHard ? 'hard-section' : ''}`}>
                                             <div className={`section-label ${isHard ? 'hard' : ''}`}>{isHard ? 'Hard Mode' : 'Regular Mode'}</div>
+                                            {ex.rampUp && (
+                                                <div className="set-row rampup-row">
+                                                    <span className="set-num">Warm-up</span>
+                                                    <span className="set-value">{log[`${ex.id}-${prefix}-w`]} {ex.isTime ? 'sec' : 'reps'}</span>
+                                                </div>
+                                            )}
                                             {Array.from({ length: numSets }).map((_, i) => (
                                                 <div key={i} className="set-row">
                                                     <span className="set-num">Set {i + 1}</span>
