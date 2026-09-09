@@ -394,13 +394,14 @@
     //   v2 — warm-up retired; APT pool cut from 19 to 6.
     //   v3 — pike push-ups disabled pending physical therapy (wrist loading).
     //   v4 — hinge work promoted out of APT; Bird Dogs and Side Plank back in.
+    //   v5 — pull progression restarts at the dead hang; wall pull-ups retired.
     // Note this resets every listed category, not just the one that prompted the
     // bump, so a deliberate re-enable in one of them is lost on the next upgrade.
     // One genuine day off per week, taken whenever you want it.
     const REST_CREDITS_PER_WEEK = 1;
 
-    const SETTINGS_VERSION = 4;
-    const RESET_ON_UPGRADE = ['mandatory', 'apt', 'overhead'];
+    const SETTINGS_VERSION = 5;
+    const RESET_ON_UPGRADE = ['mandatory', 'apt', 'overhead', 'pull'];
 
     // ── Default exercises ──────────────────────────────────────────────────
     const DEFAULT_EXERCISES = {
@@ -416,7 +417,9 @@
             { id:'p7', name:'One-Arm Push-up Prog.',     difficulty:7, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Progress toward one-arm. Start wide stance, gradually narrow feet.', videoUrl:'https://www.hybridcalisthenics.com/pushups' },
         ],
         pull: [
-            { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:true,  desc:'Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:'https://www.youtube.com/watch?v=rYXoCAxIJgs' },
+            { id:'pu9',  name:'Dead Hang',      difficulty:1, sets:3, reps:20, hardSets:3, hardReps:40, isTime:true,  enabled:true,  desc:'Hang from the high bar, hands shoulder-width, arms straight. Shoulders stay active rather than fully slack — think of pulling them down away from your ears without bending the elbows. Hold for time, feet off the floor or lightly touching if you need to scale it. This builds the grip and shoulder tolerance that every pull-up progression is gated behind, and grip endurance is the thing that limits climbers more than pulling strength. The wrist is neutral and under traction here rather than compression, which is about the kindest loaded position available to you — but stop if you get numbness or tingling. Move to scapular pulls once you can hold a comfortable 30 seconds.', videoUrl:null },
+            { id:'pu10', name:'Scapular Pulls', difficulty:2, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'From a dead hang with straight arms, pull your shoulder blades down and back to lift your body a few inches — no elbow bend at all. Pause at the top, lower under control. Tiny range, and it teaches the scapular engagement that starts every real pull-up. Skipping this is why people stall on negatives with their shoulders shrugged up around their ears.', videoUrl:null },
+            { id:'pu1', name:'Wall Pull-ups',       difficulty:1, sets:3, reps:8,  hardSets:3, hardReps:12, isTime:false, enabled:false, desc:'SUPERSEDED — this existed only because there was no bar to hang from. A dead hang on the real bar is a better starting point and transfers to actual pull-ups; a wall lean does not load the pattern much at all. Kept for reference. Face wall, hands overhead. Walk feet forward, lean back. Pull toward wall using your back.', videoUrl:'https://www.youtube.com/watch?v=rYXoCAxIJgs' },
             { id:'pu2', name:'Australian Pull-ups', requires:'Low bar', difficulty:2, sets:3, reps:8,  hardSets:4, hardReps:12, isTime:false, enabled:false, desc:'NEEDS A LOW BAR (waist height) or rings — not doable on the high dorm bar. Hang underneath, body straight, heels on the floor. Pull chest to bar. Lower with control. A sturdy desk or table edge is the usual substitute: lie underneath and row up to it.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu3', name:'Negative Pull-ups',   difficulty:3, sets:3, reps:5,  hardSets:3, hardReps:8,  isTime:false, enabled:false, desc:'Works on a high bar, so this is the rung to start on. Jump or step up to the top position with your chin over the bar, then lower as slowly as you can — aim for 5–10 seconds. The lowering half is where the strength is built, and you can do it long before you can pull yourself up. Grip is neutral here, which suits the wrists. Start with 3–5 reps; stop the set when the lowering stops being slow.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
             { id:'pu4', name:'Assisted Pull-ups',   difficulty:4, sets:3, reps:6,  hardSets:3, hardReps:10, isTime:false, enabled:false, desc:'No band needed — put a chair or box under the bar and take just enough weight through one foot to complete the rep, driving with the back rather than the leg. Reduce the help as you get stronger. Pull chin over bar, lower under control.', videoUrl:'https://www.hybridcalisthenics.com/pullups' },
